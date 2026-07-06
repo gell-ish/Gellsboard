@@ -1516,17 +1516,13 @@ function TasksTab() {
                     minWidth: 160,
                   }}
                 >
-                  <InlineEdit value={t.task} onSave={(v) => update(t.id, "task", v)} />
+                  <span>{t.task}</span>
                 </td>
                 <td style={{ padding: "9px 12px", whiteSpace: "nowrap" }}>
-                  <InlineEdit
-                    value={t.due}
-                    onSave={(v) => update(t.id, "due", v)}
-                    style={{ color: C.muted }}
-                  />
+                  <span style={{ color: C.muted }}>{t.due}</span>
                 </td>
                 <td style={{ padding: "9px 12px", whiteSpace: "nowrap" }}>
-                  <InlineEdit value={t.assignee} onSave={(v) => update(t.id, "assignee", v)} />
+                  <span>{t.assignee}</span>
                 </td>
                 <td style={{ padding: "9px 12px" }}>
                   <select
@@ -1564,11 +1560,7 @@ function TasksTab() {
                   </select>
                 </td>
                 <td style={{ padding: "9px 12px", minWidth: 140 }}>
-                  <InlineEdit
-                    value={t.notes}
-                    onSave={(v) => update(t.id, "notes", v)}
-                    style={{ color: C.muted }}
-                  />
+                  <span style={{ color: C.muted }}>{t.notes}</span>
                 </td>
                 <td style={{ padding: "9px 12px" }}>
                   <button
@@ -1596,6 +1588,258 @@ function TasksTab() {
   );
 }
 
+// ── MINI CALENDAR ──
+function MiniCalendar({ weeks, checkins, activeWeek, onSelect, C, typeFilter, setTypeFilter, rangeStart, rangeEnd, setRangeStart, setRangeEnd }) {
+  const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const DAY_NAMES   = ["Su","Mo","Tu","We","Th","Fr","Sa"];
+
+  // Map each week label -> its Monday Date
+  const weekDates = useMemo(() => weeks.map(w => {
+    const [mm,dd,yy] = w.split("/");
+    return { date: new Date(+yy, +mm-1, +dd), label: w };
+  }), [weeks]);
+
+  // Set of ISO strings for week-Monday dates (have data)
+  const weekMondays = useMemo(() => {
+    const s = new Set();
+    weekDates.forEach(({ date }) => {
+      s.add(`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`);
+    });
+    return s;
+  }, [weekDates]);
+
+  // Start at Jan of first week's year
+  const initYear  = weekDates.length ? weekDates[0].date.getFullYear() : 2026;
+  const [curYear,  setCurYear]  = useState(initYear);
+  const [curMonth, setCurMonth] = useState(0);
+  const [dragging,   setDragging]   = useState(false);
+  const [hoverDay,   setHoverDay]   = useState(null);
+
+  function prevMonth() {
+    if (curMonth === 0) { setCurMonth(11); setCurYear(y => y - 1); }
+    else setCurMonth(m => m - 1);
+  }
+  function nextMonth() {
+    if (curMonth === 11) { setCurMonth(0); setCurYear(y => y + 1); }
+    else setCurMonth(m => m + 1);
+  }
+
+  const grid = useMemo(() => {
+    const firstDay = new Date(curYear, curMonth, 1).getDay();
+    const daysInMonth = new Date(curYear, curMonth + 1, 0).getDate();
+    const cells = [];
+    for (let i = 0; i < firstDay; i++) cells.push(null);
+    for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+    return cells;
+  }, [curYear, curMonth]);
+
+  // Clear selection
+  function clearSelection() {
+    setRangeStart(null); setRangeEnd(null); setDragging(false); setHoverDay(null);
+  }
+
+  // Stats for display (computed from props checkins using same range logic)
+  const filteredCheckins = useMemo(() => {
+    let base;
+    if (rangeStart) {
+      const lo = rangeEnd && rangeEnd < rangeStart ? rangeEnd : rangeStart;
+      const hi = rangeEnd && rangeEnd > rangeStart ? rangeEnd : rangeStart;
+      const matched = weekDates
+        .filter(({ date }) => { const sun = new Date(date); sun.setDate(date.getDate()+6); return date <= hi && sun >= lo; })
+        .map(({ label }) => label);
+      base = checkins.filter(c => matched.includes(c.week));
+    } else {
+      base = checkins.filter(c => c.week === activeWeek);
+    }
+    if (typeFilter === "all") return base;
+    return base.filter(c => c.type === typeFilter);
+  }, [checkins, rangeStart, rangeEnd, activeWeek, weekDates, typeFilter]);
+
+  function dayToDate(day) { return new Date(curYear, curMonth, day); }
+
+  function isInRange(day) {
+    const d = dayToDate(day);
+    const lo = rangeEnd && rangeEnd < rangeStart ? rangeEnd : rangeStart;
+    const hi = rangeEnd && rangeEnd > rangeStart ? rangeEnd : rangeStart;
+    if (!lo) return false;
+    return d >= lo && d <= (hi || lo);
+  }
+
+  function isHoverRange(day) {
+    if (!dragging || !rangeStart || !hoverDay) return false;
+    const d = dayToDate(day);
+    const lo = hoverDay < rangeStart ? hoverDay : rangeStart;
+    const hi = hoverDay > rangeStart ? hoverDay : rangeStart;
+    return d >= lo && d <= hi;
+  }
+
+  function hasCheckinDot(day) {
+    const iso = `${curYear}-${String(curMonth+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+    return weekMondays.has(iso);
+  }
+
+  function handleMouseDown(day) {
+    const d = dayToDate(day);
+    setRangeStart(d);
+    setRangeEnd(null);
+    setDragging(true);
+    setHoverDay(d);
+    // Single click: find week for this day and show its check-ins
+    const [mm,dd,yy] = [String(curMonth+1).padStart(2,"0"), String(day).padStart(2,"0"), String(curYear)];
+    // find matching week
+    const clicked = d;
+    let best = null, bestDiff = Infinity;
+    weekDates.forEach(({ date, label }) => {
+      const sun = new Date(date); sun.setDate(date.getDate() + 6);
+      if (clicked >= date && clicked <= sun) { best = label; bestDiff = 0; }
+      else {
+        const diff = Math.min(Math.abs(clicked - date), Math.abs(clicked - sun));
+        if (diff < bestDiff) { bestDiff = diff; best = label; }
+      }
+    });
+    if (best) onSelect(best);
+  }
+
+  function handleMouseEnter(day) {
+    if (!dragging) return;
+    const d = dayToDate(day);
+    setHoverDay(d);
+    setRangeEnd(d);
+  }
+
+  function handleMouseUp(day) {
+    const d = dayToDate(day);
+    setRangeEnd(d);
+    setDragging(false);
+    setHoverDay(null);
+  }
+
+  // Clear selection
+  function clearSelection() {
+    setRangeStart(null); setRangeEnd(null); setDragging(false); setHoverDay(null);
+  }
+
+  const today = new Date();
+  const selLabel = rangeStart
+    ? rangeEnd && rangeEnd.toDateString() !== rangeStart.toDateString()
+      ? `${rangeStart.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${rangeEnd.toLocaleDateString("en-US",{month:"short",day:"numeric"})}`
+      : rangeStart.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})
+    : activeWeek || "";
+
+  return (
+    <div style={{marginBottom:18}} onMouseLeave={()=>{if(dragging){setDragging(false);setHoverDay(null);}}}>
+      {/* Controls row */}
+      <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap",alignItems:"center"}}>
+        <select value={activeWeek} onChange={e=>{onSelect(e.target.value);clearSelection();}}
+          style={{padding:"6px 10px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:13,cursor:"pointer",fontWeight:600,color:C.dark,background:C.white}}>
+          {weeks.map(w=><option key={w} value={w}>{w}</option>)}
+        </select>
+        <div style={{display:"flex",gap:4}}>
+          <button onClick={()=>{const i=weeks.indexOf(activeWeek);if(i>0){onSelect(weeks[i-1]);clearSelection();}}}
+            disabled={weeks.indexOf(activeWeek)===0}
+            style={{padding:"6px 10px",borderRadius:6,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:13,opacity:weeks.indexOf(activeWeek)===0?0.3:1}}>‹</button>
+          <button onClick={()=>{const i=weeks.indexOf(activeWeek);if(i<weeks.length-1){onSelect(weeks[i+1]);clearSelection();}}}
+            disabled={weeks.indexOf(activeWeek)===weeks.length-1}
+            style={{padding:"6px 10px",borderRadius:6,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:13,opacity:weeks.indexOf(activeWeek)===weeks.length-1?0.3:1}}>›</button>
+          <button onClick={()=>{onSelect(weeks[weeks.length-1]);clearSelection();}}
+            style={{padding:"6px 10px",borderRadius:6,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:12,color:C.muted}}>Latest</button>
+        </div>
+        <div style={{display:"flex",gap:6,marginLeft:"auto"}}>
+          {[["all","All"],["weekly","📋 Weekly"],["monthly","📅 Monthly"]].map(([v,l])=>(
+            <button key={v} onClick={()=>setTypeFilter(v)}
+              style={{padding:"5px 12px",borderRadius:8,border:"none",cursor:"pointer",fontSize:12,
+                background:typeFilter===v?C.dark:C.gray,color:typeFilter===v?C.white:C.dark,fontWeight:typeFilter===v?700:400}}>{l}</button>
+          ))}
+        </div>
+        <div style={{display:"flex",gap:6}}>
+          {[
+            {l:"Showed",  v:filteredCheckins.filter(c=>c.status==="showed").length,  c:C.green},
+            {l:"No Show", v:filteredCheckins.filter(c=>c.status==="noshow").length,  c:C.red},
+            {l:"Skipped", v:filteredCheckins.filter(c=>c.status==="skipped").length, c:C.muted},
+          ].map(s=>(
+            <div key={s.l} style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:8,padding:"5px 10px",display:"flex",gap:5,alignItems:"center"}}>
+              <span style={{fontSize:15,fontWeight:700,color:s.c}}>{s.v}</span>
+              <span style={{fontSize:10,color:C.muted}}>{s.l}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Calendar */}
+      <div style={{background:C.white,borderRadius:10,border:`1px solid ${C.border}`,padding:10,maxWidth:240,userSelect:"none"}}>
+        {/* Month nav */}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+          <button onClick={prevMonth}
+            style={{background:"none",border:"none",cursor:"pointer",fontSize:15,color:C.dark,padding:"2px 6px",borderRadius:6}}>‹</button>
+          <span style={{fontWeight:700,fontSize:13,color:C.dark}}>{MONTH_NAMES[curMonth]} {curYear}</span>
+          <button onClick={nextMonth}
+            style={{background:"none",border:"none",cursor:"pointer",fontSize:15,color:C.dark,padding:"2px 6px",borderRadius:6}}>›</button>
+        </div>
+        {/* Day headers */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",marginBottom:4}}>
+          {DAY_NAMES.map(d=>(
+            <div key={d} style={{textAlign:"center",fontSize:10,fontWeight:700,color:C.muted,padding:"3px 0"}}>{d}</div>
+          ))}
+        </div>
+        {/* Days */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:3}}>
+          {grid.map((day,i)=>{
+            if (!day) return <div key={i}/>;
+            const inSel    = isInRange(day);
+            const inHover  = isHoverRange(day);
+            const hasDot   = hasCheckinDot(day);
+            const isToday  = today.getDate()===day && today.getMonth()===curMonth && today.getFullYear()===curYear;
+            const isStart  = rangeStart && dayToDate(day).toDateString()===rangeStart.toDateString();
+            const isEnd    = rangeEnd   && dayToDate(day).toDateString()===rangeEnd.toDateString();
+            const highlighted = inSel || inHover;
+            return (
+              <div key={i}
+                onMouseDown={()=>handleMouseDown(day)}
+                onMouseEnter={()=>handleMouseEnter(day)}
+                onMouseUp={()=>handleMouseUp(day)}
+                style={{
+                  textAlign:"center", padding:"4px 1px", borderRadius:5, fontSize:11,
+                  cursor:"pointer",
+                  background: highlighted ? C.teal : "transparent",
+                  color: highlighted ? C.white : hasDot ? C.dark : C.muted,
+                  fontWeight: highlighted || isToday ? 700 : 400,
+                  border: isToday ? `2px solid ${C.red}` : "2px solid transparent",
+                  opacity: inHover && !inSel ? 0.65 : 1,
+                  position:"relative",
+                }}>
+                {day}
+                {hasDot && !highlighted && (
+                  <div style={{position:"absolute",bottom:2,left:"50%",transform:"translateX(-50%)",width:4,height:4,borderRadius:"50%",background:C.teal}}/>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        {/* Selected range label + clear */}
+        <div style={{marginTop:10,display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
+          <span style={{fontSize:11,color:C.muted}}>
+            {selLabel ? <span>📅 <strong style={{color:C.dark}}>{selLabel}</strong></span> : "Click or drag to select"}
+          </span>
+          {rangeStart && (
+            <button onClick={clearSelection}
+              style={{fontSize:11,color:C.muted,background:"none",border:`1px solid ${C.border}`,borderRadius:6,padding:"2px 8px",cursor:"pointer"}}>Clear</button>
+          )}
+        </div>
+        {/* Legend */}
+        <div style={{marginTop:8,display:"flex",gap:10,fontSize:10,color:C.muted,flexWrap:"wrap"}}>
+          <span style={{display:"flex",alignItems:"center",gap:3}}><span style={{width:6,height:6,borderRadius:"50%",background:C.teal,display:"inline-block"}}/>has check-ins</span>
+          <span style={{display:"flex",alignItems:"center",gap:3}}><span style={{width:10,height:10,borderRadius:3,background:C.teal,display:"inline-block"}}/>selected</span>
+          <span style={{display:"flex",alignItems:"center",gap:3}}><span style={{width:10,height:10,borderRadius:3,border:`2px solid ${C.red}`,display:"inline-block"}}/>today</span>
+        </div>
+      </div>
+      <p style={{fontSize:11,color:C.muted,marginTop:6}}>💡 Click a single day · Click and drag to select a date range · Dots = weeks with check-ins</p>
+    </div>
+  );
+}
+
+
+
+
 // ── KPI TAB ──
 function KPITab() {
   const C = useTheme();
@@ -1613,7 +1857,11 @@ function KPITab() {
   const [checkins, setCheckins] = useState(INIT_CHECKINS);
   const [viewMode, setViewMode] = useState("report");
   const [selWeek,  setSelWeek]  = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
   const [search,   setSearch]   = useState("");
+  // Calendar range selection (lifted from MiniCalendar)
+  const [calRangeStart, setCalRangeStart] = useState(null);
+  const [calRangeEnd,   setCalRangeEnd]   = useState(null);
   const [amFilter, setAmFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   // Add modal state
@@ -1626,23 +1874,77 @@ function KPITab() {
   const [concernSearch, setConcernSearch] = useState("");
   const [addingConcern, setAddingConcern] = useState(false);
   const [newConcern, setNewConcern] = useState({ date:"", agency:"", va:"", concern:"" });
+  // Concern calendar state
+  const [concernCalYear,  setConcernCalYear]  = useState(2026);
+  const [concernCalMonth, setConcernCalMonth] = useState(0);
+  const [concernRangeStart, setConcernRangeStart] = useState(null);
+  const [concernRangeEnd,   setConcernRangeEnd]   = useState(null);
+  const [concernDragging,   setConcernDragging]   = useState(false);
 
   const weeks = useMemo(() => [...new Set(checkins.map(c=>c.week))].sort(), [checkins]);
   const activeWeek = selWeek || weeks[weeks.length-1] || "";
-  const weekCheckins = useMemo(() => checkins.filter(c=>c.week===activeWeek), [checkins,activeWeek]);
-  const ws_data = WEEK_STATS[activeWeek] || {};
 
-  // Per-AM stats from tagged check-ins (skipped not counted)
-  const amStats = useMemo(() => AMs.map(am => {
-    const rows    = weekCheckins.filter(c=>c.am===am && c.status!=="skipped");
-    const showed  = rows.filter(c=>c.status==="showed");
-    const noShow  = rows.filter(c=>c.status==="noshow");
-    const withScore = showed.flatMap(c=>c.vas.filter(v=>v.score!==null&&v.score!==""));
-    const avgScore  = withScore.length ? Math.round(withScore.reduce((a,b)=>a+(+b.score),0)/withScore.length*10)/10 : null;
-    const showRate  = rows.length ? Math.round(showed.length/rows.length*100) : null;
-    const scRate    = showed.length ? Math.round(withScore.length/showed.length*100) : null;
-    return { am, total:rows.length, showed:showed.length, noShow:noShow.length, showRate, scRate, avgScore };
-  }), [weekCheckins]);
+  // weekDates map for range matching
+  const weekDateMap = useMemo(() => weeks.map(w => {
+    const [mm,dd,yy] = w.split("/");
+    return { date: new Date(+yy, +mm-1, +dd), label: w };
+  }), [weeks]);
+
+  // If a calendar range is selected, show all check-ins overlapping that range
+  // Otherwise fall back to the selected week
+  const weekCheckins = useMemo(() => {
+    let base;
+    if (calRangeStart) {
+      const lo = calRangeEnd && calRangeEnd < calRangeStart ? calRangeEnd : calRangeStart;
+      const hi = calRangeEnd && calRangeEnd > calRangeStart ? calRangeEnd : calRangeStart;
+      const matchedWeeks = weekDateMap
+        .filter(({ date }) => { const sun = new Date(date); sun.setDate(date.getDate()+6); return date <= hi && sun >= lo; })
+        .map(({ label }) => label);
+      base = checkins.filter(c => matchedWeeks.includes(c.week));
+    } else {
+      base = checkins.filter(c => c.week === activeWeek);
+    }
+    if (typeFilter === "all") return base;
+    return base.filter(c => c.type === typeFilter);
+  }, [checkins, activeWeek, calRangeStart, calRangeEnd, weekDateMap, typeFilter]);
+  // Per-AM stats broken out by type — computed from tagged check-ins (skipped not counted)
+  const amStats = useMemo(() => {
+    function rateFor(rows) {
+      const showed    = rows.filter(c => c.status === "showed");
+      const withScore = showed.flatMap(c => c.vas.filter(v => v.score !== null && v.score !== ""));
+      return {
+        total:    rows.length,
+        showed:   showed.length,
+        noShow:   rows.filter(c => c.status === "noshow").length,
+        showRate: rows.length   ? Math.round(showed.length    / rows.length   * 100) : null,
+        scRate:   showed.length ? Math.round(withScore.length / showed.length * 100) : null,
+        avgScore: withScore.length ? Math.round(withScore.reduce((a,b) => a+(+b.score), 0) / withScore.length * 10) / 10 : null,
+        scored:   withScore.length,
+      };
+    }
+    return AMs.map(am => {
+      const all     = weekCheckins.filter(c => c.am === am && c.status !== "skipped");
+      return { am, all: rateFor(all), weekly: rateFor(all.filter(c=>c.type==="weekly")), monthly: rateFor(all.filter(c=>c.type==="monthly")) };
+    });
+  }, [weekCheckins]);
+
+  // Overall = aggregate of all tagged check-ins (computed, not from sheet)
+  const overallStats = useMemo(() => {
+    function rateFor(rows) {
+      const showed    = rows.filter(c => c.status === "showed");
+      const withScore = showed.flatMap(c => c.vas.filter(v => v.score !== null && v.score !== ""));
+      return {
+        total:    rows.length,
+        showed:   showed.length,
+        noShow:   rows.filter(c => c.status === "noshow").length,
+        showRate: rows.length   ? Math.round(showed.length    / rows.length   * 100) : null,
+        scRate:   showed.length ? Math.round(withScore.length / showed.length * 100) : null,
+        avgScore: withScore.length ? Math.round(withScore.reduce((a,b) => a+(+b.score), 0) / withScore.length * 10) / 10 : null,
+      };
+    }
+    const tagged = weekCheckins.filter(c => c.am !== "" && c.status !== "skipped");
+    return { all: rateFor(tagged), weekly: rateFor(tagged.filter(c=>c.type==="weekly")), monthly: rateFor(tagged.filter(c=>c.type==="monthly")) };
+  }, [weekCheckins]);
 
   const weekTotals = useMemo(() => {
     const counted = weekCheckins.filter(c=>c.status!=="skipped");
@@ -1891,94 +2193,86 @@ function KPITab() {
       {/* ── MONDAY REPORT ── */}
       {viewMode==="report"&&(
         <div>
-          {/* Week picker — search + dropdown */}
-          <div style={{display:"flex",gap:10,marginBottom:16,alignItems:"center",flexWrap:"wrap"}}>
-            <div style={{position:"relative",flex:"1 1 220px",maxWidth:320}}>
-              <input
-                placeholder="🔍 Search week (e.g. 06/29 or June)…"
-                onChange={e=>{
-                  const q = e.target.value.toLowerCase();
-                  if (!q) { setSelWeek(weeks[weeks.length-1]||""); return; }
-                  const match = weeks.find(w=>w.toLowerCase().includes(q));
-                  if (match) setSelWeek(match);
-                }}
-                style={{width:"100%",padding:"8px 12px",borderRadius:8,border:`2px solid ${C.teal}`,fontSize:13,outline:"none",boxSizing:"border-box"}}
-              />
-            </div>
-            <span style={{fontSize:12,color:C.muted}}>or pick from</span>
-            <select
-              value={activeWeek}
-              onChange={e=>setSelWeek(e.target.value)}
-              style={{padding:"8px 12px",borderRadius:8,border:`2px solid ${C.teal}`,fontSize:13,cursor:"pointer",background:C.white,color:C.dark,fontWeight:600,minWidth:160}}
-            >
-              {weeks.map(w=>(
-                <option key={w} value={w}>{w}</option>
-              ))}
-            </select>
-            <div style={{display:"flex",gap:6}}>
-              <button
-                onClick={()=>{const i=weeks.indexOf(activeWeek);if(i>0)setSelWeek(weeks[i-1]);}}
-                disabled={weeks.indexOf(activeWeek)===0}
-                style={{padding:"7px 12px",borderRadius:8,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:14,color:C.dark,opacity:weeks.indexOf(activeWeek)===0?0.3:1}}
-              >‹</button>
-              <button
-                onClick={()=>{const i=weeks.indexOf(activeWeek);if(i<weeks.length-1)setSelWeek(weeks[i+1]);}}
-                disabled={weeks.indexOf(activeWeek)===weeks.length-1}
-                style={{padding:"7px 12px",borderRadius:8,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:14,color:C.dark,opacity:weeks.indexOf(activeWeek)===weeks.length-1?0.3:1}}
-              >›</button>
-              <button
-                onClick={()=>setSelWeek(weeks[weeks.length-1])}
-                style={{padding:"7px 12px",borderRadius:8,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:12,color:C.muted}}
-                title="Jump to latest week"
-              >Latest</button>
-            </div>
-          </div>
+          {/* Calendar + type filter */}
+          <MiniCalendar weeks={weeks} checkins={checkins} activeWeek={activeWeek} onSelect={setSelWeek} C={C} typeFilter={typeFilter} setTypeFilter={setTypeFilter} rangeStart={calRangeStart} rangeEnd={calRangeEnd} setRangeStart={setCalRangeStart} setRangeEnd={setCalRangeEnd} />
 
           {/* AM Stats Cards */}
           <div style={{marginBottom:18}}>
             <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"0.07em",marginBottom:10}}>
               SHOW RATE & SCORECARD RATE — {activeWeek}
-              {weekTotals.untagged>0&&<span style={{marginLeft:10,fontSize:10,fontWeight:500,color:C.amber}}>⚠️ {weekTotals.untagged} not tagged to an AM</span>}
+              {weekTotals.untagged>0&&<span style={{marginLeft:10,fontSize:10,fontWeight:500,color:C.amber}}>⚠️ {weekTotals.untagged} check-in{weekTotals.untagged!==1?"s":""} not tagged to an AM</span>}
             </div>
             <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-              {amStats.map(({am,total,showed,noShow,showRate,scRate,avgScore})=>(
-                <div key={am} style={{flex:"1 1 175px",background:C.white,borderRadius:10,border:`2px solid ${AM_COLORS[am]}`,padding:"12px 14px"}}>
-                  <div style={{fontWeight:700,fontSize:13,color:AM_COLORS[am],marginBottom:10}}>{am}</div>
-                  {total===0?(
-                    <div style={{fontSize:12,color:C.muted,fontStyle:"italic"}}>No check-ins tagged</div>
+              {amStats.map(({am,all,weekly,monthly})=>(
+                <div key={am} style={{flex:"1 1 200px",background:C.white,borderRadius:10,border:`2px solid ${AM_COLORS[am]}`,padding:"12px 14px"}}>
+                  <div style={{fontWeight:700,fontSize:13,color:AM_COLORS[am],marginBottom:10}}>
+                    {am}
+                    {all.total>0&&<span style={{fontWeight:400,fontSize:11,color:C.muted,marginLeft:8}}>{all.showed}/{all.total} showed</span>}
+                  </div>
+                  {all.total===0?(
+                    <div style={{fontSize:12,color:C.muted,fontStyle:"italic"}}>No check-ins tagged yet</div>
                   ):(
-                    <>
-                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
-                        <PctChip label="Show Rate" value={showRate} shown={showed} total={total}/>
-                        <PctChip label="Scorecard" value={scRate} shown={null} total={null}/>
-                      </div>
-                      <div style={{fontSize:11,color:C.muted,display:"flex",gap:10,flexWrap:"wrap"}}>
-                        <span>✅ {showed}</span><span>❌ {noShow}</span>
-                        {avgScore!==null&&<span>📊 avg {avgScore}%</span>}
-                      </div>
-                    </>
+                    <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                      {/* Weekly row */}
+                      {weekly.total>0&&(
+                        <div style={{background:C.gray,borderRadius:8,padding:"8px 10px"}}>
+                          <div style={{fontSize:10,fontWeight:700,color:C.muted,marginBottom:6,letterSpacing:"0.05em"}}>WEEKLY ({weekly.total})</div>
+                          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                            <PctChip label="Show Rate" value={weekly.showRate} shown={weekly.showed} total={weekly.total}/>
+                            <PctChip label="Scorecard" value={weekly.scRate} shown={weekly.scored} total={weekly.showed}/>
+                          </div>
+                          {weekly.avgScore!==null&&<div style={{fontSize:10,color:C.muted,marginTop:4}}>avg score {weekly.avgScore}%</div>}
+                        </div>
+                      )}
+                      {/* Monthly row */}
+                      {monthly.total>0&&(
+                        <div style={{background:"#EFF6FF",borderRadius:8,padding:"8px 10px"}}>
+                          <div style={{fontSize:10,fontWeight:700,color:C.blue,marginBottom:6,letterSpacing:"0.05em"}}>MONTHLY ({monthly.total})</div>
+                          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                            <PctChip label="Show Rate" value={monthly.showRate} shown={monthly.showed} total={monthly.total}/>
+                            <PctChip label="Scorecard" value={monthly.scRate} shown={monthly.scored} total={monthly.showed}/>
+                          </div>
+                          {monthly.avgScore!==null&&<div style={{fontSize:10,color:C.muted,marginTop:4}}>avg score {monthly.avgScore}%</div>}
+                        </div>
+                      )}
+                      {weekly.total===0&&monthly.total===0&&(
+                        <div style={{fontSize:11,color:C.muted}}>All check-ins are skipped</div>
+                      )}
+                    </div>
                   )}
                 </div>
               ))}
-              {/* Overall from sheet */}
-              <div style={{flex:"1 1 175px",background:C.white,borderRadius:10,border:`2px solid ${C.dark}`,padding:"12px 14px"}}>
-                <div style={{fontWeight:700,fontSize:13,color:C.dark,marginBottom:10}}>Overall / All AMs</div>
-                {ws_data.overallShowW?(
-                  <>
-                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:6}}>
-                      <PctChip label="Show Rate" value={ws_data.overallShowW?.pct??null} shown={ws_data.overallShowW?.shown} total={ws_data.overallShowW?.total}/>
-                      <PctChip label="Scorecard" value={ws_data.overallScW?.pct??null} shown={ws_data.overallScW?.shown} total={ws_data.overallScW?.total}/>
-                    </div>
-                    <div style={{fontSize:10,color:C.muted,fontStyle:"italic"}}>From sheet summary</div>
-                    {ws_data.niccoleShowW&&(
-                      <div style={{marginTop:6,paddingTop:6,borderTop:`1px solid ${C.border}`,fontSize:11,color:C.muted}}>
-                        Niccole: show {ws_data.niccoleShowW.pct}% ({ws_data.niccoleShowW.shown}/{ws_data.niccoleShowW.total})
-                        {ws_data.niccoleShowM?.pct!==null&&ws_data.niccoleShowM&&<span style={{marginLeft:8}}>· monthly {ws_data.niccoleShowM.pct}%</span>}
+
+              {/* Overall — computed from tagged check-ins */}
+              <div style={{flex:"1 1 200px",background:C.white,borderRadius:10,border:`2px solid ${C.dark}`,padding:"12px 14px"}}>
+                <div style={{fontWeight:700,fontSize:13,color:C.dark,marginBottom:10}}>
+                  Overall / All AMs
+                  {overallStats.all.total>0&&<span style={{fontWeight:400,fontSize:11,color:C.muted,marginLeft:8}}>{overallStats.all.showed}/{overallStats.all.total} showed</span>}
+                </div>
+                {overallStats.all.total===0?(
+                  <div style={{fontSize:12,color:C.muted,fontStyle:"italic"}}>Tag check-ins to AMs to see overall rates</div>
+                ):(
+                  <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                    {overallStats.weekly.total>0&&(
+                      <div style={{background:C.gray,borderRadius:8,padding:"8px 10px"}}>
+                        <div style={{fontSize:10,fontWeight:700,color:C.muted,marginBottom:6,letterSpacing:"0.05em"}}>WEEKLY ({overallStats.weekly.total})</div>
+                        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                          <PctChip label="Show Rate" value={overallStats.weekly.showRate} shown={overallStats.weekly.showed} total={overallStats.weekly.total}/>
+                          <PctChip label="Scorecard" value={overallStats.weekly.scRate} shown={null} total={null}/>
+                        </div>
                       </div>
                     )}
-                  </>
-                ):(
-                  <div style={{fontSize:12,color:C.muted,fontStyle:"italic"}}>No summary for this week yet</div>
+                    {overallStats.monthly.total>0&&(
+                      <div style={{background:"#EFF6FF",borderRadius:8,padding:"8px 10px"}}>
+                        <div style={{fontSize:10,fontWeight:700,color:C.blue,marginBottom:6,letterSpacing:"0.05em"}}>MONTHLY ({overallStats.monthly.total})</div>
+                        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                          <PctChip label="Show Rate" value={overallStats.monthly.showRate} shown={overallStats.monthly.showed} total={overallStats.monthly.total}/>
+                          <PctChip label="Scorecard" value={overallStats.monthly.scRate} shown={null} total={null}/>
+                        </div>
+                      </div>
+                    )}
+                    {overallStats.all.noShow>0&&<div style={{fontSize:11,color:C.muted}}>❌ {overallStats.all.noShow} no shows across all AMs</div>}
+                  </div>
                 )}
               </div>
             </div>
@@ -1986,7 +2280,7 @@ function KPITab() {
 
           {/* Check-in list */}
           <div style={{background:C.teal,color:C.white,borderRadius:"10px 10px 0 0",padding:"10px 18px",display:"flex",gap:14,alignItems:"center",flexWrap:"wrap"}}>
-            <span style={{fontWeight:700,fontSize:13}}>Check-ins — {activeWeek}</span>
+            <span style={{fontWeight:700,fontSize:13}}>Check-ins — {calRangeStart ? (calRangeEnd && calRangeEnd.toDateString()!==calRangeStart.toDateString() ? `${calRangeStart.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${calRangeEnd.toLocaleDateString("en-US",{month:"short",day:"numeric"})}` : calRangeStart.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})) : activeWeek}</span>
             <span style={{fontSize:12,opacity:.85}}>{weekTotals.total} counted</span>
             <span style={{fontSize:12}}>✅ {weekTotals.showed} showed</span>
             <span style={{fontSize:12}}>❌ {weekTotals.noShow} no show</span>
@@ -2142,6 +2436,110 @@ function KPITab() {
       {/* ── CLIENT CONCERNS ── */}
       {viewMode==="concerns"&&(
         <div>
+          {/* Concern Calendar */}
+          {(()=>{
+            const MNAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+            const DNAMES = ["Su","Mo","Tu","We","Th","Fr","Sa"];
+            const firstDay = new Date(concernCalYear, concernCalMonth, 1).getDay();
+            const daysInMonth = new Date(concernCalYear, concernCalMonth+1, 0).getDate();
+            const grid = [];
+            for(let i=0;i<firstDay;i++) grid.push(null);
+            for(let d=1;d<=daysInMonth;d++) grid.push(d);
+            // dates that have concerns
+            const concernDates = new Set(concerns.map(c=>{
+              if(!c.date) return null;
+              // handle MM/DD/YYYY or YYYY-MM-DD
+              if(c.date.includes('-')) return c.date.slice(0,10);
+              const [mm,dd,yy] = c.date.split('/');
+              return `${yy}-${(mm||'').padStart(2,'0')}-${(dd||'').padStart(2,'0')}`;
+            }).filter(Boolean));
+            function dayISO(d){ return `${concernCalYear}-${String(concernCalMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+            function inRange(d){
+              if(!concernRangeStart) return false;
+              const dt = new Date(concernCalYear, concernCalMonth, d);
+              const lo = concernRangeEnd&&concernRangeEnd<concernRangeStart ? concernRangeEnd : concernRangeStart;
+              const hi = concernRangeEnd&&concernRangeEnd>concernRangeStart ? concernRangeEnd : concernRangeStart;
+              return dt>=lo && dt<=hi;
+            }
+            const today = new Date();
+            return (
+              <div style={{display:"flex",gap:14,marginBottom:16,flexWrap:"wrap",alignItems:"flex-start"}}>
+                <div style={{background:C.white,borderRadius:10,border:`1px solid ${C.border}`,padding:10,maxWidth:240,width:"100%"}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+                    <button onClick={()=>{ if(concernCalMonth===0){setConcernCalMonth(11);setConcernCalYear(y=>y-1);}else setConcernCalMonth(m=>m-1); }}
+                      style={{background:"none",border:"none",cursor:"pointer",fontSize:16,color:C.dark,padding:"2px 8px"}}>‹</button>
+                    <span style={{fontWeight:700,fontSize:16,color:C.dark}}>{MNAMES[concernCalMonth]} {concernCalYear}</span>
+                    <button onClick={()=>{ if(concernCalMonth===11){setConcernCalMonth(0);setConcernCalYear(y=>y+1);}else setConcernCalMonth(m=>m+1); }}
+                      style={{background:"none",border:"none",cursor:"pointer",fontSize:16,color:C.dark,padding:"2px 8px"}}>›</button>
+                  </div>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",marginBottom:4}}>
+                    {DNAMES.map(d=><div key={d} style={{textAlign:"center",fontSize:10,fontWeight:700,color:C.muted,padding:"3px 0"}}>{d}</div>)}
+                  </div>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:1,userSelect:"none"}}>
+                    {grid.map((day,i)=>{
+                      if(!day) return <div key={i}/>;
+                      const iso = dayISO(day);
+                      const hasDot = concernDates.has(iso);
+                      const sel = inRange(day);
+                      const isToday = today.getDate()===day&&today.getMonth()===concernCalMonth&&today.getFullYear()===concernCalYear;
+                      return (
+                        <div key={i}
+                          onMouseDown={()=>{
+                            const d=new Date(concernCalYear,concernCalMonth,day);
+                            setConcernRangeStart(d); setConcernRangeEnd(null); setConcernDragging(true);
+                          }}
+                          onMouseEnter={()=>{ if(concernDragging) setConcernRangeEnd(new Date(concernCalYear,concernCalMonth,day)); }}
+                          onMouseUp={()=>{ setConcernRangeEnd(new Date(concernCalYear,concernCalMonth,day)); setConcernDragging(false); }}
+                          style={{textAlign:"center",padding:"4px 1px",borderRadius:5,fontSize:11,cursor:"pointer",position:"relative",
+                            background:sel?C.red:"transparent",
+                            color:sel?C.white:hasDot?C.dark:C.muted,
+                            fontWeight:sel||isToday?700:400,
+                            border:isToday?`2px solid ${C.red}`:"2px solid transparent"}}>
+                          {day}
+                          {hasDot&&!sel&&<div style={{position:"absolute",bottom:1,left:"50%",transform:"translateX(-50%)",width:4,height:4,borderRadius:"50%",background:C.red}}/>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div style={{marginTop:10,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                    <span style={{fontSize:10,color:C.muted}}>
+                      {concernRangeStart
+                        ? concernRangeEnd&&concernRangeEnd.toDateString()!==concernRangeStart.toDateString()
+                          ? `${concernRangeStart.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${concernRangeEnd.toLocaleDateString("en-US",{month:"short",day:"numeric"})}`
+                          : concernRangeStart.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})
+                        : "Click or drag to filter"}
+                    </span>
+                    {concernRangeStart&&(
+                      <button onClick={()=>{setConcernRangeStart(null);setConcernRangeEnd(null);}}
+                        style={{fontSize:11,color:C.muted,background:"none",border:`1px solid ${C.border}`,borderRadius:6,padding:"2px 8px",cursor:"pointer"}}>Clear</button>
+                    )}
+                  </div>
+                  <div style={{marginTop:8,display:"flex",gap:10,fontSize:10,color:C.muted}}>
+                    <span style={{display:"flex",alignItems:"center",gap:3}}><span style={{width:6,height:6,borderRadius:"50%",background:C.red,display:"inline-block"}}/>has concern</span>
+                    <span style={{display:"flex",alignItems:"center",gap:3}}><span style={{width:10,height:10,borderRadius:3,background:C.red,display:"inline-block"}}/>selected</span>
+                  </div>
+                </div>
+                <div style={{flex:1,minWidth:140,display:"flex",flexDirection:"column",gap:10}}>
+                  <div style={{fontSize:12,color:C.muted,fontWeight:600}}>
+                    {concernRangeStart ? (
+                      <>Showing concerns for <strong style={{color:C.dark}}>
+                        {concernRangeEnd&&concernRangeEnd.toDateString()!==concernRangeStart.toDateString()
+                          ? `${concernRangeStart.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${concernRangeEnd.toLocaleDateString("en-US",{month:"short",day:"numeric"})}`
+                          : concernRangeStart.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}
+                      </strong></>
+                    ) : "All concerns"}
+                  </div>
+                  {[{l:"Total",v:concerns.length,c:C.dark},{l:"This month",v:concerns.filter(c=>{ if(!c.date)return false; const d=new Date(c.date); return d.getMonth()===concernCalMonth&&d.getFullYear()===concernCalYear;}).length,c:C.red}].map(s=>(
+                    <div key={s.l} style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 12px",display:"inline-flex",gap:8,alignItems:"center"}}>
+                      <span style={{fontSize:20,fontWeight:700,color:s.c}}>{s.v}</span>
+                      <span style={{fontSize:11,color:C.muted}}>{s.l}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Header bar */}
           <div style={{display:"flex",gap:10,marginBottom:14,alignItems:"center",flexWrap:"wrap"}}>
             <input
@@ -2150,10 +2548,6 @@ function KPITab() {
               onChange={e=>setConcernSearch(e.target.value)}
               style={{flex:"1 1 220px",padding:"7px 12px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:13}}
             />
-            <span style={{fontSize:13,color:C.muted}}>{concerns.filter(c=>{
-              const q=concernSearch.toLowerCase();
-              return !concernSearch||c.agency.toLowerCase().includes(q)||c.va.toLowerCase().includes(q)||c.concern.toLowerCase().includes(q);
-            }).length} concerns</span>
             <button onClick={()=>setAddingConcern(v=>!v)}
               style={{padding:"7px 16px",borderRadius:8,border:"none",cursor:"pointer",background:C.red,color:C.white,fontWeight:600,fontSize:13,marginLeft:"auto"}}>
               {addingConcern?"✕ Cancel":"+ Add Concern"}
@@ -2213,6 +2607,13 @@ function KPITab() {
               <tbody>
                 {concerns
                   .filter(c=>{
+                    // Calendar range filter
+                    if(concernRangeStart && c.date){
+                      const cd = new Date(c.date);
+                      const lo = concernRangeEnd&&concernRangeEnd<concernRangeStart ? concernRangeEnd : concernRangeStart;
+                      const hi = concernRangeEnd&&concernRangeEnd>concernRangeStart ? concernRangeEnd : concernRangeStart;
+                      if(cd<lo||cd>hi) return false;
+                    }
                     const q=concernSearch.toLowerCase();
                     return !concernSearch||c.agency.toLowerCase().includes(q)||c.va.toLowerCase().includes(q)||c.concern.toLowerCase().includes(q);
                   })
@@ -2297,8 +2698,8 @@ function HubSpotTab() {
             <div style={{ padding: 10, display: "flex", flexDirection: "column", gap: 6 }}>
               {g.links.map((l, li) => (
                 <div key={li} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", borderRadius: 6, background: C.gray }}>
-                  <InlineEdit value={l.label} onSave={v => updateLink(gi, li, "label", v)} style={{ fontWeight: 600, fontSize: 13, minWidth: 70 }} />
-                  <InlineEdit value={l.url} onSave={v => updateLink(gi, li, "url", v)} style={{ flex: 1, fontSize: 12, color: C.teal }} />
+                  <span style={{ fontWeight: 600, fontSize: 13, minWidth: 70 }}>{l.label}</span>
+                  <span style={{ flex: 1, fontSize: 12, color: C.teal }}>{l.url}</span>
                   <button onClick={() => copyLink(l.url)}
                     style={{ padding: "4px 12px", borderRadius: 6, border: `1px solid ${C.border}`,
                       background: copied === l.url ? "#D1FAE5" : C.white, cursor: "pointer", fontSize: 11,
@@ -2956,6 +3357,8 @@ function WorkflowTab() {
 function GeneralNotesTab() {
   const C = useTheme();
   const [notes, setNotes] = useState(NOTES);
+  const [adding, setAdding] = useState(false);
+  const [newNote, setNewNote] = useState({ label: "", value: "" });
   const [copiedShipping, setCopiedShipping] = useState("");
   const [shipping, setShipping] = useState([
     { label: "Attention",      value: "Rey Jr. Gabila" },
@@ -3581,13 +3984,13 @@ function SalesTrainingTab() {
 
 // ── APP SHELL ──
 const TABS = [
-  { id: "tasks", label: "✅ Tasks" },
-  { id: "kpi", label: "📊 Island KPIs" },
-  { id: "hubspot", label: "🔗 HubSpot Links" },
-  { id: "accounts", label: "🏢 Niccole's Accounts" },
-  { id: "workflow", label: "📋 Workflow" },
-  { id: "generalnotes", label: "📌 General Notes" },
-  { id: "notes", label: "📚 Sales Training" },
+  { id: "tasks",        label: "✅ Tasks",               locked: true },
+  { id: "kpi",          label: "📊 Island KPIs",         locked: true },
+  { id: "hubspot",      label: "🔗 HubSpot Links",       locked: true },
+  { id: "accounts",     label: "🏢 Niccole's Accounts",  locked: true },
+  { id: "workflow",     label: "📋 Workflow",             locked: false },
+  { id: "generalnotes", label: "📌 General Notes",        locked: false },
+  { id: "notes",        label: "📚 Sales Training",       locked: false },
 ];
 
 export default function GellApp() {
@@ -3685,11 +4088,9 @@ export default function GellApp() {
               }}
             >
               <span style={{ fontSize: 11, color: theme.muted, opacity: 0.5, cursor: "grab" }}>⠿</span>
-              <InlineEdit
-                value={tab.label}
-                onSave={v => setTabs(prev => prev.map((t, ti) => ti === i ? { ...t, label: v } : t))}
-                style={{ color: isActive ? theme.tabActiveColor : theme.muted, fontWeight: isActive ? 700 : 400, fontSize: 13, borderBottom: "none" }}
-              />
+              <span style={{ color: isActive ? theme.tabActiveColor : theme.muted, fontWeight: isActive ? 700 : 400, fontSize: 13 }}>
+                {tab.label}
+              </span>
             </div>
           );
         })}
