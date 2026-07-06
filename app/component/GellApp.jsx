@@ -6,8 +6,8 @@ const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Generic hook: loads a table on mount, exposes rows + a setter that also syncs to Supabase
-function useSupabaseTable(table, orderBy = "id") {
-  const [rows, setRows]       = useState([]);
+function useSupabaseTable(table, orderBy = "id", fallback = []) {
+  const [rows, setRows]       = useState(fallback);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState(null);
 
@@ -17,7 +17,8 @@ function useSupabaseTable(table, orderBy = "id") {
     supabase.from(table).select("*").order(orderBy)
       .then(({ data, error }) => {
         if (error) { console.error("load", table, error.message); setError(error.message); }
-        else setRows(data || []);
+        else if (data && data.length > 0) setRows(data);
+        // if data is empty, keep the fallback already in state
         setLoading(false);
       });
   }, [table]);
@@ -1299,7 +1300,7 @@ function EditableText({ value, onSave, style = {}, inputStyle = {} }) {
 // ── TASKS TAB ──
 function TasksTab() {
   const C = useTheme();
-  const { rows: tasks, upsert: upsertTask, remove: removeTask } = useSupabaseTable("tasks");
+  const { rows: tasks, upsert: upsertTask, remove: removeTask } = useSupabaseTable("tasks", "id", INIT_TASKS);
   const [filter, setFilter] = useState("Active");
   const [adding, setAdding] = useState(false);
   const [newTask, setNewTask] = useState({
@@ -1901,7 +1902,7 @@ function KPITab() {
   const AM_COLORS  = { Niccole:C.red, Karla:C.blue, Alicia:C.teal };
   const AMs        = ["Niccole","Karla","Alicia"];
 
-  const { rows: checkins, upsert: upsertCI, remove: removeCI } = useSupabaseTable("checkins");
+  const { rows: checkins, upsert: upsertCI, remove: removeCI } = useSupabaseTable("checkins", "id", INIT_CHECKINS);
   const setCheckins = null; // replaced by upsertCI/removeCI
   const [viewMode, setViewMode] = useState("report");
   const [selWeek,  setSelWeek]  = useState("");
@@ -1918,7 +1919,7 @@ function KPITab() {
   // Expand state for inline editing in report view
   const [expandId, setExpandId] = useState(null);
   // Client Concerns state
-  const { rows: concerns, upsert: upsertConcern, remove: removeConcern } = useSupabaseTable("concerns");
+  const { rows: concerns, upsert: upsertConcern, remove: removeConcern } = useSupabaseTable("concerns", "id", INIT_CONCERNS);
   const setConcerns = null; // replaced by upsertConcern/removeConcern
   const [concernSearch, setConcernSearch] = useState("");
   const [addingConcern, setAddingConcern] = useState(false);
@@ -2782,7 +2783,7 @@ function HubSpotTab() {
 // ── NICCOLE'S ACCOUNTS TAB ──
 function AccountsTab({ checkins }) {
   const C = useTheme();
-  const { rows: accounts, upsert: upsertAccount } = useSupabaseTable("accounts");
+  const { rows: accounts, upsert: upsertAccount } = useSupabaseTable("accounts", "id", INIT_ACCOUNTS);
   function upAcc(id, field, value) {
     const acc = accounts.find(a => a.id === id);
     if (acc) upsertAccount({ ...acc, [field]: value });
@@ -3420,7 +3421,7 @@ function WorkflowTab() {
 
 function GeneralNotesTab() {
   const C = useTheme();
-  const { rows: notes, upsert: upsertNote, remove: removeNote } = useSupabaseTable("notes");
+  const { rows: notes, upsert: upsertNote, remove: removeNote } = useSupabaseTable("notes", "id", NOTES);
   const { rows: shipping, upsert: upsertShipping } = useSupabaseTable("shipping");
   const { rows: rawAgencyNotes, replace: replaceAgencyNotes } = useSupabaseTable("agency_notes");
   const [adding, setAdding] = useState(false);
@@ -4035,7 +4036,7 @@ const TABS = [
 
 export default function GellApp() {
   const [activeTab, setActiveTab] = useState("tasks");
-  const { rows: checkins } = useSupabaseTable("checkins");
+  const { rows: checkins } = useSupabaseTable("checkins", "id", INIT_CHECKINS);
   const [themeName, setThemeName] = useState("lava");
   const [tabs, setTabs] = useState(TABS);
   const [dragIdx, setDragIdx] = useState(null);
