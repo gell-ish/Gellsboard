@@ -1,4 +1,59 @@
-"use client";import React, { useState, useMemo, useRef, useContext, createContext } from "react";
+"use client";import React, { useState, useMemo, useRef, useContext, createContext, useEffect, useCallback } from "react";
+import { createClient } from "@supabase/supabase-js";
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Generic hook: loads a table on mount, exposes rows + a setter that also syncs to Supabase
+function useSupabaseTable(table, orderBy = "id") {
+  const [rows, setRows]       = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState(null);
+
+  useEffect(() => {
+    if (!SUPABASE_URL || !SUPABASE_KEY) { setLoading(false); return; }
+    setLoading(true);
+    supabase.from(table).select("*").order(orderBy)
+      .then(({ data, error }) => {
+        if (error) { console.error("load", table, error.message); setError(error.message); }
+        else setRows(data || []);
+        setLoading(false);
+      });
+  }, [table]);
+
+  const upsert = useCallback(async (row) => {
+    if (!SUPABASE_URL) return;
+    const { data, error } = await supabase.from(table).upsert(row).select();
+    if (error) console.error(`upsert ${table}:`, error.message);
+    else {
+      const saved = data?.[0] || row;
+      setRows(prev => prev.some(r => r.id === saved.id)
+        ? prev.map(r => r.id === saved.id ? { ...r, ...saved } : r)
+        : [...prev, saved]);
+    }
+  }, [table]);
+
+  const remove = useCallback(async (id) => {
+    if (!SUPABASE_URL) return;
+    const { error } = await supabase.from(table).delete().eq("id", id);
+    if (error) console.error(`delete ${table}:`, error.message);
+    else setRows(prev => prev.filter(r => r.id !== id));
+  }, [table]);
+
+  const replace = useCallback(async (newRows) => {
+    if (!SUPABASE_URL) { setRows(newRows); return; }
+    await supabase.from(table).delete().neq("id", 0);
+    if (newRows.length) {
+      const { error } = await supabase.from(table).insert(newRows);
+      if (error) console.error(`replace ${table}:`, error.message);
+    }
+    setRows(newRows);
+  }, [table]);
+
+  return { rows, setRows, loading, error, upsert, remove, replace };
+}
+
 
 // ── Theme definitions ─────────────────────────────────────────────────
 const THEMES = {
@@ -1244,15 +1299,11 @@ function EditableText({ value, onSave, style = {}, inputStyle = {} }) {
 // ── TASKS TAB ──
 function TasksTab() {
   const C = useTheme();
-  const [tasks, setTasks] = useState(INIT_TASKS);
+  const { rows: tasks, upsert: upsertTask, remove: removeTask } = useSupabaseTable("tasks");
   const [filter, setFilter] = useState("Active");
   const [adding, setAdding] = useState(false);
   const [newTask, setNewTask] = useState({
-    task: "",
-    due: "",
-    assignee: "Gell",
-    priority: "Medium",
-    notes: "",
+    task: "", due: "", assignee: "Gell", priority: "Medium", notes: "",
   });
   const visible = useMemo(
     () =>
@@ -1264,21 +1315,17 @@ function TasksTab() {
     [tasks, filter],
   );
   function update(id, field, value) {
-    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, [field]: value } : t)));
+    const task = tasks.find(t => t.id === id);
+    if (task) upsertTask({ ...task, [field]: value });
   }
   function toggleDone(id) {
-    setTasks((prev) =>
-      prev.map((t) =>
-        t.id === id ? { ...t, status: t.status === "Done" ? "In Progress" : "Done" } : t,
-      ),
-    );
+    const task = tasks.find(t => t.id === id);
+    if (task) upsertTask({ ...task, status: task.status === "Done" ? "In Progress" : "Done" });
   }
-  function del(id) {
-    setTasks((prev) => prev.filter((t) => t.id !== id));
-  }
+  function del(id) { removeTask(id); }
   function add() {
     if (!newTask.task.trim()) return;
-    setTasks((prev) => [{ id: Date.now(), status: "In Progress", ...newTask }, ...prev]);
+    upsertTask({ id: Date.now(), status: "In Progress", ...newTask });
     setNewTask({ task: "", due: "", assignee: "Gell", priority: "Medium", notes: "" });
     setAdding(false);
   }
@@ -1854,7 +1901,8 @@ function KPITab() {
   const AM_COLORS  = { Niccole:C.red, Karla:C.blue, Alicia:C.teal };
   const AMs        = ["Niccole","Karla","Alicia"];
 
-  const [checkins, setCheckins] = useState(INIT_CHECKINS);
+  const { rows: checkins, upsert: upsertCI, remove: removeCI } = useSupabaseTable("checkins");
+  const setCheckins = null; // replaced by upsertCI/removeCI
   const [viewMode, setViewMode] = useState("report");
   const [selWeek,  setSelWeek]  = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -1870,7 +1918,8 @@ function KPITab() {
   // Expand state for inline editing in report view
   const [expandId, setExpandId] = useState(null);
   // Client Concerns state
-  const [concerns, setConcerns] = useState(INIT_CONCERNS);
+  const { rows: concerns, upsert: upsertConcern, remove: removeConcern } = useSupabaseTable("concerns");
+  const setConcerns = null; // replaced by upsertConcern/removeConcern
   const [concernSearch, setConcernSearch] = useState("");
   const [addingConcern, setAddingConcern] = useState(false);
   const [newConcern, setNewConcern] = useState({ date:"", agency:"", va:"", concern:"" });
@@ -1967,15 +2016,18 @@ function KPITab() {
       return ms && (amFilter==="All"||c.am===amFilter) && (statusFilter==="All"||c.status===statusFilter);
     }), [checkins,search,amFilter,statusFilter]);
 
-  function upCI(id,field,value){ setCheckins(prev=>prev.map(c=>c.id===id?{...c,[field]:value}:c)); }
-  function delCI(id){ setCheckins(prev=>prev.filter(c=>c.id!==id)); }
+  function upCI(id, field, value) {
+    const ci = checkins.find(c => c.id === id);
+    if (ci) upsertCI({ ...ci, [field]: value });
+  }
+  function delCI(id) { removeCI(id); }
   function addVA(){ setNewCI(p=>({...p,vas:[...p.vas,{name:"",score:""}]})); }
   function removeVA(i){ setNewCI(p=>({...p,vas:p.vas.filter((_,j)=>j!==i)})); }
   function setVA(i,field,val){ setNewCI(p=>({...p,vas:p.vas.map((v,j)=>j===i?{...v,[field]:val}:v)})); }
   function saveNew(){
     if(!newCI.client.trim()&&!newCI.week) return;
     const vasClean = newCI.vas.filter(v=>v.name.trim()).map(v=>({name:v.name.trim(),score:v.score===""?null:parseFloat(v.score)||null}));
-    setCheckins(prev=>[...prev,{...newCI,id:Date.now(),vas:vasClean}]);
+    upsertCI({...newCI,id:Date.now(),vas:vasClean});
     setNewCI(EMPTY_CI); setAdding(false);
   }
 
@@ -2585,7 +2637,7 @@ function KPITab() {
                   style={{padding:"7px 18px",borderRadius:8,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:13}}>Cancel</button>
                 <button onClick={()=>{
                     if(!newConcern.agency.trim()||!newConcern.concern.trim()) return;
-                    setConcerns(prev=>[{id:Date.now(),...newConcern},...prev]);
+                    upsertConcern({id:Date.now(),...newConcern});
                     setNewConcern({date:"",agency:"",va:"",concern:""});
                     setAddingConcern(false);
                   }}
@@ -2621,19 +2673,19 @@ function KPITab() {
                   .map((c,i)=>(
                   <tr key={c.id} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?C.white:"#FAFAFA"}}>
                     <td style={{padding:"10px 14px",whiteSpace:"nowrap",fontSize:12,color:C.muted}}>
-                      <InlineEdit value={c.date} onSave={v=>setConcerns(prev=>prev.map(x=>x.id===c.id?{...x,date:v}:x))} style={{color:C.muted}}/>
+                      <InlineEdit value={c.date} onSave={v=>upsertConcern({...c,date:v})} style={{color:C.muted}}/>
                     </td>
                     <td style={{padding:"10px 14px",fontWeight:600}}>
-                      <InlineEdit value={c.agency} onSave={v=>setConcerns(prev=>prev.map(x=>x.id===c.id?{...x,agency:v}:x))}/>
+                      <InlineEdit value={c.agency} onSave={v=>upsertConcern({...c,agency:v})}/>
                     </td>
                     <td style={{padding:"10px 14px"}}>
-                      <InlineEdit value={c.va||"—"} onSave={v=>setConcerns(prev=>prev.map(x=>x.id===c.id?{...x,va:v}:x))} style={{color:c.va?C.dark:C.muted}}/>
+                      <InlineEdit value={c.va||"—"} onSave={v=>upsertConcern({...c,va:v})} style={{color:c.va?C.dark:C.muted}}/>
                     </td>
                     <td style={{padding:"10px 14px",minWidth:260}}>
-                      <InlineEdit value={c.concern} onSave={v=>setConcerns(prev=>prev.map(x=>x.id===c.id?{...x,concern:v}:x))} multiline/>
+                      <InlineEdit value={c.concern} onSave={v=>upsertConcern({...c,concern:v})} multiline/>
                     </td>
                     <td style={{padding:"10px 14px"}}>
-                      <button onClick={()=>setConcerns(prev=>prev.filter(x=>x.id!==c.id))}
+                      <button onClick={()=>removeConcern(c.id)}
                         style={{background:"none",border:"none",cursor:"pointer",color:C.muted,fontSize:16}}>×</button>
                     </td>
                   </tr>
@@ -2654,7 +2706,19 @@ function KPITab() {
 // ── HUBSPOT TAB ──
 function HubSpotTab() {
   const C = useTheme();
-  const [links, setLinks] = useState(HUBSPOT_LINKS);
+  const { rows: rawLinks, upsert: upsertLink } = useSupabaseTable("hubspot_links", "id");
+  // Group raw rows into the nested structure the UI expects
+  const links = useMemo(() => {
+    const persons = [...new Set(rawLinks.map(r => r.person))];
+    return persons.flatMap(person => {
+      const cats = [...new Set(rawLinks.filter(r => r.person === person).map(r => r.category))];
+      return cats.map(category => ({
+        person, category,
+        links: rawLinks.filter(r => r.person === person && r.category === category)
+          .map(r => ({ id: r.id, label: r.label, url: r.url }))
+      }));
+    });
+  }, [rawLinks]);
   const [activePerson, setActivePerson] = useState("Niccole");
   const [copied, setCopied] = useState("");
   const persons = [...new Set(links.map((g) => g.person))];
@@ -2667,13 +2731,12 @@ function HubSpotTab() {
     }).catch(() => {});
   }
   function updateLink(gi, li, field, val) {
-    setLinks(prev => {
-      const next = [...prev];
-      const gIdx = prev.findIndex((g, i) => prev.filter(x => x.person === activePerson)[gi] === g);
-      const g = { ...next[gIdx], links: next[gIdx].links.map((l, i) => i !== li ? l : { ...l, [field]: val }) };
-      next[gIdx] = g;
-      return next;
-    });
+    const group = groups[gi];
+    if (!group) return;
+    const linkRow = group.links[li];
+    if (!linkRow) return;
+    const raw = rawLinks.find(r => r.id === linkRow.id);
+    if (raw) upsertLink({ ...raw, [field]: val });
   }
 
   return (
@@ -2719,7 +2782,11 @@ function HubSpotTab() {
 // ── NICCOLE'S ACCOUNTS TAB ──
 function AccountsTab({ checkins }) {
   const C = useTheme();
-  const [accounts, setAccounts] = useState(INIT_ACCOUNTS);
+  const { rows: accounts, upsert: upsertAccount } = useSupabaseTable("accounts");
+  function upAcc(id, field, value) {
+    const acc = accounts.find(a => a.id === id);
+    if (acc) upsertAccount({ ...acc, [field]: value });
+  }
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [expandedId, setExpandedId] = useState(null);
@@ -2772,28 +2839,25 @@ function AccountsTab({ checkins }) {
     [accounts, search, statusFilter],
   );
 
-  function upAcc(id, field, value) {
-    setAccounts((prev) => prev.map((a) => (a.id === id ? { ...a, [field]: value } : a)));
-  }
+
   function removeVA(aId, vName) {
-    setAccounts((prev) =>
-      prev.map((a) => (a.id === aId ? { ...a, vas: a.vas.filter((v) => v !== vName) } : a)),
-    );
+    const acc = accounts.find(a => a.id === aId);
+    if (acc) upsertAccount({ ...acc, vas: acc.vas.filter(v => v !== vName) });
   }
   function addVA(aId) {
     if (!newVA.trim()) return;
-    setAccounts((prev) =>
-      prev.map((a) => (a.id === aId ? { ...a, vas: [...a.vas, newVA.trim()] } : a)),
-    );
+    const acc = accounts.find(a => a.id === aId);
+    if (acc) upsertAccount({ ...acc, vas: [...(acc.vas || []), newVA.trim()] });
     setNewVA("");
     setAddingVA(null);
   }
   function delAcc(id) {
-    setAccounts((prev) => prev.filter((a) => a.id !== id));
+    const { remove: removeAccount } = { remove: (i) => supabase.from("accounts").delete().eq("id", i) };
+    removeAccount(id);
   }
   function addAccount() {
     if (!newAcc.agency.trim()) return;
-    setAccounts((prev) => [...prev, { id: Date.now(), ...newAcc }]);
+    upsertAccount({ id: Date.now(), ...newAcc });
     setNewAcc({
       agency: "",
       contact: "",
@@ -3356,63 +3420,39 @@ function WorkflowTab() {
 
 function GeneralNotesTab() {
   const C = useTheme();
-  const [notes, setNotes] = useState(NOTES);
+  const { rows: notes, upsert: upsertNote, remove: removeNote } = useSupabaseTable("notes");
+  const { rows: shipping, upsert: upsertShipping } = useSupabaseTable("shipping");
+  const { rows: rawAgencyNotes, replace: replaceAgencyNotes } = useSupabaseTable("agency_notes");
   const [adding, setAdding] = useState(false);
   const [newNote, setNewNote] = useState({ label: "", value: "" });
   const [copiedShipping, setCopiedShipping] = useState("");
-  const [shipping, setShipping] = useState([
-    { label: "Attention",      value: "Rey Jr. Gabila" },
-    { label: "Full Address",   value: "Units B1 - B3 2nd floor Buhangin Grand Complex, Km6 Carnation St. Barangay Buhangin, Davao City, Davao del Sur, 8000" },
-    { label: "Street Address", value: "Units B1 - B3 2nd floor Buhangin Grand Complex, Km6 Carnation" },
-    { label: "City",           value: "Davao City" },
-    { label: "Province",       value: "Davao del Sur" },
-    { label: "Zip Code",       value: "8000" },
-  ]);
-  const [agencyNotes, setAgencyNotes] = useState([
-    {
-      section: "Agency Notes",
-      items: [
-        { text: "Yancey — CRM hourly based", flag: null },
-        { text: "Pinnacle Partners Insurance in the list but billed as Pinnacle Premier Home and Auto", flag: null },
-      ],
-    },
-    {
-      section: "CRM — No Payment Found",
-      items: [
-        { text: "WestWays Insurance Agency — DFY 2023", flag: null },
-        { text: "Aspen Ridge Insurance — DFY 2023", flag: null },
-        { text: "Insurance Firm listed as Insurance Company Advisors Group — DFY 2024", flag: null },
-      ],
-    },
-    {
-      section: "Pinnacle Group — All Inactive",
-      items: [
-        { text: "Pinnacle Carnegie Home and Auto", flag: "inactive" },
-        { text: "Pinnacle Florida Home and Auto", flag: "inactive" },
-        { text: "Pinnacle Safeguard Home and Auto", flag: "inactive" },
-        { text: "Pinnacle Guard Insurance", flag: "inactive" },
-        { text: "Pinnacle Greater Penn Insurance", flag: "inactive" },
-      ],
-    },
-    {
-      section: "Valley Group",
-      items: [
-        { text: "Partners Insurance Inc.", flag: null },
-        { text: "Wiley Insurance Agency", flag: null },
-        { text: "Faith Insurance Agency", flag: null },
-        { text: "Bull Insurance Agency", flag: null },
-        { text: "Dillehay Insurance", flag: "inactive" },
-        { text: "Rock Island Insurance, LLC", flag: null },
-        { text: "Graves Insurance Group", flag: null },
-      ],
-    },
-  ]);
+
+  // Reconstruct agencyNotes grouped structure from flat DB rows
+  const agencyNotes = useMemo(() => {
+    const sections = [...new Set(rawAgencyNotes.map(r => r.section))];
+    return sections.map(section => ({
+      section,
+      items: rawAgencyNotes
+        .filter(r => r.section === section)
+        .sort((a, b) => a.item_index - b.item_index)
+        .map(r => ({ text: r.text, flag: r.flag }))
+    }));
+  }, [rawAgencyNotes]);
 
   function updateAgencyItem(gi, ii, newText) {
-    setAgencyNotes(prev => prev.map((g, gIdx) => gIdx !== gi ? g : {
-      ...g,
-      items: g.items.map((item, iIdx) => iIdx !== ii ? item : { ...item, text: newText })
-    }));
+    const group = agencyNotes[gi];
+    if (!group) return;
+    const flat = rawAgencyNotes
+      .filter(r => r.section === group.section)
+      .sort((a, b) => a.item_index - b.item_index);
+    const row = flat[ii];
+    if (row) {
+      const { replace: _, ...rest } = row;
+      supabase.from("agency_notes").update({ text: newText }).eq("id", row.id).then(() => {});
+      // optimistic update via replaceAgencyNotes not needed — hook re-fetches on mount only
+      // for now just update locally via replace
+      replaceAgencyNotes(rawAgencyNotes.map(r => r.id === row.id ? { ...r, text: newText } : r));
+    }
   }
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -3432,7 +3472,7 @@ function GeneralNotesTab() {
             style={{ flex: "0 1 200px", padding: "7px 10px", borderRadius: 6, border: `1px solid ${C.border}`, fontSize: 13 }} />
           <input placeholder="Value" value={newNote.value} onChange={e => setNewNote(p => ({ ...p, value: e.target.value }))}
             style={{ flex: "2 1 240px", padding: "7px 10px", borderRadius: 6, border: `1px solid ${C.border}`, fontSize: 13 }} />
-          <button onClick={() => { if (!newNote.label.trim()) return; setNotes(prev => [...prev, { ...newNote }]); setNewNote({ label: "", value: "" }); setAdding(false); }}
+          <button onClick={() => { if (!newNote.label.trim()) return; upsertNote({ id: Date.now(), ...newNote }); setNewNote({ label: "", value: "" }); setAdding(false); }}
             style={{ padding: "7px 18px", borderRadius: 6, border: "none", background: C.purple, color: C.white, cursor: "pointer", fontWeight: 600, fontSize: 13 }}>Save</button>
         </div>
       )}
@@ -3444,8 +3484,8 @@ function GeneralNotesTab() {
           {notes.map((n, i) => (
             <div key={i} style={{ display: "flex", gap: 12, padding: "8px 10px", background: C.gray, borderRadius: 6, alignItems: "flex-start" }}>
               <span style={{ fontWeight: 600, fontSize: 12, color: C.muted, minWidth: 200, whiteSpace: "nowrap" }}>{n.label}</span>
-              <InlineEdit value={n.value} onSave={v => setNotes(prev => prev.map((x, j) => (j === i ? { ...x, value: v } : x)))} style={{ fontSize: 13 }} />
-              <button onClick={() => setNotes(prev => prev.filter((_, j) => j !== i))}
+              <InlineEdit value={n.value} onSave={v => upsertNote({ ...n, value: v })} style={{ fontSize: 13 }} />
+              <button onClick={() => removeNote(n.id)}
                 style={{ background: "none", border: "none", cursor: "pointer", color: C.muted, fontSize: 16, marginLeft: "auto", flexShrink: 0 }}>×</button>
             </div>
           ))}
@@ -3475,7 +3515,7 @@ function GeneralNotesTab() {
             <div key={i} style={{ display: "flex", gap: 12, padding: "8px 12px", background: C.gray, borderRadius: 6, alignItems: "flex-start" }}>
               <span style={{ fontWeight: 600, fontSize: 12, color: C.muted, minWidth: 130, flexShrink: 0 }}>{row.label}</span>
               <div style={{ flex: 1 }}>
-                <InlineEdit value={row.value} onSave={v => setShipping(prev => prev.map((x, j) => j === i ? { ...x, value: v } : x))} style={{ fontSize: 13 }} />
+                <InlineEdit value={row.value} onSave={v => upsertShipping({ ...row, value: v })} style={{ fontSize: 13 }} />
               </div>
               <button
                 onClick={() => {
@@ -3995,7 +4035,7 @@ const TABS = [
 
 export default function GellApp() {
   const [activeTab, setActiveTab] = useState("tasks");
-  const [checkins] = useState(INIT_CHECKINS);
+  const { rows: checkins } = useSupabaseTable("checkins");
   const [themeName, setThemeName] = useState("lava");
   const [tabs, setTabs] = useState(TABS);
   const [dragIdx, setDragIdx] = useState(null);
