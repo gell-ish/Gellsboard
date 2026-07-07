@@ -2508,9 +2508,12 @@ function KPITab() {
                   <span style={{fontSize:12,color:C.muted}}>
                     {concerns.filter(c=>{
                       if(concernRangeStart&&c.date){
-                        const cd=new Date(c.date);
-                        const lo=concernRangeEnd&&concernRangeEnd<concernRangeStart?concernRangeEnd:concernRangeStart;
-                        const hi=concernRangeEnd&&concernRangeEnd>concernRangeStart?concernRangeEnd:concernRangeStart;
+                        const parts=c.date.includes('-')?c.date.split('-'):[c.date.split('/')[2],c.date.split('/')[0],c.date.split('/')[1]];
+                        const cd=new Date(+parts[0],+parts[1]-1,+parts[2]);
+                        const lo=new Date(concernRangeEnd&&concernRangeEnd<concernRangeStart?concernRangeEnd:concernRangeStart);
+                        lo.setHours(0,0,0,0);
+                        const hi=new Date(concernRangeEnd&&concernRangeEnd>concernRangeStart?concernRangeEnd:concernRangeStart);
+                        hi.setHours(23,59,59,999);
                         return cd>=lo&&cd<=hi;
                       }
                       return true;
@@ -2686,9 +2689,12 @@ function KPITab() {
                   .filter(c=>{
                     // Calendar range filter
                     if(concernRangeStart && c.date){
-                      const cd = new Date(c.date);
-                      const lo = concernRangeEnd&&concernRangeEnd<concernRangeStart ? concernRangeEnd : concernRangeStart;
-                      const hi = concernRangeEnd&&concernRangeEnd>concernRangeStart ? concernRangeEnd : concernRangeStart;
+                      const parts=c.date.includes('-')?c.date.split('-'):[c.date.split('/')[2],c.date.split('/')[0],c.date.split('/')[1]];
+                      const cd=new Date(+parts[0],+parts[1]-1,+parts[2]);
+                      const lo=new Date(concernRangeEnd&&concernRangeEnd<concernRangeStart?concernRangeEnd:concernRangeStart);
+                      lo.setHours(0,0,0,0);
+                      const hi=new Date(concernRangeEnd&&concernRangeEnd>concernRangeStart?concernRangeEnd:concernRangeStart);
+                      hi.setHours(23,59,59,999);
                       if(cd<lo||cd>hi) return false;
                     }
                     const q=concernSearch.toLowerCase();
