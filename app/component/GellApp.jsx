@@ -1833,7 +1833,7 @@ function MiniCalendar({ weeks, checkins, activeWeek, onSelect, C, typeFilter, se
 // ── KPI TAB ──
 function KPITab() {
   const C = useTheme();
-  const EMPTY_CI = { week:"", date:"", client:"", vas:[{name:"",score:""}], type:"weekly", mode:"zoom", status:"showed", am:"", notes:"" };
+  const EMPTY_CI = { week:"", date:"", client:"", vas:[{name:"",score:""}], type:"weekly", mode:"zoom", status:"showed", am:"", tl:"", notes:"" };
   const STATUS_CFG = {
     showed: { bg:"#FFFFFF", dot:"#059669", label:"✅ Showed" },
     skipped:{ bg:"#F0FDF4", dot:"#16A34A", label:"⏭️ Skipped (not counted)" },
@@ -2044,6 +2044,15 @@ function KPITab() {
                 <option>Niccole</option><option>Karla</option><option>Alicia</option>
               </select>
             </div>
+            {/* TL */}
+            <div>
+              <div style={{fontSize:10,color:C.muted,fontWeight:700,marginBottom:4}}>TL ASSIGNED</div>
+              <select value={ci.tl||""} onChange={e=>upCI(ci.id,'tl',e.target.value)}
+                style={{width:"100%",padding:"5px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13}}>
+                <option value="">— Select TL —</option>
+                <option>Martin</option><option>Rez</option><option>Ed</option><option>RJ</option><option>Vincent</option>
+              </select>
+            </div>
             {/* Status */}
             <div>
               <div style={{fontSize:10,color:C.muted,fontWeight:700,marginBottom:4}}>STATUS</div>
@@ -2147,6 +2156,14 @@ function KPITab() {
               <select value={newCI.am} onChange={e=>setNewCI(p=>({...p,am:e.target.value}))} style={{...sel,width:"100%",color:newCI.am?AM_COLORS[newCI.am]:undefined}}>
                 <option value="">— Select AM —</option>
                 <option>Niccole</option><option>Karla</option><option>Alicia</option>
+              </select>
+            </div>
+            {/* TL */}
+            <div>
+              <div style={{fontSize:11,color:C.muted,fontWeight:600,marginBottom:4}}>TL ASSIGNED</div>
+              <select value={newCI.tl} onChange={e=>setNewCI(p=>({...p,tl:e.target.value}))} style={{...sel,width:"100%"}}>
+                <option value="">— Select TL —</option>
+                <option>Martin</option><option>Rez</option><option>Ed</option><option>RJ</option><option>Vincent</option>
               </select>
             </div>
             {/* Status */}
@@ -2291,7 +2308,7 @@ function KPITab() {
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:13,minWidth:640}}>
               <thead>
                 <tr style={{background:"#F8F8FB"}}>
-                  {["","Client / Agency","VAs & Scores","Type","Mode","AM","Status"].map((h,i)=>(
+                  {["","Client / Agency","VAs & Scores","Type","Mode","AM","TL","Status"].map((h,i)=>(
                     <th key={i} style={{padding:"8px 12px",textAlign:"left",fontSize:11,color:C.muted,fontWeight:700,borderBottom:`1px solid ${C.border}`,whiteSpace:"nowrap"}}>{h}</th>
                   ))}
                 </tr>
@@ -2339,6 +2356,10 @@ function KPITab() {
                             :<span style={{fontSize:11,color:C.amber}}>⚠️ Tag AM</span>}
                         </td>
                         <td style={{padding:"8px 12px"}}>
+                          {c.tl?<span style={{fontSize:12,fontWeight:600,color:C.teal}}>{c.tl}</span>
+                            :<span style={{fontSize:11,color:C.muted}}>—</span>}
+                        </td>
+                        <td style={{padding:"8px 12px"}}>
                           <span style={{fontSize:11,fontWeight:600,color:cfg.dot}}>{cfg.label}</span>
                         </td>
                       </tr>
@@ -2369,7 +2390,7 @@ function KPITab() {
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:13,minWidth:800}}>
               <thead>
                 <tr style={{background:C.dark,color:C.white}}>
-                  {["","Week","Client / Agency","VAs & Scores","Type","Mode","AM","Status",""].map((h,i)=>(
+                  {["","Week","Client / Agency","VAs & Scores","Type","Mode","AM","TL","Status",""].map((h,i)=>(
                     <th key={i} style={{padding:"9px 12px",textAlign:"left",fontWeight:600,fontSize:11,letterSpacing:"0.05em",whiteSpace:"nowrap"}}>{h}</th>
                   ))}
                 </tr>
@@ -2410,6 +2431,13 @@ function KPITab() {
                         <td style={{padding:"7px 12px"}}>
                           {c.am?<span style={{fontSize:12,fontWeight:700,color:AM_COLORS[c.am]||C.muted}}>{c.am}</span>
                             :<span style={{fontSize:11,color:C.amber}}>⚠️ Tag</span>}
+                        </td>
+                        <td style={{padding:"7px 12px"}}>
+                          <select value={c.tl||""} onChange={e=>upCI(c.id,"tl",e.target.value)}
+                            style={{border:"none",background:"transparent",cursor:"pointer",fontSize:12,color:c.tl?C.teal:C.muted,fontWeight:c.tl?600:400}}>
+                            <option value="">— TL —</option>
+                            <option>Martin</option><option>Rez</option><option>Ed</option><option>RJ</option><option>Vincent</option>
+                          </select>
                         </td>
                         <td style={{padding:"7px 12px"}}>
                           <span style={{fontSize:11,fontWeight:600,color:cfg.dot}}>{cfg.label}</span>
