@@ -1556,21 +1556,24 @@ function TasksTab() {
                     style={{ cursor: "pointer", accentColor: C.red }}
                   />
                 </td>
-                <td
-                  style={{
-                    padding: "9px 12px",
-                    fontWeight: 500,
-                    textDecoration: t.status === "Done" ? "line-through" : "none",
-                    minWidth: 160,
-                  }}
-                >
-                  <span>{t.task}</span>
+                <td style={{ padding: "9px 12px", fontWeight: 500, textDecoration: t.status === "Done" ? "line-through" : "none", minWidth: 160 }}>
+                  <InlineEdit value={t.task} onSave={v => update(t.id, "task", v)} style={{ fontWeight: 500 }} />
                 </td>
                 <td style={{ padding: "9px 12px", whiteSpace: "nowrap" }}>
-                  <span style={{ color: C.muted }}>{t.due}</span>
+                  <InlineEdit value={t.due || "—"} onSave={v => update(t.id, "due", v)} style={{ color: C.muted, fontSize: 13 }} />
                 </td>
                 <td style={{ padding: "9px 12px", whiteSpace: "nowrap" }}>
-                  <span>{t.assignee}</span>
+                  <select
+                    value={t.assignee}
+                    onChange={e => update(t.id, "assignee", e.target.value)}
+                    style={{ border: "none", background: "transparent", cursor: "pointer", fontSize: 13, color: C.dark, fontWeight: 500 }}
+                  >
+                    <option>Gell</option>
+                    <option>Niccole</option>
+                    <option>Niccole/Gell</option>
+                    <option>Alicia</option>
+                    <option>Karla</option>
+                  </select>
                 </td>
                 <td style={{ padding: "9px 12px" }}>
                   <select
@@ -1578,16 +1581,19 @@ function TasksTab() {
                     onChange={(e) => update(t.id, "priority", e.target.value)}
                     style={{
                       border: "none",
-                      background: "transparent",
+                      borderRadius: 6,
                       cursor: "pointer",
-                      fontSize: 13,
-                      color: PRIORITY_COLOR[t.priority] || C.muted,
-                      fontWeight: 600,
+                      fontSize: 12,
+                      fontWeight: 700,
+                      padding: "3px 8px",
+                      background: t.priority === "High" ? "#FEE2E2" : t.priority === "Medium" ? "#FEF9C3" : t.priority === "Low" ? "#DCFCE7" : C.gray,
+                      color: t.priority === "High" ? "#DC2626" : t.priority === "Medium" ? "#CA8A04" : t.priority === "Low" ? "#16A34A" : C.muted,
                     }}
                   >
                     <option>High</option>
                     <option>Medium</option>
                     <option>Low</option>
+                    <option>Recurring</option>
                   </select>
                 </td>
                 <td style={{ padding: "9px 12px" }}>
@@ -1608,7 +1614,7 @@ function TasksTab() {
                   </select>
                 </td>
                 <td style={{ padding: "9px 12px", minWidth: 140 }}>
-                  <span style={{ color: C.muted }}>{t.notes}</span>
+                  <InlineEdit value={t.notes || ""} onSave={v => update(t.id, "notes", v)} style={{ color: C.muted, fontSize: 13 }} multiline />
                 </td>
                 <td style={{ padding: "9px 12px" }}>
                   <button
@@ -1640,14 +1646,13 @@ function TasksTab() {
 function MiniCalendar({ weeks, checkins, activeWeek, onSelect, C, typeFilter, setTypeFilter, rangeStart, rangeEnd, setRangeStart, setRangeEnd }) {
   const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
   const DAY_NAMES   = ["Su","Mo","Tu","We","Th","Fr","Sa"];
+  const [open, setOpen] = useState(false);
 
-  // Map each week label -> its Monday Date
   const weekDates = useMemo(() => weeks.map(w => {
     const [mm,dd,yy] = w.split("/");
     return { date: new Date(+yy, +mm-1, +dd), label: w };
   }), [weeks]);
 
-  // Set of ISO strings for week-Monday dates (have data)
   const weekMondays = useMemo(() => {
     const s = new Set();
     weekDates.forEach(({ date }) => {
@@ -1656,69 +1661,41 @@ function MiniCalendar({ weeks, checkins, activeWeek, onSelect, C, typeFilter, se
     return s;
   }, [weekDates]);
 
-  // Start at Jan of first week's year
   const initYear  = weekDates.length ? weekDates[0].date.getFullYear() : 2026;
   const [curYear,  setCurYear]  = useState(initYear);
   const [curMonth, setCurMonth] = useState(0);
-  const [dragging,   setDragging]   = useState(false);
-  const [hoverDay,   setHoverDay]   = useState(null);
+  const [dragging, setDragging] = useState(false);
 
-  function prevMonth() {
-    if (curMonth === 0) { setCurMonth(11); setCurYear(y => y - 1); }
-    else setCurMonth(m => m - 1);
-  }
-  function nextMonth() {
-    if (curMonth === 11) { setCurMonth(0); setCurYear(y => y + 1); }
-    else setCurMonth(m => m + 1);
-  }
+  function prevMonth() { if(curMonth===0){setCurMonth(11);setCurYear(y=>y-1);}else setCurMonth(m=>m-1); }
+  function nextMonth() { if(curMonth===11){setCurMonth(0);setCurYear(y=>y+1);}else setCurMonth(m=>m+1); }
 
   const grid = useMemo(() => {
     const firstDay = new Date(curYear, curMonth, 1).getDay();
-    const daysInMonth = new Date(curYear, curMonth + 1, 0).getDate();
+    const daysInMonth = new Date(curYear, curMonth+1, 0).getDate();
     const cells = [];
-    for (let i = 0; i < firstDay; i++) cells.push(null);
-    for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+    for(let i=0;i<firstDay;i++) cells.push(null);
+    for(let d=1;d<=daysInMonth;d++) cells.push(d);
     return cells;
   }, [curYear, curMonth]);
 
-  // Clear selection
-  function clearSelection() {
-    setRangeStart(null); setRangeEnd(null); setDragging(false); setHoverDay(null);
+  function weekForDay(day) {
+    const clicked = new Date(curYear, curMonth, day);
+    let best = null, bestDiff = Infinity;
+    weekDates.forEach(({ date, label }) => {
+      const sun = new Date(date); sun.setDate(date.getDate()+6);
+      if(clicked>=date&&clicked<=sun){best=label;bestDiff=0;return;}
+      const diff = Math.min(Math.abs(clicked-date),Math.abs(clicked-sun));
+      if(diff<bestDiff){bestDiff=diff;best=label;}
+    });
+    return best;
   }
-
-  // Stats for display (computed from props checkins using same range logic)
-  const filteredCheckins = useMemo(() => {
-    let base;
-    if (rangeStart) {
-      const lo = rangeEnd && rangeEnd < rangeStart ? rangeEnd : rangeStart;
-      const hi = rangeEnd && rangeEnd > rangeStart ? rangeEnd : rangeStart;
-      const matched = weekDates
-        .filter(({ date }) => { const sun = new Date(date); sun.setDate(date.getDate()+6); return date <= hi && sun >= lo; })
-        .map(({ label }) => label);
-      base = checkins.filter(c => matched.includes(c.week));
-    } else {
-      base = checkins.filter(c => c.week === activeWeek);
-    }
-    if (typeFilter === "all") return base;
-    return base.filter(c => c.type === typeFilter);
-  }, [checkins, rangeStart, rangeEnd, activeWeek, weekDates, typeFilter]);
-
-  function dayToDate(day) { return new Date(curYear, curMonth, day); }
 
   function isInRange(day) {
-    const d = dayToDate(day);
-    const lo = rangeEnd && rangeEnd < rangeStart ? rangeEnd : rangeStart;
-    const hi = rangeEnd && rangeEnd > rangeStart ? rangeEnd : rangeStart;
-    if (!lo) return false;
-    return d >= lo && d <= (hi || lo);
-  }
-
-  function isHoverRange(day) {
-    if (!dragging || !rangeStart || !hoverDay) return false;
-    const d = dayToDate(day);
-    const lo = hoverDay < rangeStart ? hoverDay : rangeStart;
-    const hi = hoverDay > rangeStart ? hoverDay : rangeStart;
-    return d >= lo && d <= hi;
+    if(!rangeStart) return false;
+    const d = new Date(curYear, curMonth, day);
+    const lo = rangeEnd&&rangeEnd<rangeStart?rangeEnd:rangeStart;
+    const hi = rangeEnd&&rangeEnd>rangeStart?rangeEnd:rangeStart;
+    return d>=lo&&d<=(hi||lo);
   }
 
   function hasCheckinDot(day) {
@@ -1727,62 +1704,48 @@ function MiniCalendar({ weeks, checkins, activeWeek, onSelect, C, typeFilter, se
   }
 
   function handleMouseDown(day) {
-    const d = dayToDate(day);
-    setRangeStart(d);
-    setRangeEnd(null);
-    setDragging(true);
-    setHoverDay(d);
-    // Single click: find week for this day and show its check-ins
-    const [mm,dd,yy] = [String(curMonth+1).padStart(2,"0"), String(day).padStart(2,"0"), String(curYear)];
-    // find matching week
-    const clicked = d;
-    let best = null, bestDiff = Infinity;
-    weekDates.forEach(({ date, label }) => {
-      const sun = new Date(date); sun.setDate(date.getDate() + 6);
-      if (clicked >= date && clicked <= sun) { best = label; bestDiff = 0; }
-      else {
-        const diff = Math.min(Math.abs(clicked - date), Math.abs(clicked - sun));
-        if (diff < bestDiff) { bestDiff = diff; best = label; }
-      }
-    });
-    if (best) onSelect(best);
+    const d = new Date(curYear, curMonth, day);
+    setRangeStart(d); setRangeEnd(null); setDragging(true);
+    const w = weekForDay(day); if(w) onSelect(w);
   }
+  function handleMouseEnter(day) { if(!dragging) return; setRangeEnd(new Date(curYear,curMonth,day)); }
+  function handleMouseUp(day) { setRangeEnd(new Date(curYear,curMonth,day)); setDragging(false); }
+  function clearSelection() { setRangeStart(null); setRangeEnd(null); setDragging(false); }
 
-  function handleMouseEnter(day) {
-    if (!dragging) return;
-    const d = dayToDate(day);
-    setHoverDay(d);
-    setRangeEnd(d);
-  }
-
-  function handleMouseUp(day) {
-    const d = dayToDate(day);
-    setRangeEnd(d);
-    setDragging(false);
-    setHoverDay(null);
-  }
-
-  // Clear selection
-  function clearSelection() {
-    setRangeStart(null); setRangeEnd(null); setDragging(false); setHoverDay(null);
-  }
+  const filteredCheckins = useMemo(() => {
+    let base;
+    if(rangeStart){
+      const lo=rangeEnd&&rangeEnd<rangeStart?rangeEnd:rangeStart;
+      const hi=rangeEnd&&rangeEnd>rangeStart?rangeEnd:rangeStart;
+      const matched=weekDates.filter(({date})=>{const sun=new Date(date);sun.setDate(date.getDate()+6);return date<=hi&&sun>=lo;}).map(({label})=>label);
+      base=checkins.filter(c=>matched.includes(c.week));
+    } else { base=checkins.filter(c=>c.week===activeWeek); }
+    if(typeFilter==="all") return base;
+    return base.filter(c=>c.type===typeFilter);
+  }, [checkins,rangeStart,rangeEnd,activeWeek,weekDates,typeFilter]);
 
   const today = new Date();
   const selLabel = rangeStart
-    ? rangeEnd && rangeEnd.toDateString() !== rangeStart.toDateString()
+    ? rangeEnd&&rangeEnd.toDateString()!==rangeStart.toDateString()
       ? `${rangeStart.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${rangeEnd.toLocaleDateString("en-US",{month:"short",day:"numeric"})}`
       : rangeStart.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})
-    : activeWeek || "";
+    : activeWeek||"Select a week";
 
   return (
-    <div style={{marginBottom:18}} onMouseLeave={()=>{if(dragging){setDragging(false);setHoverDay(null);}}}>
-      {/* Controls row */}
-      <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap",alignItems:"center"}}>
-        <select value={activeWeek} onChange={e=>{onSelect(e.target.value);clearSelection();}}
-          style={{padding:"6px 10px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:13,cursor:"pointer",fontWeight:600,color:C.dark,background:C.white}}>
-          {weeks.map(w=><option key={w} value={w}>{w}</option>)}
-        </select>
-        <div style={{display:"flex",gap:4}}>
+    <div style={{marginBottom:14}} onMouseLeave={()=>{if(dragging){setDragging(false);}}}>
+      {/* Top bar: calendar button + type filter + stats */}
+      <div style={{display:"flex",gap:8,marginBottom:open?10:0,flexWrap:"wrap",alignItems:"center"}}>
+        {/* Calendar dropdown trigger */}
+        <button onClick={()=>setOpen(v=>!v)}
+          style={{display:"flex",alignItems:"center",gap:6,padding:"7px 12px",borderRadius:8,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:13,fontWeight:500,color:C.dark}}>
+          📅 {selLabel}
+          <span style={{fontSize:10,color:C.muted,marginLeft:2}}>{open?"▲":"▼"}</span>
+        </button>
+        {rangeStart&&(
+          <button onClick={clearSelection}
+            style={{padding:"7px 10px",borderRadius:8,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:12,color:C.muted}}>✕ Clear</button>
+        )}
+        <div style={{display:"flex",gap:4,marginLeft:"auto"}}>
           <button onClick={()=>{const i=weeks.indexOf(activeWeek);if(i>0){onSelect(weeks[i-1]);clearSelection();}}}
             disabled={weeks.indexOf(activeWeek)===0}
             style={{padding:"6px 10px",borderRadius:6,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:13,opacity:weeks.indexOf(activeWeek)===0?0.3:1}}>‹</button>
@@ -1792,13 +1755,15 @@ function MiniCalendar({ weeks, checkins, activeWeek, onSelect, C, typeFilter, se
           <button onClick={()=>{onSelect(weeks[weeks.length-1]);clearSelection();}}
             style={{padding:"6px 10px",borderRadius:6,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:12,color:C.muted}}>Latest</button>
         </div>
-        <div style={{display:"flex",gap:6,marginLeft:"auto"}}>
+        {/* Type filter */}
+        <div style={{display:"flex",gap:4}}>
           {[["all","All"],["weekly","📋 Weekly"],["monthly","📅 Monthly"]].map(([v,l])=>(
             <button key={v} onClick={()=>setTypeFilter(v)}
-              style={{padding:"5px 12px",borderRadius:8,border:"none",cursor:"pointer",fontSize:12,
+              style={{padding:"5px 10px",borderRadius:8,border:"none",cursor:"pointer",fontSize:12,
                 background:typeFilter===v?C.dark:C.gray,color:typeFilter===v?C.white:C.dark,fontWeight:typeFilter===v?700:400}}>{l}</button>
           ))}
         </div>
+        {/* Quick stats */}
         <div style={{display:"flex",gap:6}}>
           {[
             {l:"Showed",  v:filteredCheckins.filter(c=>c.status==="showed").length,  c:C.green},
@@ -1806,84 +1771,61 @@ function MiniCalendar({ weeks, checkins, activeWeek, onSelect, C, typeFilter, se
             {l:"Skipped", v:filteredCheckins.filter(c=>c.status==="skipped").length, c:C.muted},
           ].map(s=>(
             <div key={s.l} style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:8,padding:"5px 10px",display:"flex",gap:5,alignItems:"center"}}>
-              <span style={{fontSize:15,fontWeight:700,color:s.c}}>{s.v}</span>
+              <span style={{fontSize:14,fontWeight:700,color:s.c}}>{s.v}</span>
               <span style={{fontSize:10,color:C.muted}}>{s.l}</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Calendar */}
-      <div style={{background:C.white,borderRadius:10,border:`1px solid ${C.border}`,padding:10,maxWidth:240,userSelect:"none"}}>
-        {/* Month nav */}
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-          <button onClick={prevMonth}
-            style={{background:"none",border:"none",cursor:"pointer",fontSize:15,color:C.dark,padding:"2px 6px",borderRadius:6}}>‹</button>
-          <span style={{fontWeight:700,fontSize:13,color:C.dark}}>{MONTH_NAMES[curMonth]} {curYear}</span>
-          <button onClick={nextMonth}
-            style={{background:"none",border:"none",cursor:"pointer",fontSize:15,color:C.dark,padding:"2px 6px",borderRadius:6}}>›</button>
+      {/* Dropdown calendar panel */}
+      {open&&(
+        <div style={{background:C.white,borderRadius:12,border:`1px solid ${C.border}`,padding:12,maxWidth:240,boxShadow:"0 4px 20px rgba(0,0,0,0.1)",position:"relative",zIndex:10}}>
+          {/* Month nav */}
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+            <button onClick={prevMonth} style={{background:"none",border:"none",cursor:"pointer",fontSize:15,color:C.dark,padding:"2px 6px"}}>‹</button>
+            <span style={{fontWeight:700,fontSize:13,color:C.dark}}>{MONTH_NAMES[curMonth]} {curYear}</span>
+            <button onClick={nextMonth} style={{background:"none",border:"none",cursor:"pointer",fontSize:15,color:C.dark,padding:"2px 6px"}}>›</button>
+          </div>
+          {/* Day headers */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",marginBottom:3}}>
+            {DAY_NAMES.map(d=><div key={d} style={{textAlign:"center",fontSize:9,fontWeight:700,color:C.muted}}>{d}</div>)}
+          </div>
+          {/* Days */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:1,userSelect:"none"}}>
+            {grid.map((day,i)=>{
+              if(!day) return <div key={i}/>;
+              const inSel=isInRange(day);
+              const hasDot=hasCheckinDot(day);
+              const isToday=today.getDate()===day&&today.getMonth()===curMonth&&today.getFullYear()===curYear;
+              return (
+                <div key={i}
+                  onMouseDown={()=>handleMouseDown(day)}
+                  onMouseEnter={()=>handleMouseEnter(day)}
+                  onMouseUp={()=>{handleMouseUp(day);setOpen(false);}}
+                  style={{textAlign:"center",padding:"5px 2px",borderRadius:5,fontSize:11,cursor:"pointer",position:"relative",
+                    background:inSel?C.teal:"transparent",
+                    color:inSel?C.white:hasDot?C.dark:C.muted,
+                    fontWeight:inSel||isToday?700:400,
+                    border:isToday?`2px solid ${C.red}`:"2px solid transparent"}}>
+                  {day}
+                  {hasDot&&!inSel&&<div style={{position:"absolute",bottom:1,left:"50%",transform:"translateX(-50%)",width:3,height:3,borderRadius:"50%",background:C.teal}}/>}
+                </div>
+              );
+            })}
+          </div>
+          {/* Legend */}
+          <div style={{marginTop:8,display:"flex",gap:10,fontSize:9,color:C.muted,justifyContent:"center"}}>
+            <span style={{display:"flex",alignItems:"center",gap:3}}><span style={{width:5,height:5,borderRadius:"50%",background:C.teal,display:"inline-block"}}/>check-ins</span>
+            <span style={{display:"flex",alignItems:"center",gap:3}}><span style={{width:8,height:8,borderRadius:2,background:C.teal,display:"inline-block"}}/>selected</span>
+          </div>
+          <p style={{fontSize:9,color:C.muted,textAlign:"center",margin:"6px 0 0"}}>Click or drag to select · closes on pick</p>
         </div>
-        {/* Day headers */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",marginBottom:4}}>
-          {DAY_NAMES.map(d=>(
-            <div key={d} style={{textAlign:"center",fontSize:10,fontWeight:700,color:C.muted,padding:"3px 0"}}>{d}</div>
-          ))}
-        </div>
-        {/* Days */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:3}}>
-          {grid.map((day,i)=>{
-            if (!day) return <div key={i}/>;
-            const inSel    = isInRange(day);
-            const inHover  = isHoverRange(day);
-            const hasDot   = hasCheckinDot(day);
-            const isToday  = today.getDate()===day && today.getMonth()===curMonth && today.getFullYear()===curYear;
-            const isStart  = rangeStart && dayToDate(day).toDateString()===rangeStart.toDateString();
-            const isEnd    = rangeEnd   && dayToDate(day).toDateString()===rangeEnd.toDateString();
-            const highlighted = inSel || inHover;
-            return (
-              <div key={i}
-                onMouseDown={()=>handleMouseDown(day)}
-                onMouseEnter={()=>handleMouseEnter(day)}
-                onMouseUp={()=>handleMouseUp(day)}
-                style={{
-                  textAlign:"center", padding:"4px 1px", borderRadius:5, fontSize:11,
-                  cursor:"pointer",
-                  background: highlighted ? C.teal : "transparent",
-                  color: highlighted ? C.white : hasDot ? C.dark : C.muted,
-                  fontWeight: highlighted || isToday ? 700 : 400,
-                  border: isToday ? `2px solid ${C.red}` : "2px solid transparent",
-                  opacity: inHover && !inSel ? 0.65 : 1,
-                  position:"relative",
-                }}>
-                {day}
-                {hasDot && !highlighted && (
-                  <div style={{position:"absolute",bottom:2,left:"50%",transform:"translateX(-50%)",width:4,height:4,borderRadius:"50%",background:C.teal}}/>
-                )}
-              </div>
-            );
-          })}
-        </div>
-        {/* Selected range label + clear */}
-        <div style={{marginTop:10,display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
-          <span style={{fontSize:11,color:C.muted}}>
-            {selLabel ? <span>📅 <strong style={{color:C.dark}}>{selLabel}</strong></span> : "Click or drag to select"}
-          </span>
-          {rangeStart && (
-            <button onClick={clearSelection}
-              style={{fontSize:11,color:C.muted,background:"none",border:`1px solid ${C.border}`,borderRadius:6,padding:"2px 8px",cursor:"pointer"}}>Clear</button>
-          )}
-        </div>
-        {/* Legend */}
-        <div style={{marginTop:8,display:"flex",gap:10,fontSize:10,color:C.muted,flexWrap:"wrap"}}>
-          <span style={{display:"flex",alignItems:"center",gap:3}}><span style={{width:6,height:6,borderRadius:"50%",background:C.teal,display:"inline-block"}}/>has check-ins</span>
-          <span style={{display:"flex",alignItems:"center",gap:3}}><span style={{width:10,height:10,borderRadius:3,background:C.teal,display:"inline-block"}}/>selected</span>
-          <span style={{display:"flex",alignItems:"center",gap:3}}><span style={{width:10,height:10,borderRadius:3,border:`2px solid ${C.red}`,display:"inline-block"}}/>today</span>
-        </div>
-      </div>
-      <p style={{fontSize:11,color:C.muted,marginTop:6}}>💡 Click a single day · Click and drag to select a date range · Dots = weeks with check-ins</p>
+      )}
     </div>
   );
 }
+
 
 
 
@@ -1930,6 +1872,7 @@ function KPITab() {
   const [concernRangeStart, setConcernRangeStart] = useState(null);
   const [concernRangeEnd,   setConcernRangeEnd]   = useState(null);
   const [concernDragging,   setConcernDragging]   = useState(false);
+  const [concernCalOpen,    setConcernCalOpen]     = useState(false);
 
   const weeks = useMemo(() => [...new Set(checkins.map(c=>c.week))].sort(), [checkins]);
   const activeWeek = selWeek || weeks[weeks.length-1] || "";
@@ -2152,7 +2095,7 @@ function KPITab() {
       {/* Top bar: view toggle + legend + add button */}
       <div style={{display:"flex",gap:8,marginBottom:14,alignItems:"center",flexWrap:"wrap"}}>
         <div style={{display:"flex",background:C.gray,borderRadius:8,padding:3}}>
-          {[{v:"report",l:"📅 Monday Report"},{v:"table",l:"📋 Full Table"},{v:"concerns",l:"⚠️ Client Concerns"}].map(m=>(
+          {[{v:"report",l:"✅ Client Check-ins"},{v:"table",l:"📋 Full Table"},{v:"concerns",l:"⚠️ Client Concerns"}].map(m=>(
             <button key={m.v} onClick={()=>setViewMode(m.v)} style={{padding:"6px 14px",borderRadius:6,border:"none",cursor:"pointer",fontSize:13,background:viewMode===m.v?C.dark:C.gray,color:viewMode===m.v?C.white:C.muted,fontWeight:viewMode===m.v?700:400}}>{m.l}</button>
           ))}
         </div>
@@ -2489,106 +2432,101 @@ function KPITab() {
       {/* ── CLIENT CONCERNS ── */}
       {viewMode==="concerns"&&(
         <div>
-          {/* Concern Calendar */}
+          {/* Concern Calendar — dropdown */}
           {(()=>{
-            const MNAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-            const DNAMES = ["Su","Mo","Tu","We","Th","Fr","Sa"];
-            const firstDay = new Date(concernCalYear, concernCalMonth, 1).getDay();
-            const daysInMonth = new Date(concernCalYear, concernCalMonth+1, 0).getDate();
-            const grid = [];
+            const MNAMES=["January","February","March","April","May","June","July","August","September","October","November","December"];
+            const DNAMES=["Su","Mo","Tu","We","Th","Fr","Sa"];
+            const firstDay=new Date(concernCalYear,concernCalMonth,1).getDay();
+            const daysInMonth=new Date(concernCalYear,concernCalMonth+1,0).getDate();
+            const grid=[];
             for(let i=0;i<firstDay;i++) grid.push(null);
             for(let d=1;d<=daysInMonth;d++) grid.push(d);
-            // dates that have concerns
-            const concernDates = new Set(concerns.map(c=>{
+            const concernDates=new Set(concerns.map(c=>{
               if(!c.date) return null;
-              // handle MM/DD/YYYY or YYYY-MM-DD
               if(c.date.includes('-')) return c.date.slice(0,10);
-              const [mm,dd,yy] = c.date.split('/');
+              const [mm,dd,yy]=c.date.split('/');
               return `${yy}-${(mm||'').padStart(2,'0')}-${(dd||'').padStart(2,'0')}`;
             }).filter(Boolean));
             function dayISO(d){ return `${concernCalYear}-${String(concernCalMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
             function inRange(d){
               if(!concernRangeStart) return false;
-              const dt = new Date(concernCalYear, concernCalMonth, d);
-              const lo = concernRangeEnd&&concernRangeEnd<concernRangeStart ? concernRangeEnd : concernRangeStart;
-              const hi = concernRangeEnd&&concernRangeEnd>concernRangeStart ? concernRangeEnd : concernRangeStart;
-              return dt>=lo && dt<=hi;
+              const dt=new Date(concernCalYear,concernCalMonth,d);
+              const lo=concernRangeEnd&&concernRangeEnd<concernRangeStart?concernRangeEnd:concernRangeStart;
+              const hi=concernRangeEnd&&concernRangeEnd>concernRangeStart?concernRangeEnd:concernRangeStart;
+              return dt>=lo&&dt<=hi;
             }
-            const today = new Date();
+            const today=new Date();
+            const selLabel=concernRangeStart
+              ?(concernRangeEnd&&concernRangeEnd.toDateString()!==concernRangeStart.toDateString()
+                ?`${concernRangeStart.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${concernRangeEnd.toLocaleDateString("en-US",{month:"short",day:"numeric"})}`
+                :concernRangeStart.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}))
+              :"Filter by date";
             return (
-              <div style={{display:"flex",gap:14,marginBottom:16,flexWrap:"wrap",alignItems:"flex-start"}}>
-                <div style={{background:C.white,borderRadius:10,border:`1px solid ${C.border}`,padding:10,maxWidth:240,width:"100%"}}>
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-                    <button onClick={()=>{ if(concernCalMonth===0){setConcernCalMonth(11);setConcernCalYear(y=>y-1);}else setConcernCalMonth(m=>m-1); }}
-                      style={{background:"none",border:"none",cursor:"pointer",fontSize:16,color:C.dark,padding:"2px 8px"}}>‹</button>
-                    <span style={{fontWeight:700,fontSize:16,color:C.dark}}>{MNAMES[concernCalMonth]} {concernCalYear}</span>
-                    <button onClick={()=>{ if(concernCalMonth===11){setConcernCalMonth(0);setConcernCalYear(y=>y+1);}else setConcernCalMonth(m=>m+1); }}
-                      style={{background:"none",border:"none",cursor:"pointer",fontSize:16,color:C.dark,padding:"2px 8px"}}>›</button>
-                  </div>
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",marginBottom:4}}>
-                    {DNAMES.map(d=><div key={d} style={{textAlign:"center",fontSize:10,fontWeight:700,color:C.muted,padding:"3px 0"}}>{d}</div>)}
-                  </div>
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:1,userSelect:"none"}}>
-                    {grid.map((day,i)=>{
-                      if(!day) return <div key={i}/>;
-                      const iso = dayISO(day);
-                      const hasDot = concernDates.has(iso);
-                      const sel = inRange(day);
-                      const isToday = today.getDate()===day&&today.getMonth()===concernCalMonth&&today.getFullYear()===concernCalYear;
-                      return (
-                        <div key={i}
-                          onMouseDown={()=>{
-                            const d=new Date(concernCalYear,concernCalMonth,day);
-                            setConcernRangeStart(d); setConcernRangeEnd(null); setConcernDragging(true);
-                          }}
-                          onMouseEnter={()=>{ if(concernDragging) setConcernRangeEnd(new Date(concernCalYear,concernCalMonth,day)); }}
-                          onMouseUp={()=>{ setConcernRangeEnd(new Date(concernCalYear,concernCalMonth,day)); setConcernDragging(false); }}
-                          style={{textAlign:"center",padding:"4px 1px",borderRadius:5,fontSize:11,cursor:"pointer",position:"relative",
-                            background:sel?C.red:"transparent",
-                            color:sel?C.white:hasDot?C.dark:C.muted,
-                            fontWeight:sel||isToday?700:400,
-                            border:isToday?`2px solid ${C.red}`:"2px solid transparent"}}>
-                          {day}
-                          {hasDot&&!sel&&<div style={{position:"absolute",bottom:1,left:"50%",transform:"translateX(-50%)",width:4,height:4,borderRadius:"50%",background:C.red}}/>}
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div style={{marginTop:10,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                    <span style={{fontSize:10,color:C.muted}}>
-                      {concernRangeStart
-                        ? concernRangeEnd&&concernRangeEnd.toDateString()!==concernRangeStart.toDateString()
-                          ? `${concernRangeStart.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${concernRangeEnd.toLocaleDateString("en-US",{month:"short",day:"numeric"})}`
-                          : concernRangeStart.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})
-                        : "Click or drag to filter"}
-                    </span>
-                    {concernRangeStart&&(
-                      <button onClick={()=>{setConcernRangeStart(null);setConcernRangeEnd(null);}}
-                        style={{fontSize:11,color:C.muted,background:"none",border:`1px solid ${C.border}`,borderRadius:6,padding:"2px 8px",cursor:"pointer"}}>Clear</button>
-                    )}
-                  </div>
-                  <div style={{marginTop:8,display:"flex",gap:10,fontSize:10,color:C.muted}}>
-                    <span style={{display:"flex",alignItems:"center",gap:3}}><span style={{width:6,height:6,borderRadius:"50%",background:C.red,display:"inline-block"}}/>has concern</span>
-                    <span style={{display:"flex",alignItems:"center",gap:3}}><span style={{width:10,height:10,borderRadius:3,background:C.red,display:"inline-block"}}/>selected</span>
-                  </div>
+              <div style={{marginBottom:14,position:"relative"}}
+                onMouseLeave={()=>{if(concernDragging) setConcernDragging(false);}}>
+                <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+                  <button onClick={()=>setConcernCalOpen(v=>!v)}
+                    style={{display:"flex",alignItems:"center",gap:6,padding:"7px 12px",borderRadius:8,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:13,fontWeight:500,color:C.dark}}>
+                    📅 {selLabel}
+                    <span style={{fontSize:10,color:C.muted}}>{concernCalOpen?"▲":"▼"}</span>
+                  </button>
+                  {concernRangeStart&&(
+                    <button onClick={()=>{setConcernRangeStart(null);setConcernRangeEnd(null);}}
+                      style={{padding:"7px 10px",borderRadius:8,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:12,color:C.muted}}>✕ Clear</button>
+                  )}
+                  <span style={{fontSize:12,color:C.muted}}>
+                    {concerns.filter(c=>{
+                      if(concernRangeStart&&c.date){
+                        const cd=new Date(c.date);
+                        const lo=concernRangeEnd&&concernRangeEnd<concernRangeStart?concernRangeEnd:concernRangeStart;
+                        const hi=concernRangeEnd&&concernRangeEnd>concernRangeStart?concernRangeEnd:concernRangeStart;
+                        return cd>=lo&&cd<=hi;
+                      }
+                      return true;
+                    }).length} concerns
+                  </span>
                 </div>
-                <div style={{flex:1,minWidth:140,display:"flex",flexDirection:"column",gap:10}}>
-                  <div style={{fontSize:12,color:C.muted,fontWeight:600}}>
-                    {concernRangeStart ? (
-                      <>Showing concerns for <strong style={{color:C.dark}}>
-                        {concernRangeEnd&&concernRangeEnd.toDateString()!==concernRangeStart.toDateString()
-                          ? `${concernRangeStart.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${concernRangeEnd.toLocaleDateString("en-US",{month:"short",day:"numeric"})}`
-                          : concernRangeStart.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}
-                      </strong></>
-                    ) : "All concerns"}
-                  </div>
-                  {[{l:"Total",v:concerns.length,c:C.dark},{l:"This month",v:concerns.filter(c=>{ if(!c.date)return false; const d=new Date(c.date); return d.getMonth()===concernCalMonth&&d.getFullYear()===concernCalYear;}).length,c:C.red}].map(s=>(
-                    <div key={s.l} style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 12px",display:"inline-flex",gap:8,alignItems:"center"}}>
-                      <span style={{fontSize:20,fontWeight:700,color:s.c}}>{s.v}</span>
-                      <span style={{fontSize:11,color:C.muted}}>{s.l}</span>
+                {concernCalOpen&&(
+                  <div style={{position:"absolute",top:"100%",left:0,zIndex:20,marginTop:6,background:C.white,borderRadius:12,border:`1px solid ${C.border}`,padding:12,maxWidth:240,boxShadow:"0 4px 20px rgba(0,0,0,0.12)"}}>
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+                      <button onClick={()=>{if(concernCalMonth===0){setConcernCalMonth(11);setConcernCalYear(y=>y-1);}else setConcernCalMonth(m=>m-1);}}
+                        style={{background:"none",border:"none",cursor:"pointer",fontSize:15,color:C.dark,padding:"2px 6px"}}>‹</button>
+                      <span style={{fontWeight:700,fontSize:13,color:C.dark}}>{MNAMES[concernCalMonth]} {concernCalYear}</span>
+                      <button onClick={()=>{if(concernCalMonth===11){setConcernCalMonth(0);setConcernCalYear(y=>y+1);}else setConcernCalMonth(m=>m+1);}}
+                        style={{background:"none",border:"none",cursor:"pointer",fontSize:15,color:C.dark,padding:"2px 6px"}}>›</button>
                     </div>
-                  ))}
-                </div>
+                    <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",marginBottom:3}}>
+                      {DNAMES.map(d=><div key={d} style={{textAlign:"center",fontSize:9,fontWeight:700,color:C.muted}}>{d}</div>)}
+                    </div>
+                    <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:1,userSelect:"none"}}>
+                      {grid.map((day,i)=>{
+                        if(!day) return <div key={i}/>;
+                        const iso=dayISO(day);
+                        const hasDot=concernDates.has(iso);
+                        const sel=inRange(day);
+                        const isToday=today.getDate()===day&&today.getMonth()===concernCalMonth&&today.getFullYear()===concernCalYear;
+                        return (
+                          <div key={i}
+                            onMouseDown={()=>{
+                              const d=new Date(concernCalYear,concernCalMonth,day);
+                              setConcernRangeStart(d);setConcernRangeEnd(null);setConcernDragging(true);
+                            }}
+                            onMouseEnter={()=>{if(concernDragging)setConcernRangeEnd(new Date(concernCalYear,concernCalMonth,day));}}
+                            onMouseUp={()=>{setConcernRangeEnd(new Date(concernCalYear,concernCalMonth,day));setConcernDragging(false);setConcernCalOpen(false);}}
+                            style={{textAlign:"center",padding:"5px 2px",borderRadius:5,fontSize:11,cursor:"pointer",position:"relative",
+                              background:sel?C.red:"transparent",
+                              color:sel?C.white:hasDot?C.dark:C.muted,
+                              fontWeight:sel||isToday?700:400,
+                              border:isToday?`2px solid ${C.red}`:"2px solid transparent"}}>
+                            {day}
+                            {hasDot&&!sel&&<div style={{position:"absolute",bottom:1,left:"50%",transform:"translateX(-50%)",width:3,height:3,borderRadius:"50%",background:C.red}}/>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div style={{marginTop:8,fontSize:9,color:C.muted,textAlign:"center"}}>Click or drag · closes on pick</div>
+                  </div>
+                )}
               </div>
             );
           })()}
