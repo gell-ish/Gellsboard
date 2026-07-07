@@ -1873,6 +1873,7 @@ function KPITab() {
   const [concernRangeEnd,   setConcernRangeEnd]   = useState(null);
   const [concernDragging,   setConcernDragging]   = useState(false);
   const [concernCalOpen,    setConcernCalOpen]     = useState(false);
+  const [addConcernCalOpen, setAddConcernCalOpen]  = useState(false);
 
   const weeks = useMemo(() => [...new Set(checkins.map(c=>c.week))].sort(), [checkins]);
   const activeWeek = selWeek || weeks[weeks.length-1] || "";
@@ -2099,9 +2100,11 @@ function KPITab() {
             <button key={m.v} onClick={()=>setViewMode(m.v)} style={{padding:"6px 14px",borderRadius:6,border:"none",cursor:"pointer",fontSize:13,background:viewMode===m.v?C.dark:C.gray,color:viewMode===m.v?C.white:C.muted,fontWeight:viewMode===m.v?700:400}}>{m.l}</button>
           ))}
         </div>
-        <button onClick={()=>setAdding(v=>!v)} style={{padding:"7px 16px",borderRadius:8,border:"none",cursor:"pointer",background:C.red,color:C.white,fontWeight:600,fontSize:13,marginLeft:"auto"}}>
-          {adding?"✕ Cancel":"+ Add Check-in"}
-        </button>
+        {viewMode!=="concerns"&&(
+          <button onClick={()=>setAdding(v=>!v)} style={{padding:"7px 16px",borderRadius:8,border:"none",cursor:"pointer",background:C.red,color:C.white,fontWeight:600,fontSize:13,marginLeft:"auto"}}>
+            {adding?"✕ Cancel":"+ Add Check-in"}
+          </button>
+        )}
       </div>
 
       {/* Add Check-in Form */}
@@ -2552,8 +2555,63 @@ function KPITab() {
               <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12}}>
                 <div>
                   <div style={{fontSize:11,color:C.muted,fontWeight:600,marginBottom:4}}>DATE *</div>
-                  <input type="date" value={newConcern.date} onChange={e=>setNewConcern(p=>({...p,date:e.target.value}))}
-                    style={{width:"100%",padding:"6px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13}}/>
+                  <div style={{position:"relative"}}>
+                    <button onClick={()=>setAddConcernCalOpen(v=>!v)}
+                      style={{width:"100%",padding:"6px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13,
+                        background:C.white,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",justifyContent:"space-between",color:newConcern.date?C.dark:C.muted}}>
+                      <span>📅 {newConcern.date ? new Date(newConcern.date+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : "Pick a date"}</span>
+                      <span style={{fontSize:10,color:C.muted}}>{addConcernCalOpen?"▲":"▼"}</span>
+                    </button>
+                    {addConcernCalOpen&&(()=>{
+                      const MNAMES=["January","February","March","April","May","June","July","August","September","October","November","December"];
+                      const DNAMES=["Su","Mo","Tu","We","Th","Fr","Sa"];
+                      const selDate = newConcern.date ? new Date(newConcern.date+"T00:00:00") : new Date();
+                      const [calY, setCalY] = [selDate.getFullYear(), ()=>{}];
+                      const [calM, setCalM] = [selDate.getMonth(), ()=>{}];
+                      // Use a sub-component to hold month state
+                      const ConcernDatePicker = ()=>{
+                        const [cy,setCy] = useState(selDate.getFullYear());
+                        const [cm,setCm] = useState(selDate.getMonth());
+                        const fd = new Date(cy,cm,1).getDay();
+                        const dim = new Date(cy,cm+1,0).getDate();
+                        const cells=[];
+                        for(let i=0;i<fd;i++) cells.push(null);
+                        for(let d=1;d<=dim;d++) cells.push(d);
+                        const today=new Date();
+                        return (
+                          <div style={{position:"absolute",top:"100%",left:0,zIndex:30,marginTop:4,background:C.white,borderRadius:10,border:`1px solid ${C.border}`,padding:12,maxWidth:240,boxShadow:"0 4px 20px rgba(0,0,0,0.12)"}}>
+                            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+                              <button onClick={()=>{if(cm===0){setCm(11);setCy(y=>y-1);}else setCm(m=>m-1);}} style={{background:"none",border:"none",cursor:"pointer",fontSize:15,color:C.dark,padding:"2px 6px"}}>‹</button>
+                              <span style={{fontWeight:700,fontSize:13,color:C.dark}}>{MNAMES[cm]} {cy}</span>
+                              <button onClick={()=>{if(cm===11){setCm(0);setCy(y=>y+1);}else setCm(m=>m+1);}} style={{background:"none",border:"none",cursor:"pointer",fontSize:15,color:C.dark,padding:"2px 6px"}}>›</button>
+                            </div>
+                            <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",marginBottom:3}}>
+                              {DNAMES.map(d=><div key={d} style={{textAlign:"center",fontSize:9,fontWeight:700,color:C.muted}}>{d}</div>)}
+                            </div>
+                            <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:1}}>
+                              {cells.map((day,i)=>{
+                                if(!day) return <div key={i}/>;
+                                const iso=`${cy}-${String(cm+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+                                const isSel=newConcern.date===iso;
+                                const isToday=today.getDate()===day&&today.getMonth()===cm&&today.getFullYear()===cy;
+                                return (
+                                  <div key={i} onClick={()=>{setNewConcern(p=>({...p,date:iso}));setAddConcernCalOpen(false);}}
+                                    style={{textAlign:"center",padding:"5px 2px",borderRadius:5,fontSize:11,cursor:"pointer",
+                                      background:isSel?C.red:"transparent",
+                                      color:isSel?C.white:C.dark,
+                                      fontWeight:isSel||isToday?700:400,
+                                      border:isToday?`2px solid ${C.red}`:"2px solid transparent"}}>
+                                    {day}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      };
+                      return <ConcernDatePicker/>;
+                    })()}
+                  </div>
                 </div>
                 <div style={{gridColumn:"span 2"}}>
                   <div style={{fontSize:11,color:C.muted,fontWeight:600,marginBottom:4}}>AGENCY *</div>
