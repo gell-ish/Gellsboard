@@ -1430,11 +1430,11 @@ function TasksTab() {
             }}
           />
           <input
-            placeholder="Due"
+            type="date"
             value={newTask.due}
             onChange={(e) => setNewTask((p) => ({ ...p, due: e.target.value }))}
             style={{
-              flex: "0 1 90px",
+              flex: "0 1 140px",
               padding: "7px 10px",
               borderRadius: 6,
               border: `1px solid ${C.border}`,
@@ -1560,7 +1560,69 @@ function TasksTab() {
                   <InlineEdit value={t.task} onSave={v => update(t.id, "task", v)} style={{ fontWeight: 500 }} />
                 </td>
                 <td style={{ padding: "9px 12px", whiteSpace: "nowrap" }}>
-                  <InlineEdit value={t.due || "—"} onSave={v => update(t.id, "due", v)} style={{ color: C.muted, fontSize: 13 }} />
+                  {(()=>{
+                    const TaskDatePicker = () => {
+                      const MNAMES=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+                      const DNAMES=["Su","Mo","Tu","We","Th","Fr","Sa"];
+                      const [open, setOpen] = useState(false);
+                      const parsed = t.due && t.due.match(/\d{4}-\d{2}-\d{2}/) ? new Date(t.due+"T00:00:00") : null;
+                      const now = parsed || new Date();
+                      const [cy, setCy] = useState(now.getFullYear());
+                      const [cm, setCm] = useState(now.getMonth());
+                      const fd = new Date(cy,cm,1).getDay();
+                      const dim = new Date(cy,cm+1,0).getDate();
+                      const cells=[]; for(let i=0;i<fd;i++) cells.push(null); for(let d=1;d<=dim;d++) cells.push(d);
+                      const today = new Date();
+                      const displayLabel = parsed
+                        ? parsed.toLocaleDateString("en-US",{month:"short",day:"numeric"})
+                        : t.due || "—";
+                      return (
+                        <div style={{position:"relative",display:"inline-block"}}>
+                          <button onClick={()=>setOpen(v=>!v)}
+                            style={{background:"none",border:"none",cursor:"pointer",fontSize:13,color:t.due?C.dark:C.muted,padding:0,textDecoration:"underline dotted"}}>
+                            {displayLabel}
+                          </button>
+                          {open&&(
+                            <div style={{position:"absolute",top:"100%",left:0,zIndex:50,marginTop:4,background:C.white,borderRadius:10,border:`1px solid ${C.border}`,padding:10,minWidth:220,boxShadow:"0 4px 20px rgba(0,0,0,0.12)"}}>
+                              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+                                <button onClick={()=>{if(cm===0){setCm(11);setCy(y=>y-1);}else setCm(m=>m-1);}} style={{background:"none",border:"none",cursor:"pointer",fontSize:14,color:C.dark,padding:"2px 6px"}}>‹</button>
+                                <span style={{fontWeight:700,fontSize:12,color:C.dark}}>{MNAMES[cm]} {cy}</span>
+                                <button onClick={()=>{if(cm===11){setCm(0);setCy(y=>y+1);}else setCm(m=>m+1);}} style={{background:"none",border:"none",cursor:"pointer",fontSize:14,color:C.dark,padding:"2px 6px"}}>›</button>
+                              </div>
+                              <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",marginBottom:2}}>
+                                {DNAMES.map(d=><div key={d} style={{textAlign:"center",fontSize:9,fontWeight:700,color:C.muted}}>{d}</div>)}
+                              </div>
+                              <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:1}}>
+                                {cells.map((day,i)=>{
+                                  if(!day) return <div key={i}/>;
+                                  const iso=`${cy}-${String(cm+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+                                  const isSel=t.due===iso;
+                                  const isToday=today.getDate()===day&&today.getMonth()===cm&&today.getFullYear()===cy;
+                                  return (
+                                    <div key={i} onClick={()=>{update(t.id,"due",iso);setOpen(false);}}
+                                      style={{textAlign:"center",padding:"5px 2px",borderRadius:4,fontSize:11,cursor:"pointer",
+                                        background:isSel?C.red:"transparent",
+                                        color:isSel?C.white:C.dark,
+                                        fontWeight:isSel||isToday?700:400,
+                                        border:isToday?`1px solid ${C.red}`:"1px solid transparent"}}>
+                                      {day}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              <div style={{marginTop:6,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                                <button onClick={()=>{update(t.id,"due","");setOpen(false);}}
+                                  style={{fontSize:10,color:C.muted,background:"none",border:"none",cursor:"pointer"}}>Clear</button>
+                                <button onClick={()=>setOpen(false)}
+                                  style={{fontSize:10,color:C.muted,background:"none",border:"none",cursor:"pointer"}}>Close</button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    };
+                    return <TaskDatePicker/>;
+                  })()}
                 </td>
                 <td style={{ padding: "9px 12px", whiteSpace: "nowrap" }}>
                   <select
