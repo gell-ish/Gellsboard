@@ -603,7 +603,7 @@ const HUBSPOT_LINKS = [
 const WORKFLOW = [
   {
     time: "Start of Day",
-    emoji: "",
+    emoji: "☀️",
     color: C.dark,
     items: [
       "Clock in at 7AM (or earlier if Niccole has a 7AM meeting), 7:30AM on regular days",
@@ -616,7 +616,7 @@ const WORKFLOW = [
   },
   {
     time: "Midday",
-    emoji: "",
+    emoji: "☀",
     color: "#374151",
     items: [
       "Work through the to-do list",
@@ -627,7 +627,7 @@ const WORKFLOW = [
   },
   {
     time: "End of Day",
-    emoji: "",
+    emoji: "🌙",
     color: C.teal,
     items: [
       "Review schedule for tomorrow; add right stakeholders to meetings",
@@ -638,7 +638,7 @@ const WORKFLOW = [
   },
   {
     time: "Every Friday",
-    emoji: "",
+    emoji: "📅",
     color: C.red,
     items: [
       "Prepare Island KPIs",
@@ -3539,13 +3539,13 @@ function AccountsTab({ checkins }) {
 
 //  WORKFLOW & NOTES TAB 
 const EMAIL_STARS = [
-  { icon: "", color: "#F59E0B", bg: "#FFFBEB", border: "#FCD34D", label: "File Away",    desc: "Archive / file the email away" },
-  { icon: "", color: "#059669", bg: "#F0FDF4", border: "#6EE7B7", label: "Sales",        desc: "Sales-related email" },
-  { icon: "", color: "#1D4ED8", bg: "#EFF6FF", border: "#93C5FD", label: "IT",           desc: "IT-related email" },
-  { icon: "", color: "#B45309", bg: "#FFFBEB", border: "#FCD34D", label: "VA Concerns",  desc: "VA concern — needs attention", square: true, sqColor: "#FCD34D" },
-  { icon: "", color: "#7C3AED", bg: "#F5F3FF", border: "#C4B5FD", label: "$ Concerns",   desc: "Financial / billing concern", square: true, sqColor: "#C4B5FD" },
-  { icon: "", color: "#DC2626", bg: "#FFF1F1", border: "#FCA5A5", label: "High Priority", desc: "Tell Niccole immediately when this email arrives", square: true, sqColor: "#FCA5A5" },
-  { icon: "ℹ", color: "#1D4ED8", bg: "#EFF6FF", border: "#93C5FD", label: "1-off Work",   desc: "One-off task or work item", square: true, sqColor: "#93C5FD" },
+  { icon: "⭐", color: "#F59E0B", bg: "#FFFBEB", border: "#FCD34D", label: "File Away",    desc: "Archive / file the email away" },
+  { icon: "🟢", color: "#059669", bg: "#F0FDF4", border: "#6EE7B7", label: "Sales",        desc: "Sales-related email" },
+  { icon: "🔵", color: "#1D4ED8", bg: "#EFF6FF", border: "#93C5FD", label: "IT",           desc: "IT-related email" },
+  { icon: "❗", color: "#B45309", bg: "#FFFBEB", border: "#FCD34D", label: "VA Concerns",  desc: "VA concern — needs attention", square: true, sqColor: "#FCD34D" },
+  { icon: "❓", color: "#7C3AED", bg: "#F5F3FF", border: "#C4B5FD", label: "$ Concerns",   desc: "Financial / billing concern", square: true, sqColor: "#C4B5FD" },
+  { icon: "❗", color: "#DC2626", bg: "#FFF1F1", border: "#FCA5A5", label: "High Priority", desc: "Tell Niccole immediately when this email arrives", square: true, sqColor: "#FCA5A5" },
+  { icon: "ℹ️", color: "#1D4ED8", bg: "#EFF6FF", border: "#93C5FD", label: "1-off Work",   desc: "One-off task or work item", square: true, sqColor: "#93C5FD" },
 ];
 
 function WorkflowTab() {
