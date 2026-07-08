@@ -1,4 +1,6 @@
-"use client";import React, { useState, useMemo, useRef, useContext, createContext, useEffect, useCallback } from "react";
+"use client";"use client";
+
+import React, { useState, useMemo, useRef, useContext, createContext, useEffect, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
@@ -2056,15 +2058,17 @@ function KPITab() {
   const amStats = useMemo(() => {
     function rateFor(rows) {
       const showed    = rows.filter(c => c.status === "showed");
-      const withScore = showed.flatMap(c => c.vas.filter(v => v.score !== null && v.score !== ""));
+      const withScore  = showed.flatMap(c => c.vas.filter(v => v.score !== null && v.score !== ""));
+      const passing    = withScore.filter(v => +v.score >= 80);
       return {
         total:    rows.length,
         showed:   showed.length,
         noShow:   rows.filter(c => c.status === "noshow").length,
-        showRate: rows.length   ? Math.round(showed.length    / rows.length   * 100) : null,
-        scRate:   showed.length ? Math.round(withScore.length / showed.length * 100) : null,
+        showRate: rows.length      ? Math.round(showed.length  / rows.length      * 100) : null,
+        scRate:   withScore.length ? Math.round(passing.length / withScore.length * 100) : null,
         avgScore: withScore.length ? Math.round(withScore.reduce((a,b) => a+(+b.score), 0) / withScore.length * 10) / 10 : null,
         scored:   withScore.length,
+        passing:  passing.length,
       };
     }
     return AMs.map(am => {
@@ -2078,12 +2082,13 @@ function KPITab() {
     function rateFor(rows) {
       const showed    = rows.filter(c => c.status === "showed");
       const withScore = showed.flatMap(c => c.vas.filter(v => v.score !== null && v.score !== ""));
+      const passing   = withScore.filter(v => +v.score >= 80);
       return {
         total:    rows.length,
         showed:   showed.length,
         noShow:   rows.filter(c => c.status === "noshow").length,
-        showRate: rows.length   ? Math.round(showed.length    / rows.length   * 100) : null,
-        scRate:   showed.length ? Math.round(withScore.length / showed.length * 100) : null,
+        showRate: rows.length      ? Math.round(showed.length  / rows.length      * 100) : null,
+        scRate:   withScore.length ? Math.round(passing.length / withScore.length * 100) : null,
         avgScore: withScore.length ? Math.round(withScore.reduce((a,b) => a+(+b.score), 0) / withScore.length * 10) / 10 : null,
       };
     }
@@ -2386,7 +2391,7 @@ function KPITab() {
                           <div style={{fontSize:10,fontWeight:700,color:C.muted,marginBottom:6,letterSpacing:"0.05em"}}>WEEKLY ({weekly.total})</div>
                           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
                             <PctChip label="Show Rate" value={weekly.showRate} shown={weekly.showed} total={weekly.total}/>
-                            <PctChip label="Scorecard" value={weekly.scRate} shown={weekly.scored} total={weekly.showed}/>
+                            <PctChip label="Scorecard" value={weekly.scRate} shown={weekly.passing} total={weekly.scored}/>
                           </div>
                           {weekly.avgScore!==null&&<div style={{fontSize:10,color:C.muted,marginTop:4}}>avg score {weekly.avgScore}%</div>}
                         </div>
@@ -2397,7 +2402,7 @@ function KPITab() {
                           <div style={{fontSize:10,fontWeight:700,color:C.blue,marginBottom:6,letterSpacing:"0.05em"}}>MONTHLY ({monthly.total})</div>
                           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
                             <PctChip label="Show Rate" value={monthly.showRate} shown={monthly.showed} total={monthly.total}/>
-                            <PctChip label="Scorecard" value={monthly.scRate} shown={monthly.scored} total={monthly.showed}/>
+                            <PctChip label="Scorecard" value={monthly.scRate} shown={monthly.passing} total={monthly.scored}/>
                           </div>
                           {monthly.avgScore!==null&&<div style={{fontSize:10,color:C.muted,marginTop:4}}>avg score {monthly.avgScore}%</div>}
                         </div>
@@ -2459,7 +2464,7 @@ function KPITab() {
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:13,minWidth:640}}>
               <thead>
                 <tr style={{background:"#F8F8FB"}}>
-                  {["","Client / Agency","VAs & Scores","Type","Mode","AM","TL","Status"].map((h,i)=>(
+                  {["","Client / Agency","VAs & Scores","Type","Mode","AM","TL","Status",""].map((h,i)=>(
                     <th key={i} style={{padding:"8px 12px",textAlign:"left",fontSize:11,color:C.muted,fontWeight:700,borderBottom:`1px solid ${C.border}`,whiteSpace:"nowrap"}}>{h}</th>
                   ))}
                 </tr>
@@ -2512,6 +2517,11 @@ function KPITab() {
                         </td>
                         <td style={{padding:"8px 12px"}}>
                           <span style={{fontSize:11,fontWeight:600,color:cfg.dot}}>{cfg.label}</span>
+                        </td>
+                        <td style={{padding:"8px 8px"}} onClick={e=>e.stopPropagation()}>
+                          <button onClick={()=>delCI(c.id)}
+                            style={{background:"none",border:`1px solid ${C.border}`,borderRadius:6,cursor:"pointer",color:C.muted,fontSize:13,padding:"3px 8px",lineHeight:1}}
+                            title="Delete check-in">×</button>
                         </td>
                       </tr>
                       {isOpen&&<ExpandedRow ci={c}/>}
