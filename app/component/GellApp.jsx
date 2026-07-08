@@ -1,4 +1,4 @@
-"use clieny";import React, { useState, useMemo, useRef, useContext, createContext, useEffect, useCallback } from "react";
+"use client";import React, { useState, useMemo, useRef, useContext, createContext, useEffect, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
