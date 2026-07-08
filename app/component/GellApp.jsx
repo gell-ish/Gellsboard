@@ -58,10 +58,10 @@ function useSupabaseTable(table, orderBy = "id", fallback = []) {
 }
 
 
-// ── Theme definitions ─────────────────────────────────────────────────
+//  Theme definitions 
 const THEMES = {
   lava: {
-    name: "🔴 Lava",
+    name: " Lava",
     red:"#E73835", dark:"#24242D", teal:"#145365", white:"#FFFFFF",
     black:"#1B120B", gray:"#F2F2F5", muted:"#8B8B99", border:"#E0E0EA",
     green:"#059669", amber:"#D97706", blue:"#1D4ED8", purple:"#7C3AED",
@@ -69,7 +69,7 @@ const THEMES = {
     tabActiveBorder:"#E73835", tabActiveColor:"#E73835", tabBg:"#FFFFFF",
   },
   green: {
-    name: "🌿 Green",
+    name: " Green",
     red:"#D97706", dark:"#14532D", teal:"#047857", white:"#F8FAF8",
     black:"#0D2818", gray:"#ECFAF3", muted:"#5A7A64", border:"#BBD9C8",
     green:"#15803D", amber:"#B45309", blue:"#0369A1", purple:"#6D28D9",
@@ -77,7 +77,7 @@ const THEMES = {
     tabActiveBorder:"#15803D", tabActiveColor:"#15803D", tabBg:"#F8FAF8",
   },
   nature: {
-    name: "🍂 Warm",
+    name: " Warm",
     red:"#C2410C", dark:"#1C1309", teal:"#92400E", white:"#FFFBF5",
     black:"#1C1309", gray:"#FEF9F0", muted:"#A07850", border:"#F0D9BE",
     green:"#15803D", amber:"#CA8A04", blue:"#1D4ED8", purple:"#7C3AED",
@@ -85,7 +85,7 @@ const THEMES = {
     tabActiveBorder:"#C2410C", tabActiveColor:"#C2410C", tabBg:"#FFFBF5",
   },
   ocean: {
-    name: "🌊 Ocean",
+    name: " Ocean",
     red:"#EF4444", dark:"#0C1E3C", teal:"#0891B2", white:"#F0F9FF",
     black:"#0C1E3C", gray:"#E0F2FE", muted:"#4A7A9B", border:"#BAE6FD",
     green:"#059669", amber:"#D97706", blue:"#0369A1", purple:"#7C3AED",
@@ -97,11 +97,11 @@ const THEMES = {
 const ThemeCtx = createContext(THEMES.lava);
 function useTheme() { return useContext(ThemeCtx); }
 
-// ── Fallback C for module-level code (overridden per component via useTheme) ──
+//  Fallback C for module-level code (overridden per component via useTheme) 
 const C = THEMES.lava;
 const AM_COLOR = { Niccole: C.red, Alicia: C.teal, Karla: C.blue };
 
-// ── ALL CHECK-INS from Island KPI sheet — each VA is its own row ──────
+//  ALL CHECK-INS from Island KPI sheet — each VA is its own row 
 const INIT_CHECKINS = [
   {id:1,week:"01/12/2026",client:"4th Check-in Meeting: TJ and Anna, Navigate Risk Advisors",vas:[{"name": "George", "score": 88.0}],type:"weekly",mode:"zoom",status:"showed",am:"",notes:""},
   {id:2,week:"01/12/2026",client:"2nd Check-in Meeting: Brad and Darcy, Ameriguard Agency Inc",vas:[],type:"weekly",mode:"zoom",status:"skipped",am:"",notes:""},
@@ -603,7 +603,7 @@ const HUBSPOT_LINKS = [
 const WORKFLOW = [
   {
     time: "Start of Day",
-    emoji: "🌅",
+    emoji: "",
     color: C.dark,
     items: [
       "Clock in at 7AM (or earlier if Niccole has a 7AM meeting), 7:30AM on regular days",
@@ -616,7 +616,7 @@ const WORKFLOW = [
   },
   {
     time: "Midday",
-    emoji: "☀️",
+    emoji: "",
     color: "#374151",
     items: [
       "Work through the to-do list",
@@ -627,7 +627,7 @@ const WORKFLOW = [
   },
   {
     time: "End of Day",
-    emoji: "🌙",
+    emoji: "",
     color: C.teal,
     items: [
       "Review schedule for tomorrow; add right stakeholders to meetings",
@@ -638,7 +638,7 @@ const WORKFLOW = [
   },
   {
     time: "Every Friday",
-    emoji: "📅",
+    emoji: "",
     color: C.red,
     items: [
       "Prepare Island KPIs",
@@ -1189,7 +1189,7 @@ const WORD_TRACK = [
   },
 ];
 
-// ── Helpers ──
+//  Helpers 
 const PRIORITY_COLOR = { High: C.red, Medium: "#F59E0B", Low: C.teal, Recurring: C.purple };
 function sc(s) {
   if (s === null || s === undefined) return C.muted;
@@ -1294,12 +1294,12 @@ function EditableText({ value, onSave, style = {}, inputStyle = {} }) {
       {value}
       <span style={{ fontSize: 11, opacity: 0, transition: "opacity 0.15s" }}
         onMouseEnter={e => e.currentTarget.style.opacity = "0.6"}
-        onMouseLeave={e => e.currentTarget.style.opacity = "0"}>✏️</span>
+        onMouseLeave={e => e.currentTarget.style.opacity = "0"}></span>
     </span>
   );
 }
 
-// ── TASKS TAB ──
+//  TASKS TAB 
 function TasksTab() {
   const C = useTheme();
   const { rows: tasks, upsert: upsertTask, remove: removeTask } = useSupabaseTable("tasks", "id", INIT_TASKS);
@@ -1700,13 +1700,13 @@ function TasksTab() {
         </table>
       </div>
       <p style={{ fontSize: 11, color: C.muted, marginTop: 8 }}>
-        💡 Click any cell to edit inline.
+         Click any cell to edit inline.
       </p>
     </div>
   );
 }
 
-// ── MINI CALENDAR ──
+//  MINI CALENDAR 
 function MiniCalendar({ weeks, checkins, activeWeek, onSelect, C, typeFilter, setTypeFilter, rangeStart, rangeEnd, setRangeStart, setRangeEnd }) {
   const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
   const DAY_NAMES   = ["Mo","Tu","We","Th","Fr","Sa","Su"];
@@ -1861,10 +1861,10 @@ function MiniCalendar({ weeks, checkins, activeWeek, onSelect, C, typeFilter, se
           style={{display:"flex",alignItems:"center",gap:6,padding:"7px 14px",borderRadius:8,
             border:`2px solid ${open?C.teal:C.border}`,background:C.white,cursor:"pointer",
             fontSize:13,fontWeight:500,color:C.dark,boxShadow:open?"0 0 0 3px "+C.teal+"22":"none"}}>
-          📅 {triggerLabel}
-          <span style={{fontSize:10,color:C.muted}}>{open?"▲":"▼"}</span>
+           {triggerLabel}
+          <span style={{fontSize:10,color:C.muted}}>{open?"":""}</span>
         </button>
-        {lo&&<button onClick={clearSel} style={{padding:"7px 10px",borderRadius:8,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:12,color:C.muted}}>✕ Clear</button>}
+        {lo&&<button onClick={clearSel} style={{padding:"7px 10px",borderRadius:8,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:12,color:C.muted}}> Clear</button>}
         {/* Prev/Next week */}
         <div style={{display:"flex",gap:4}}>
           <button onClick={()=>{const i=weeks.indexOf(activeWeek);if(i>0)onSelect(weeks[i-1]);}} disabled={weeks.indexOf(activeWeek)===0}
@@ -1876,7 +1876,7 @@ function MiniCalendar({ weeks, checkins, activeWeek, onSelect, C, typeFilter, se
         </div>
         {/* Type filter */}
         <div style={{display:"flex",gap:4}}>
-          {[["all","All"],["weekly","📋 Weekly"],["monthly","📅 Monthly"]].map(([v,l])=>(
+          {[["all","All"],["weekly"," Weekly"],["monthly"," Monthly"]].map(([v,l])=>(
             <button key={v} onClick={()=>setTypeFilter(v)}
               style={{padding:"5px 10px",borderRadius:8,border:"none",cursor:"pointer",fontSize:12,
                 background:typeFilter===v?C.dark:C.gray,color:typeFilter===v?C.white:C.dark,fontWeight:typeFilter===v?700:400}}>{l}</button>
@@ -1972,17 +1972,17 @@ function MiniCalendar({ weeks, checkins, activeWeek, onSelect, C, typeFilter, se
 
 
 
-// ── KPI TAB ──
+//  KPI TAB 
 function KPITab() {
   const C = useTheme();
   const EMPTY_CI = { week:"", date:"", client:"", vas:[{name:"",score:""}], type:"weekly", mode:"zoom", status:"showed", am:"", tl:"", notes:"" };
   const STATUS_CFG = {
-    showed: { bg:"#FFFFFF", dot:"#059669", label:"✅ Showed" },
-    skipped:{ bg:"#F0FDF4", dot:"#16A34A", label:"⏭️ Skipped (not counted)" },
-    noshow: { bg:"#FFF1F1", dot:C.red,     label:"❌ No Show" },
+    showed: { bg:"#FFFFFF", dot:"#059669", label:" Showed" },
+    skipped:{ bg:"#F0FDF4", dot:"#16A34A", label:"⏭ Skipped (not counted)" },
+    noshow: { bg:"#FFF1F1", dot:C.red,     label:" No Show" },
   };
-  const TYPE_CFG   = { weekly:"📋 Weekly", monthly:"📅 Monthly" };
-  const MODE_CFG   = { zoom:"🎥 Zoom", call:"📞 Call", email:"📧 Email" };
+  const TYPE_CFG   = { weekly:" Weekly", monthly:" Monthly" };
+  const MODE_CFG   = { zoom:" Zoom", call:" Call", email:" Email" };
   const AM_COLORS  = { Niccole:C.red, Karla:C.blue, Alicia:C.teal };
   const AMs        = ["Niccole","Karla","Alicia"];
 
@@ -2177,8 +2177,8 @@ function KPITab() {
               <div style={{fontSize:10,color:C.muted,fontWeight:700,marginBottom:4}}>TYPE</div>
               <select value={ci.type} onChange={e=>upCI(ci.id,'type',e.target.value)}
                 style={{width:"100%",padding:"5px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13}}>
-                <option value="weekly">📋 Weekly</option>
-                <option value="monthly">📅 Monthly</option>
+                <option value="weekly"> Weekly</option>
+                <option value="monthly"> Monthly</option>
               </select>
             </div>
             {/* Mode */}
@@ -2186,9 +2186,9 @@ function KPITab() {
               <div style={{fontSize:10,color:C.muted,fontWeight:700,marginBottom:4}}>MODE</div>
               <select value={ci.mode} onChange={e=>upCI(ci.id,'mode',e.target.value)}
                 style={{width:"100%",padding:"5px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13}}>
-                <option value="zoom">🎥 Zoom</option>
-                <option value="call">📞 Call</option>
-                <option value="email">📧 Email</option>
+                <option value="zoom"> Zoom</option>
+                <option value="call"> Call</option>
+                <option value="email"> Email</option>
               </select>
             </div>
             {/* AM */}
@@ -2214,9 +2214,9 @@ function KPITab() {
               <div style={{fontSize:10,color:C.muted,fontWeight:700,marginBottom:4}}>STATUS</div>
               <select value={ci.status} onChange={e=>upCI(ci.id,'status',e.target.value)}
                 style={{width:"100%",padding:"5px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13,color:cfg.dot}}>
-                <option value="showed">✅ Showed</option>
-                <option value="skipped">⏭️ Skipped</option>
-                <option value="noshow">❌ No Show</option>
+                <option value="showed"> Showed</option>
+                <option value="skipped">⏭ Skipped</option>
+                <option value="noshow"> No Show</option>
               </select>
             </div>
             {/* VAs */}
@@ -2261,13 +2261,13 @@ function KPITab() {
       {/* Top bar: view toggle + legend + add button */}
       <div style={{display:"flex",gap:8,marginBottom:14,alignItems:"center",flexWrap:"wrap"}}>
         <div style={{display:"flex",background:C.gray,borderRadius:8,padding:3}}>
-          {[{v:"report",l:"✅ Client Check-ins"},{v:"table",l:"📋 Full Table"},{v:"concerns",l:"⚠️ Client Concerns"}].map(m=>(
+          {[{v:"report",l:" Client Check-ins"},{v:"table",l:" Full Table"},{v:"concerns",l:" Client Concerns"}].map(m=>(
             <button key={m.v} onClick={()=>setViewMode(m.v)} style={{padding:"6px 14px",borderRadius:6,border:"none",cursor:"pointer",fontSize:13,background:viewMode===m.v?C.dark:C.gray,color:viewMode===m.v?C.white:C.muted,fontWeight:viewMode===m.v?700:400}}>{m.l}</button>
           ))}
         </div>
         {viewMode!=="concerns"&&(
           <button onClick={()=>setAdding(v=>!v)} style={{padding:"7px 16px",borderRadius:8,border:"none",cursor:"pointer",background:C.red,color:C.white,fontWeight:600,fontSize:13,marginLeft:"auto"}}>
-            {adding?"✕ Cancel":"+ Add Check-in"}
+            {adding?" Cancel":"+ Add Check-in"}
           </button>
         )}
       </div>
@@ -2293,17 +2293,17 @@ function KPITab() {
             <div>
               <div style={{fontSize:11,color:C.muted,fontWeight:600,marginBottom:4}}>TYPE</div>
               <select value={newCI.type} onChange={e=>setNewCI(p=>({...p,type:e.target.value}))} style={{...sel,width:"100%"}}>
-                <option value="weekly">📋 Weekly</option>
-                <option value="monthly">📅 Monthly</option>
+                <option value="weekly"> Weekly</option>
+                <option value="monthly"> Monthly</option>
               </select>
             </div>
             {/* Mode */}
             <div>
               <div style={{fontSize:11,color:C.muted,fontWeight:600,marginBottom:4}}>MODE OF COMMUNICATION</div>
               <select value={newCI.mode} onChange={e=>setNewCI(p=>({...p,mode:e.target.value}))} style={{...sel,width:"100%"}}>
-                <option value="zoom">🎥 Zoom</option>
-                <option value="call">📞 Call</option>
-                <option value="email">📧 Email</option>
+                <option value="zoom"> Zoom</option>
+                <option value="call"> Call</option>
+                <option value="email"> Email</option>
               </select>
             </div>
             {/* AM */}
@@ -2326,9 +2326,9 @@ function KPITab() {
             <div>
               <div style={{fontSize:11,color:C.muted,fontWeight:600,marginBottom:4}}>STATUS</div>
               <select value={newCI.status} onChange={e=>setNewCI(p=>({...p,status:e.target.value}))} style={{...sel,width:"100%"}}>
-                <option value="showed">✅ Showed</option>
-                <option value="skipped">⏭️ Skipped</option>
-                <option value="noshow">❌ No Show</option>
+                <option value="showed"> Showed</option>
+                <option value="skipped">⏭ Skipped</option>
+                <option value="noshow"> No Show</option>
               </select>
             </div>
             {/* VAs */}
@@ -2362,7 +2362,7 @@ function KPITab() {
         </div>
       )}
 
-      {/* ── MONDAY REPORT ── */}
+      {/*  MONDAY REPORT  */}
       {viewMode==="report"&&(
         <div>
           {/* Calendar + type filter */}
@@ -2372,7 +2372,7 @@ function KPITab() {
           <div style={{marginBottom:18}}>
             <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"0.07em",marginBottom:10}}>
               SHOW RATE & SCORECARD RATE — {activeWeek}
-              {weekTotals.untagged>0&&<span style={{marginLeft:10,fontSize:10,fontWeight:500,color:C.amber}}>⚠️ {weekTotals.untagged} check-in{weekTotals.untagged!==1?"s":""} not tagged to an AM</span>}
+              {weekTotals.untagged>0&&<span style={{marginLeft:10,fontSize:10,fontWeight:500,color:C.amber}}> {weekTotals.untagged} check-in{weekTotals.untagged!==1?"s":""} not tagged to an AM</span>}
             </div>
             <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
               {amStats.map(({am,all,weekly,monthly})=>(
@@ -2443,7 +2443,7 @@ function KPITab() {
                         </div>
                       </div>
                     )}
-                    {overallStats.all.noShow>0&&<div style={{fontSize:11,color:C.muted}}>❌ {overallStats.all.noShow} no shows across all AMs</div>}
+                    {overallStats.all.noShow>0&&<div style={{fontSize:11,color:C.muted}}> {overallStats.all.noShow} no shows across all AMs</div>}
                   </div>
                 )}
               </div>
@@ -2454,10 +2454,10 @@ function KPITab() {
           <div style={{background:C.teal,color:C.white,borderRadius:"10px 10px 0 0",padding:"10px 18px",display:"flex",gap:14,alignItems:"center",flexWrap:"wrap"}}>
             <span style={{fontWeight:700,fontSize:13}}>Check-ins — {calRangeStart ? (calRangeEnd && calRangeEnd.toDateString()!==calRangeStart.toDateString() ? `${calRangeStart.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${calRangeEnd.toLocaleDateString("en-US",{month:"short",day:"numeric"})}` : calRangeStart.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})) : activeWeek}</span>
             <span style={{fontSize:12,opacity:.85}}>{weekTotals.total} counted</span>
-            <span style={{fontSize:12}}>✅ {weekTotals.showed} showed</span>
-            <span style={{fontSize:12}}>❌ {weekTotals.noShow} no show</span>
-            {weekTotals.skipped>0&&<span style={{fontSize:12,opacity:.7}}>⏭️ {weekTotals.skipped} skipped</span>}
-            {weekTotals.avgScore!==null&&<span style={{fontSize:12}}>📊 avg {weekTotals.avgScore}%</span>}
+            <span style={{fontSize:12}}> {weekTotals.showed} showed</span>
+            <span style={{fontSize:12}}> {weekTotals.noShow} no show</span>
+            {weekTotals.skipped>0&&<span style={{fontSize:12,opacity:.7}}>⏭ {weekTotals.skipped} skipped</span>}
+            {weekTotals.avgScore!==null&&<span style={{fontSize:12}}> avg {weekTotals.avgScore}%</span>}
             <span style={{fontSize:11,opacity:.7,marginLeft:"auto"}}>Click a row to edit</span>
           </div>
           <div style={{background:C.white,border:`1px solid ${C.border}`,borderTop:"none",borderRadius:"0 0 10px 10px",overflow:"auto"}}>
@@ -2499,17 +2499,17 @@ function KPITab() {
                         </td>
                         <td style={{padding:"8px 12px",whiteSpace:"nowrap",fontSize:12}}>
                           <select value={c.type} onChange={e=>upCI(c.id,"type",e.target.value)} style={{border:"none",background:"transparent",fontSize:12,cursor:"pointer",color:C.dark}}>
-                            <option value="weekly">📋 Weekly</option><option value="monthly">📅 Monthly</option>
+                            <option value="weekly"> Weekly</option><option value="monthly"> Monthly</option>
                           </select>
                         </td>
                         <td style={{padding:"8px 12px",whiteSpace:"nowrap",fontSize:12}}>
                           <select value={c.mode} onChange={e=>upCI(c.id,"mode",e.target.value)} style={{border:"none",background:"transparent",fontSize:12,cursor:"pointer",color:C.dark}}>
-                            <option value="zoom">🎥 Zoom</option><option value="call">📞 Call</option><option value="email">📧 Email</option>
+                            <option value="zoom"> Zoom</option><option value="call"> Call</option><option value="email"> Email</option>
                           </select>
                         </td>
                         <td style={{padding:"8px 12px"}}>
                           {c.am?<span style={{fontSize:12,fontWeight:700,color:AM_COLORS[c.am]||C.muted}}>{c.am}</span>
-                            :<span style={{fontSize:11,color:C.amber}}>⚠️ Tag AM</span>}
+                            :<span style={{fontSize:11,color:C.amber}}> Tag AM</span>}
                         </td>
                         <td style={{padding:"8px 12px"}}>
                           {c.tl?<span style={{fontSize:12,fontWeight:600,color:C.teal}}>{c.tl}</span>
@@ -2534,16 +2534,16 @@ function KPITab() {
         </div>
       )}
 
-      {/* ── FULL TABLE ── */}
+      {/*  FULL TABLE  */}
       {viewMode==="table"&&(
         <div>
           <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap",alignItems:"center"}}>
-            <input placeholder="🔍 Search client, VA, week, AM…" value={search} onChange={e=>setSearch(e.target.value)}
+            <input placeholder=" Search client, VA, week, AM…" value={search} onChange={e=>setSearch(e.target.value)}
               style={{flex:"1 1 200px",padding:"7px 12px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:13}}/>
             {["All",...AMs].map(a=>(
               <button key={a} onClick={()=>setAmFilter(a)} style={{padding:"6px 12px",borderRadius:8,border:"none",cursor:"pointer",fontSize:12,background:amFilter===a?(a==="All"?C.dark:AM_COLORS[a]):C.gray,color:amFilter===a?C.white:C.dark,fontWeight:amFilter===a?700:400}}>{a==="All"?"All AMs":a}</button>
             ))}
-            {[["All","All statuses"],["showed","✅ Showed"],["skipped","⏭️ Skipped"],["noshow","❌ No Show"]].map(([v,l])=>(
+            {[["All","All statuses"],["showed"," Showed"],["skipped","⏭ Skipped"],["noshow"," No Show"]].map(([v,l])=>(
               <button key={v} onClick={()=>setStatusFilter(v)} style={{padding:"6px 12px",borderRadius:8,border:`1px solid ${statusFilter===v?C.dark:C.border}`,cursor:"pointer",fontSize:12,background:statusFilter===v?C.dark:C.white,color:statusFilter===v?C.white:C.dark,fontWeight:statusFilter===v?700:400}}>{l}</button>
             ))}
           </div>
@@ -2581,17 +2581,17 @@ function KPITab() {
                         </td>
                         <td style={{padding:"7px 12px",whiteSpace:"nowrap",fontSize:12}}>
                           <select value={c.type} onChange={e=>upCI(c.id,"type",e.target.value)} style={{border:"none",background:"transparent",fontSize:12,cursor:"pointer",color:C.dark}}>
-                            <option value="weekly">📋 Weekly</option><option value="monthly">📅 Monthly</option>
+                            <option value="weekly"> Weekly</option><option value="monthly"> Monthly</option>
                           </select>
                         </td>
                         <td style={{padding:"7px 12px",whiteSpace:"nowrap",fontSize:12}}>
                           <select value={c.mode} onChange={e=>upCI(c.id,"mode",e.target.value)} style={{border:"none",background:"transparent",fontSize:12,cursor:"pointer",color:C.dark}}>
-                            <option value="zoom">🎥 Zoom</option><option value="call">📞 Call</option><option value="email">📧 Email</option>
+                            <option value="zoom"> Zoom</option><option value="call"> Call</option><option value="email"> Email</option>
                           </select>
                         </td>
                         <td style={{padding:"7px 12px"}}>
                           {c.am?<span style={{fontSize:12,fontWeight:700,color:AM_COLORS[c.am]||C.muted}}>{c.am}</span>
-                            :<span style={{fontSize:11,color:C.amber}}>⚠️ Tag</span>}
+                            :<span style={{fontSize:11,color:C.amber}}> Tag</span>}
                         </td>
                         <td style={{padding:"7px 12px"}}>
                           <select value={c.tl||""} onChange={e=>upCI(c.id,"tl",e.target.value)}
@@ -2621,7 +2621,7 @@ function KPITab() {
         </div>
       )}
 
-      {/* ── CLIENT CONCERNS ── */}
+      {/*  CLIENT CONCERNS  */}
       {viewMode==="concerns"&&(
         <div>
           {/* Concern Calendar — dropdown */}
@@ -2659,12 +2659,12 @@ function KPITab() {
                 <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
                   <button onClick={()=>setConcernCalOpen(v=>!v)}
                     style={{display:"flex",alignItems:"center",gap:6,padding:"7px 12px",borderRadius:8,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:13,fontWeight:500,color:C.dark}}>
-                    📅 {selLabel}
-                    <span style={{fontSize:10,color:C.muted}}>{concernCalOpen?"▲":"▼"}</span>
+                     {selLabel}
+                    <span style={{fontSize:10,color:C.muted}}>{concernCalOpen?"":""}</span>
                   </button>
                   {concernRangeStart&&(
                     <button onClick={()=>{setConcernRangeStart(null);setConcernRangeEnd(null);}}
-                      style={{padding:"7px 10px",borderRadius:8,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:12,color:C.muted}}>✕ Clear</button>
+                      style={{padding:"7px 10px",borderRadius:8,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:12,color:C.muted}}> Clear</button>
                   )}
                   <span style={{fontSize:12,color:C.muted}}>
                     {concerns.filter(c=>{
@@ -2729,14 +2729,14 @@ function KPITab() {
           {/* Header bar */}
           <div style={{display:"flex",gap:10,marginBottom:14,alignItems:"center",flexWrap:"wrap"}}>
             <input
-              placeholder="🔍 Search agency, VA, or concern…"
+              placeholder=" Search agency, VA, or concern…"
               value={concernSearch}
               onChange={e=>setConcernSearch(e.target.value)}
               style={{flex:"1 1 220px",padding:"7px 12px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:13}}
             />
             <button onClick={()=>setAddingConcern(v=>!v)}
               style={{padding:"7px 16px",borderRadius:8,border:"none",cursor:"pointer",background:C.red,color:C.white,fontWeight:600,fontSize:13,marginLeft:"auto"}}>
-              {addingConcern?"✕ Cancel":"+ Add Concern"}
+              {addingConcern?" Cancel":"+ Add Concern"}
             </button>
           </div>
 
@@ -2751,8 +2751,8 @@ function KPITab() {
                     <button onClick={()=>setAddConcernCalOpen(v=>!v)}
                       style={{width:"100%",padding:"6px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13,
                         background:C.white,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",justifyContent:"space-between",color:newConcern.date?C.dark:C.muted}}>
-                      <span>📅 {newConcern.date ? new Date(newConcern.date+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : "Pick a date"}</span>
-                      <span style={{fontSize:10,color:C.muted}}>{addConcernCalOpen?"▲":"▼"}</span>
+                      <span> {newConcern.date ? new Date(newConcern.date+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : "Pick a date"}</span>
+                      <span style={{fontSize:10,color:C.muted}}>{addConcernCalOpen?"":""}</span>
                     </button>
                     {addConcernCalOpen&&(()=>{
                       const MNAMES=["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -2888,14 +2888,14 @@ function KPITab() {
               </tbody>
             </table>
           </div>
-          <p style={{fontSize:11,color:C.muted,marginTop:8}}>💡 Click any cell to edit inline.</p>
+          <p style={{fontSize:11,color:C.muted,marginTop:8}}> Click any cell to edit inline.</p>
         </div>
       )}
     </div>
   );
 }
 
-// ── HUBSPOT TAB ──
+//  HUBSPOT TAB 
 function HubSpotTab() {
   const C = useTheme();
   const { rows: rawLinks, upsert: upsertLink } = useSupabaseTable("hubspot_links", "id");
@@ -2971,7 +2971,7 @@ function HubSpotTab() {
   );
 }
 
-// ── NICCOLE'S ACCOUNTS TAB ──
+//  NICCOLE'S ACCOUNTS TAB 
 function AccountsTab({ checkins }) {
   const C = useTheme();
   const { rows: accounts, upsert: upsertAccount } = useSupabaseTable("accounts", "id", INIT_ACCOUNTS);
@@ -3066,7 +3066,7 @@ function AccountsTab({ checkins }) {
     <div>
       <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
         <input
-          placeholder="🔍 Search agency, contact, or VA…"
+          placeholder=" Search agency, contact, or VA…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={{
@@ -3248,7 +3248,7 @@ function AccountsTab({ checkins }) {
                 onClick={() => setExpandedId(exp ? null : a.id)}
               >
                 <span style={{ fontSize: 14, color: C.muted, userSelect: "none" }}>
-                  {exp ? "▼" : "▶"}
+                  {exp ? "" : ""}
                 </span>
                 <div style={{ flex: "2 1 170px", fontWeight: 600, fontSize: 13 }} onClick={e => e.stopPropagation()}>
                   <InlineEdit value={a.agency} onSave={v => upAcc(a.id, "agency", v)} style={{ fontWeight: 600, fontSize: 13 }} />
@@ -3530,22 +3530,22 @@ function AccountsTab({ checkins }) {
         })}
       </div>
       <p style={{ fontSize: 11, color: C.muted, marginTop: 8 }}>
-        💡 Click a row to expand. Each VA shows their last check-in from Island KPI data. Click any
+         Click a row to expand. Each VA shows their last check-in from Island KPI data. Click any
         field to edit.
       </p>
     </div>
   );
 }
 
-// ── WORKFLOW & NOTES TAB ──
+//  WORKFLOW & NOTES TAB 
 const EMAIL_STARS = [
-  { icon: "⭐", color: "#F59E0B", bg: "#FFFBEB", border: "#FCD34D", label: "File Away",    desc: "Archive / file the email away" },
-  { icon: "🟢", color: "#059669", bg: "#F0FDF4", border: "#6EE7B7", label: "Sales",        desc: "Sales-related email" },
-  { icon: "🔵", color: "#1D4ED8", bg: "#EFF6FF", border: "#93C5FD", label: "IT",           desc: "IT-related email" },
-  { icon: "❗", color: "#B45309", bg: "#FFFBEB", border: "#FCD34D", label: "VA Concerns",  desc: "VA concern — needs attention", square: true, sqColor: "#FCD34D" },
-  { icon: "❓", color: "#7C3AED", bg: "#F5F3FF", border: "#C4B5FD", label: "$ Concerns",   desc: "Financial / billing concern", square: true, sqColor: "#C4B5FD" },
-  { icon: "❗", color: "#DC2626", bg: "#FFF1F1", border: "#FCA5A5", label: "High Priority", desc: "Tell Niccole immediately when this email arrives", square: true, sqColor: "#FCA5A5" },
-  { icon: "ℹ️", color: "#1D4ED8", bg: "#EFF6FF", border: "#93C5FD", label: "1-off Work",   desc: "One-off task or work item", square: true, sqColor: "#93C5FD" },
+  { icon: "", color: "#F59E0B", bg: "#FFFBEB", border: "#FCD34D", label: "File Away",    desc: "Archive / file the email away" },
+  { icon: "", color: "#059669", bg: "#F0FDF4", border: "#6EE7B7", label: "Sales",        desc: "Sales-related email" },
+  { icon: "", color: "#1D4ED8", bg: "#EFF6FF", border: "#93C5FD", label: "IT",           desc: "IT-related email" },
+  { icon: "", color: "#B45309", bg: "#FFFBEB", border: "#FCD34D", label: "VA Concerns",  desc: "VA concern — needs attention", square: true, sqColor: "#FCD34D" },
+  { icon: "", color: "#7C3AED", bg: "#F5F3FF", border: "#C4B5FD", label: "$ Concerns",   desc: "Financial / billing concern", square: true, sqColor: "#C4B5FD" },
+  { icon: "", color: "#DC2626", bg: "#FFF1F1", border: "#FCA5A5", label: "High Priority", desc: "Tell Niccole immediately when this email arrives", square: true, sqColor: "#FCA5A5" },
+  { icon: "ℹ", color: "#1D4ED8", bg: "#EFF6FF", border: "#93C5FD", label: "1-off Work",   desc: "One-off task or work item", square: true, sqColor: "#93C5FD" },
 ];
 
 function WorkflowTab() {
@@ -3650,12 +3650,12 @@ function GeneralNotesTab() {
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       {/* Tab description */}
       <div style={{ background: "#EFF6FF", border: "1px solid #93C5FD", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "#1E3A5F", lineHeight: 1.6 }}>
-        <strong>📌 General Notes</strong> — Your quick-reference hub for important contacts, addresses, shipping info, and agency-level notes you need handy at all times. Everything here is editable so you can keep it up to date.
+        <strong> General Notes</strong> — Your quick-reference hub for important contacts, addresses, shipping info, and agency-level notes you need handy at all times. Everything here is editable so you can keep it up to date.
       </div>
 
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
         <button onClick={() => setAdding(v => !v)} style={{ padding: "7px 16px", borderRadius: 8, border: "none", cursor: "pointer", background: C.purple, color: C.white, fontWeight: 600, fontSize: 13 }}>
-          {adding ? "✕ Cancel" : "+ Add Note"}
+          {adding ? " Cancel" : "+ Add Note"}
         </button>
       </div>
       {adding && (
@@ -3670,7 +3670,7 @@ function GeneralNotesTab() {
       )}
       <div style={{ background: C.white, borderRadius: 10, border: `1px solid ${C.border}`, overflow: "hidden" }}>
         <div style={{ padding: "12px 18px", background: C.purple, color: C.white, fontWeight: 700, fontSize: 14 }}>
-          📌 Key References
+           Key References
         </div>
         <div style={{ padding: 14, display: "flex", flexDirection: "column", gap: 8 }}>
           {notes.map((n, i) => (
@@ -3684,12 +3684,12 @@ function GeneralNotesTab() {
           {notes.length === 0 && <div style={{ padding: 16, textAlign: "center", color: C.muted, fontSize: 13 }}>No notes yet. Add one above.</div>}
         </div>
       </div>
-      <p style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>💡 Click any value to edit inline.</p>
+      <p style={{ fontSize: 11, color: C.muted, marginTop: 4 }}> Click any value to edit inline.</p>
 
       {/* Shipping Details */}
       <div style={{ background: C.white, borderRadius: 10, border: `1px solid ${C.border}`, overflow: "hidden" }}>
         <div style={{ padding: "12px 18px", background: "#0369A1", color: C.white, fontWeight: 700, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span>📦 PH Shipping Details</span>
+          <span> PH Shipping Details</span>
           <button
             onClick={() => {
               const text = shipping.map(r => `${r.label}: ${r.value}`).join("\n");
@@ -3699,7 +3699,7 @@ function GeneralNotesTab() {
               }).catch(() => {});
             }}
             style={{ padding: "4px 14px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.4)", background: copiedShipping === "all" ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.15)", color: C.white, cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
-            {copiedShipping === "all" ? "✓ Copied!" : "Copy All"}
+            {copiedShipping === "all" ? " Copied!" : "Copy All"}
           </button>
         </div>
         <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 8 }}>
@@ -3717,7 +3717,7 @@ function GeneralNotesTab() {
                   }).catch(() => {});
                 }}
                 style={{ padding: "3px 10px", borderRadius: 6, border: `1px solid ${C.border}`, background: copiedShipping === i ? "#D1FAE5" : C.white, cursor: "pointer", fontSize: 11, fontWeight: 600, color: copiedShipping === i ? C.green : C.muted, whiteSpace: "nowrap", flexShrink: 0 }}>
-                {copiedShipping === i ? "✓ Copied" : "Copy"}
+                {copiedShipping === i ? " Copied" : "Copy"}
               </button>
             </div>
           ))}
@@ -3727,7 +3727,7 @@ function GeneralNotesTab() {
       {/* Agency Notes */}
       <div style={{ background: C.white, borderRadius: 10, border: `1px solid ${C.border}`, overflow: "hidden" }}>
         <div style={{ padding: "12px 18px", background: C.teal, color: C.white, fontWeight: 700, fontSize: 14 }}>
-          🏢 Agency Notes
+           Agency Notes
         </div>
         <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 14 }}>
           {agencyNotes.map((group, gi) => (
@@ -3793,7 +3793,7 @@ function ClaritySellingPanel() {
             fontSize: 14,
           }}
         >
-          📚 Sales Training — Clarity Selling by Bryan Ostermiller
+           Sales Training — Clarity Selling by Bryan Ostermiller
         </div>
         <div style={{ padding: 16 }}>
           <div
@@ -4005,7 +4005,7 @@ function WordTrackPanel() {
     <div>
       <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
         <input
-          placeholder="🔍 Search topics, keywords, questions…"
+          placeholder=" Search topics, keywords, questions…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={{
@@ -4155,7 +4155,7 @@ function WordTrackPanel() {
                     color: "#92400E",
                   }}
                 >
-                  💡 {section.notes}
+                   {section.notes}
                 </div>
               )}
             </div>
@@ -4190,7 +4190,7 @@ function SalesTrainingTab() {
             color: resource === "clarity" ? C.white : C.muted,
           }}
         >
-          📚 Clarity Selling
+           Clarity Selling
         </button>
         <button
           onClick={() => setResource("wordtrack")}
@@ -4205,7 +4205,7 @@ function SalesTrainingTab() {
             color: resource === "wordtrack" ? C.white : C.muted,
           }}
         >
-          🗣️ VA & AM Word Track
+           VA & AM Word Track
         </button>
       </div>
       {resource === "clarity" && <ClaritySellingPanel />}
@@ -4214,15 +4214,15 @@ function SalesTrainingTab() {
   );
 }
 
-// ── APP SHELL ──
+//  APP SHELL 
 const TABS = [
-  { id: "tasks",        label: "✅ Tasks",               locked: true },
-  { id: "kpi",          label: "📊 Island KPIs",         locked: true },
-  { id: "hubspot",      label: "🔗 HubSpot Links",       locked: true },
-  { id: "accounts",     label: "🏢 Niccole's Accounts",  locked: true },
-  { id: "workflow",     label: "📋 Workflow",             locked: false },
-  { id: "generalnotes", label: "📌 General Notes",        locked: false },
-  { id: "notes",        label: "📚 Sales Training",       locked: false },
+  { id: "tasks",        label: " Tasks",               locked: true },
+  { id: "kpi",          label: " Island KPIs",         locked: true },
+  { id: "hubspot",      label: " HubSpot Links",       locked: true },
+  { id: "accounts",     label: " Niccole's Accounts",  locked: true },
+  { id: "workflow",     label: " Workflow",             locked: false },
+  { id: "generalnotes", label: " General Notes",        locked: false },
+  { id: "notes",        label: " Sales Training",       locked: false },
 ];
 
 export default function GellApp() {
@@ -4281,7 +4281,7 @@ export default function GellApp() {
           </div>
           <div style={{ textAlign: "right" }}>
             <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{today}</div>
-            {isFriday && <div style={{ marginTop: 4, background: theme.red, color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 12px", borderRadius: 99 }}>📅 Friday — Prep Island KPIs!</div>}
+            {isFriday && <div style={{ marginTop: 4, background: theme.red, color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 12px", borderRadius: 99 }}> Friday — Prep Island KPIs!</div>}
           </div>
         </div>
       </div>
@@ -4319,7 +4319,7 @@ export default function GellApp() {
                 gap: 6,
               }}
             >
-              <span style={{ fontSize: 11, color: theme.muted, opacity: 0.5, cursor: "grab" }}>⠿</span>
+              <span style={{ fontSize: 11, color: theme.muted, opacity: 0.5, cursor: "grab" }}></span>
               <span style={{ color: isActive ? theme.tabActiveColor : theme.muted, fontWeight: isActive ? 700 : 400, fontSize: 13 }}>
                 {tab.label}
               </span>
