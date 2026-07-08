@@ -2222,8 +2222,6 @@ function KPITab() {
                 <option value="skipped">Skipped</option>
                 <option value="noreply">No Reply</option>
                 <option value="replied">Replied</option>
-                <option value="noreply">No Reply</option>
-                <option value="replied">Replied</option>
               </select>
             </div>
             {/* VAs */}
@@ -2336,8 +2334,6 @@ function KPITab() {
                 <option value="showed">Showed</option>
                 <option value="noshow">No Show</option>
                 <option value="skipped">Skipped</option>
-                <option value="noreply">No Reply</option>
-                <option value="replied">Replied</option>
                 <option value="noreply">No Reply</option>
                 <option value="replied">Replied</option>
               </select>
