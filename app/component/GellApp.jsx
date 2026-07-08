@@ -1,4 +1,4 @@
-"use client";import React, { useState, useMemo, useRef, useContext, createContext, useEffect, useCallback } from "react";
+"use clieny";import React, { useState, useMemo, useRef, useContext, createContext, useEffect, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
@@ -1707,114 +1707,169 @@ function TasksTab() {
 // ── MINI CALENDAR ──
 function MiniCalendar({ weeks, checkins, activeWeek, onSelect, C, typeFilter, setTypeFilter, rangeStart, rangeEnd, setRangeStart, setRangeEnd }) {
   const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-  const DAY_NAMES   = ["Su","Mo","Tu","We","Th","Fr","Sa"];
-  const [open, setOpen] = useState(false);
+  const DAY_NAMES   = ["Mo","Tu","We","Th","Fr","Sa","Su"];
+  const [open, setOpen]       = useState(false);
+  const [hovDay,  setHovDay]  = useState(null);
+  const [dragging,setDragging]= useState(false);
 
+  // Calendar month state — start at the month of the latest week
+  const latestWeek  = weeks.length ? weeks[weeks.length-1] : null;
+  const initDate    = latestWeek ? (()=>{ const [mm,dd,yy]=latestWeek.split("/"); return new Date(+yy,+mm-1,+dd); })() : new Date();
+  const [cy, setCy] = useState(initDate.getFullYear());
+  const [cm, setCm] = useState(initDate.getMonth());
+
+  // Map week labels to their Monday Date
   const weekDates = useMemo(() => weeks.map(w => {
     const [mm,dd,yy] = w.split("/");
-    return { date: new Date(+yy, +mm-1, +dd), label: w };
+    return { mon: new Date(+yy,+mm-1,+dd), label: w };
   }), [weeks]);
 
+  // Set of "YYYY-MM-DD" strings that are week-start Mondays with data
   const weekMondays = useMemo(() => {
     const s = new Set();
-    weekDates.forEach(({ date }) => {
-      s.add(`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`);
-    });
+    weekDates.forEach(({ mon }) => s.add(toISO(mon)));
     return s;
   }, [weekDates]);
 
-  const initYear  = weekDates.length ? weekDates[0].date.getFullYear() : 2026;
-  const [curYear,  setCurYear]  = useState(initYear);
-  const [curMonth, setCurMonth] = useState(0);
-  const [dragging, setDragging] = useState(false);
+  function toISO(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  }
+  function fromISO(iso) {
+    const [y,m,d] = iso.split("-").map(Number);
+    return new Date(y, m-1, d);
+  }
+  function dayISO(day) {
+    return `${cy}-${String(cm+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+  }
 
-  function prevMonth() { if(curMonth===0){setCurMonth(11);setCurYear(y=>y-1);}else setCurMonth(m=>m-1); }
-  function nextMonth() { if(curMonth===11){setCurMonth(0);setCurYear(y=>y+1);}else setCurMonth(m=>m+1); }
-
-  const grid = useMemo(() => {
-    const firstDay = new Date(curYear, curMonth, 1).getDay();
-    const daysInMonth = new Date(curYear, curMonth+1, 0).getDate();
-    const cells = [];
-    for(let i=0;i<firstDay;i++) cells.push(null);
-    for(let d=1;d<=daysInMonth;d++) cells.push(d);
-    return cells;
-  }, [curYear, curMonth]);
-
-  function weekForDay(day) {
-    const clicked = new Date(curYear, curMonth, day);
+  // Find which week label contains a given date
+  function weekForDate(d) {
     let best = null, bestDiff = Infinity;
-    weekDates.forEach(({ date, label }) => {
-      const sun = new Date(date); sun.setDate(date.getDate()+6);
-      if(clicked>=date&&clicked<=sun){best=label;bestDiff=0;return;}
-      const diff = Math.min(Math.abs(clicked-date),Math.abs(clicked-sun));
-      if(diff<bestDiff){bestDiff=diff;best=label;}
+    weekDates.forEach(({ mon, label }) => {
+      const sun = new Date(mon); sun.setDate(mon.getDate()+6);
+      if (d >= mon && d <= sun) { best = label; bestDiff = 0; return; }
+      const diff = Math.min(Math.abs(d-mon), Math.abs(d-sun));
+      if (diff < bestDiff) { bestDiff = diff; best = label; }
     });
     return best;
   }
 
-  function isInRange(day) {
-    if(!rangeStart) return false;
-    const d = new Date(curYear, curMonth, day);
-    const lo = rangeEnd&&rangeEnd<rangeStart?rangeEnd:rangeStart;
-    const hi = rangeEnd&&rangeEnd>rangeStart?rangeEnd:rangeStart;
-    return d>=lo&&d<=(hi||lo);
-  }
+  // Calendar grid (Mon-first)
+  const grid = useMemo(() => {
+    const firstDay = new Date(cy, cm, 1).getDay(); // 0=Sun
+    const offset   = (firstDay + 6) % 7;            // shift so Mon=0
+    const dim      = new Date(cy, cm+1, 0).getDate();
+    const cells    = [];
+    for (let i=0; i<offset; i++) cells.push(null);
+    for (let d=1; d<=dim; d++) cells.push(d);
+    return cells;
+  }, [cy, cm]);
 
-  function hasCheckinDot(day) {
-    const iso = `${curYear}-${String(curMonth+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
-    return weekMondays.has(iso);
-  }
+  // Effective range (lo ≤ hi)
+  const lo = rangeStart && rangeEnd ? (rangeStart<=rangeEnd ? rangeStart : rangeEnd) : rangeStart;
+  const hi = rangeStart && rangeEnd ? (rangeStart<=rangeEnd ? rangeEnd   : rangeStart) : rangeStart;
 
-  function handleMouseDown(day) {
-    const d = new Date(curYear, curMonth, day);
-    setRangeStart(d); setRangeEnd(null); setDragging(true);
-    const w = weekForDay(day); if(w) onSelect(w);
+  function inRange(day) {
+    if (!lo) return false;
+    const d = fromISO(dayISO(day));
+    return d >= lo && d <= (hi||lo);
   }
-  function handleMouseEnter(day) { if(!dragging) return; setRangeEnd(new Date(curYear,curMonth,day)); }
-  function handleMouseUp(day) { setRangeEnd(new Date(curYear,curMonth,day)); setDragging(false); }
-  function clearSelection() { setRangeStart(null); setRangeEnd(null); setDragging(false); }
+  function inHover(day) {
+    if (!dragging || !rangeStart || !hovDay) return false;
+    const d = fromISO(dayISO(day));
+    const hlo = hovDay<=rangeStart ? hovDay : rangeStart;
+    const hhi = hovDay<=rangeStart ? rangeStart : hovDay;
+    return d >= hlo && d <= hhi;
+  }
+  function hasDot(day) { return weekMondays.has(dayISO(day)); }
 
+  function handleDown(day) {
+    const d = fromISO(dayISO(day));
+    setRangeStart(d); setRangeEnd(null); setDragging(true); setHovDay(d);
+    const w = weekForDate(d); if (w) onSelect(w);
+  }
+  function handleEnter(day) {
+    if (!dragging) return;
+    const d = fromISO(dayISO(day));
+    setHovDay(d); setRangeEnd(d);
+  }
+  function handleUp(day) {
+    const d = fromISO(dayISO(day));
+    setRangeEnd(d); setDragging(false); setHovDay(null);
+    setOpen(false);
+  }
+  function applyPreset(lo, hi) {
+    setRangeStart(lo); setRangeEnd(hi);
+    const w = weekForDate(lo); if (w) onSelect(w);
+    setOpen(false);
+  }
+  function clearSel() { setRangeStart(null); setRangeEnd(null); }
+
+  function prevMonth() { if(cm===0){setCm(11);setCy(y=>y-1);}else setCm(m=>m-1); }
+  function nextMonth() { if(cm===11){setCm(0);setCy(y=>y+1);}else setCm(m=>m+1); }
+
+  // Filtered checkins for stats display
   const filteredCheckins = useMemo(() => {
     let base;
-    if(rangeStart){
-      const lo=rangeEnd&&rangeEnd<rangeStart?rangeEnd:rangeStart;
-      const hi=rangeEnd&&rangeEnd>rangeStart?rangeEnd:rangeStart;
-      const matched=weekDates.filter(({date})=>{const sun=new Date(date);sun.setDate(date.getDate()+6);return date<=hi&&sun>=lo;}).map(({label})=>label);
-      base=checkins.filter(c=>matched.includes(c.week));
-    } else { base=checkins.filter(c=>c.week===activeWeek); }
-    if(typeFilter==="all") return base;
-    return base.filter(c=>c.type===typeFilter);
-  }, [checkins,rangeStart,rangeEnd,activeWeek,weekDates,typeFilter]);
+    if (lo) {
+      base = checkins.filter(c => {
+        if (!c.week) return false;
+        const [mm,dd,yy] = c.week.split("/");
+        const mon = new Date(+yy,+mm-1,+dd);
+        const sun = new Date(mon); sun.setDate(mon.getDate()+6);
+        const hiEnd = hi ? new Date(hi.getFullYear(),hi.getMonth(),hi.getDate(),23,59,59) : new Date(lo.getFullYear(),lo.getMonth(),lo.getDate(),23,59,59);
+        return mon <= hiEnd && sun >= lo;
+      });
+    } else {
+      base = checkins.filter(c => c.week === activeWeek);
+    }
+    if (typeFilter === "all") return base;
+    return base.filter(c => c.type === typeFilter);
+  }, [checkins, lo, hi, activeWeek, typeFilter]);
 
   const today = new Date();
-  const selLabel = rangeStart
-    ? rangeEnd&&rangeEnd.toDateString()!==rangeStart.toDateString()
-      ? `${rangeStart.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${rangeEnd.toLocaleDateString("en-US",{month:"short",day:"numeric"})}`
-      : rangeStart.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})
-    : activeWeek||"Select a week";
+
+  // Label for trigger button
+  function fmtDate(d) {
+    return d ? d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : "";
+  }
+  const triggerLabel = lo
+    ? (hi && hi.toDateString()!==lo.toDateString() ? `${fmtDate(lo)} – ${fmtDate(hi)}` : fmtDate(lo))
+    : (activeWeek || "Select dates");
+
+  // Preset helpers
+  function daysAgo(n) { const d=new Date(); d.setDate(d.getDate()-n); d.setHours(0,0,0,0); return d; }
+  function startOfWeek(d) { const r=new Date(d); r.setDate(d.getDate()-((d.getDay()+6)%7)); r.setHours(0,0,0,0); return r; }
+  function endOfDay(d) { const r=new Date(d); r.setHours(23,59,59,999); return r; }
+  const presets = [
+    { label:"Today",       lo: daysAgo(0), hi: endOfDay(new Date()) },
+    { label:"Yesterday",   lo: daysAgo(1), hi: endOfDay(daysAgo(1)) },
+    { label:"Last 7 days", lo: daysAgo(7), hi: endOfDay(new Date()) },
+    { label:"Last week",   lo: startOfWeek(daysAgo(7)), hi: endOfDay(new Date(startOfWeek(daysAgo(7)).getTime()+6*86400000)) },
+    { label:"This month",  lo: new Date(today.getFullYear(),today.getMonth(),1), hi: endOfDay(new Date()) },
+    { label:"Last month",  lo: new Date(today.getFullYear(),today.getMonth()-1,1), hi: endOfDay(new Date(today.getFullYear(),today.getMonth(),0)) },
+  ];
 
   return (
-    <div style={{marginBottom:14}} onMouseLeave={()=>{if(dragging){setDragging(false);}}}>
-      {/* Top bar: calendar button + type filter + stats */}
-      <div style={{display:"flex",gap:8,marginBottom:open?10:0,flexWrap:"wrap",alignItems:"center"}}>
-        {/* Calendar dropdown trigger */}
+    <div style={{marginBottom:14}} onMouseLeave={()=>{if(dragging){setDragging(false);setHovDay(null);}}}>
+      {/* Controls row */}
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center",marginBottom:open?10:0}}>
+        {/* Trigger button */}
         <button onClick={()=>setOpen(v=>!v)}
-          style={{display:"flex",alignItems:"center",gap:6,padding:"7px 12px",borderRadius:8,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:13,fontWeight:500,color:C.dark}}>
-          📅 {selLabel}
-          <span style={{fontSize:10,color:C.muted,marginLeft:2}}>{open?"▲":"▼"}</span>
+          style={{display:"flex",alignItems:"center",gap:6,padding:"7px 14px",borderRadius:8,
+            border:`2px solid ${open?C.teal:C.border}`,background:C.white,cursor:"pointer",
+            fontSize:13,fontWeight:500,color:C.dark,boxShadow:open?"0 0 0 3px "+C.teal+"22":"none"}}>
+          📅 {triggerLabel}
+          <span style={{fontSize:10,color:C.muted}}>{open?"▲":"▼"}</span>
         </button>
-        {rangeStart&&(
-          <button onClick={clearSelection}
-            style={{padding:"7px 10px",borderRadius:8,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:12,color:C.muted}}>✕ Clear</button>
-        )}
-        <div style={{display:"flex",gap:4,marginLeft:"auto"}}>
-          <button onClick={()=>{const i=weeks.indexOf(activeWeek);if(i>0){onSelect(weeks[i-1]);clearSelection();}}}
-            disabled={weeks.indexOf(activeWeek)===0}
+        {lo&&<button onClick={clearSel} style={{padding:"7px 10px",borderRadius:8,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:12,color:C.muted}}>✕ Clear</button>}
+        {/* Prev/Next week */}
+        <div style={{display:"flex",gap:4}}>
+          <button onClick={()=>{const i=weeks.indexOf(activeWeek);if(i>0)onSelect(weeks[i-1]);}} disabled={weeks.indexOf(activeWeek)===0}
             style={{padding:"6px 10px",borderRadius:6,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:13,opacity:weeks.indexOf(activeWeek)===0?0.3:1}}>‹</button>
-          <button onClick={()=>{const i=weeks.indexOf(activeWeek);if(i<weeks.length-1){onSelect(weeks[i+1]);clearSelection();}}}
-            disabled={weeks.indexOf(activeWeek)===weeks.length-1}
+          <button onClick={()=>{const i=weeks.indexOf(activeWeek);if(i<weeks.length-1)onSelect(weeks[i+1]);}} disabled={weeks.indexOf(activeWeek)===weeks.length-1}
             style={{padding:"6px 10px",borderRadius:6,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:13,opacity:weeks.indexOf(activeWeek)===weeks.length-1?0.3:1}}>›</button>
-          <button onClick={()=>{onSelect(weeks[weeks.length-1]);clearSelection();}}
+          <button onClick={()=>onSelect(weeks[weeks.length-1])}
             style={{padding:"6px 10px",borderRadius:6,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:12,color:C.muted}}>Latest</button>
         </div>
         {/* Type filter */}
@@ -1826,12 +1881,10 @@ function MiniCalendar({ weeks, checkins, activeWeek, onSelect, C, typeFilter, se
           ))}
         </div>
         {/* Quick stats */}
-        <div style={{display:"flex",gap:6}}>
-          {[
-            {l:"Showed",  v:filteredCheckins.filter(c=>c.status==="showed").length,  c:C.green},
-            {l:"No Show", v:filteredCheckins.filter(c=>c.status==="noshow").length,  c:C.red},
-            {l:"Skipped", v:filteredCheckins.filter(c=>c.status==="skipped").length, c:C.muted},
-          ].map(s=>(
+        <div style={{display:"flex",gap:6,marginLeft:"auto"}}>
+          {[{l:"Showed",v:filteredCheckins.filter(c=>c.status==="showed").length,c:C.green},
+            {l:"No Show",v:filteredCheckins.filter(c=>c.status==="noshow").length,c:C.red},
+            {l:"Skipped",v:filteredCheckins.filter(c=>c.status==="skipped").length,c:C.muted}].map(s=>(
             <div key={s.l} style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:8,padding:"5px 10px",display:"flex",gap:5,alignItems:"center"}}>
               <span style={{fontSize:14,fontWeight:700,color:s.c}}>{s.v}</span>
               <span style={{fontSize:10,color:C.muted}}>{s.l}</span>
@@ -1840,53 +1893,78 @@ function MiniCalendar({ weeks, checkins, activeWeek, onSelect, C, typeFilter, se
         </div>
       </div>
 
-      {/* Dropdown calendar panel */}
+      {/* Dropdown panel */}
       {open&&(
-        <div style={{background:C.white,borderRadius:12,border:`1px solid ${C.border}`,padding:12,maxWidth:240,boxShadow:"0 4px 20px rgba(0,0,0,0.1)",position:"relative",zIndex:10}}>
-          {/* Month nav */}
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
-            <button onClick={prevMonth} style={{background:"none",border:"none",cursor:"pointer",fontSize:15,color:C.dark,padding:"2px 6px"}}>‹</button>
-            <span style={{fontWeight:700,fontSize:13,color:C.dark}}>{MONTH_NAMES[curMonth]} {curYear}</span>
-            <button onClick={nextMonth} style={{background:"none",border:"none",cursor:"pointer",fontSize:15,color:C.dark,padding:"2px 6px"}}>›</button>
+        <div style={{display:"flex",background:C.white,borderRadius:12,border:`1px solid ${C.border}`,boxShadow:"0 6px 30px rgba(0,0,0,0.13)",overflow:"hidden",zIndex:50,position:"relative",maxWidth:560}}>
+          {/* Presets */}
+          <div style={{borderRight:`1px solid ${C.border}`,padding:"12px 8px",display:"flex",flexDirection:"column",gap:2,minWidth:130}}>
+            {presets.map(p=>(
+              <button key={p.label} onClick={()=>applyPreset(p.lo,p.hi)}
+                style={{padding:"7px 12px",borderRadius:6,border:"none",cursor:"pointer",textAlign:"left",fontSize:13,
+                  background:"transparent",color:C.dark,fontWeight:400,
+                  transition:"background 0.1s"}}
+                onMouseEnter={e=>e.currentTarget.style.background=C.gray}
+                onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                {p.label}
+              </button>
+            ))}
           </div>
-          {/* Day headers */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",marginBottom:3}}>
-            {DAY_NAMES.map(d=><div key={d} style={{textAlign:"center",fontSize:9,fontWeight:700,color:C.muted}}>{d}</div>)}
+
+          {/* Calendar */}
+          <div style={{padding:16,flex:1}}>
+            {/* Month nav */}
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+              <button onClick={prevMonth} style={{background:"none",border:"none",cursor:"pointer",fontSize:16,color:C.dark,padding:"2px 8px"}}>‹</button>
+              <span style={{fontWeight:700,fontSize:14,color:C.dark}}>{MONTH_NAMES[cm]} {cy}</span>
+              <button onClick={nextMonth} style={{background:"none",border:"none",cursor:"pointer",fontSize:16,color:C.dark,padding:"2px 8px"}}>›</button>
+            </div>
+            {/* Day headers */}
+            <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",marginBottom:4}}>
+              {DAY_NAMES.map(d=><div key={d} style={{textAlign:"center",fontSize:10,fontWeight:700,color:C.muted,padding:"2px 0"}}>{d}</div>)}
+            </div>
+            {/* Day cells */}
+            <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2,userSelect:"none"}}>
+              {grid.map((day,i)=>{
+                if (!day) return <div key={i}/>;
+                const sel    = inRange(day);
+                const hov    = !sel && inHover(day);
+                const dot    = hasDot(day);
+                const isToday= today.getDate()===day&&today.getMonth()===cm&&today.getFullYear()===cy;
+                const highlight = sel || hov;
+                return (
+                  <div key={i}
+                    onMouseDown={()=>handleDown(day)}
+                    onMouseEnter={()=>handleEnter(day)}
+                    onMouseUp={()=>handleUp(day)}
+                    style={{textAlign:"center",padding:"7px 2px",borderRadius:6,fontSize:12,cursor:"pointer",position:"relative",
+                      background: sel ? C.teal : hov ? C.gray : "transparent",
+                      color: sel ? C.white : C.dark,
+                      fontWeight: sel||isToday ? 700 : 400,
+                      border: isToday ? `2px solid ${C.teal}` : "2px solid transparent",
+                    }}>
+                    {day}
+                    {dot&&!sel&&<div style={{position:"absolute",bottom:2,left:"50%",transform:"translateX(-50%)",width:4,height:4,borderRadius:"50%",background:C.teal}}/>}
+                  </div>
+                );
+              })}
+            </div>
+            {/* Footer */}
+            <div style={{marginTop:10,display:"flex",justifyContent:"space-between",alignItems:"center",borderTop:`1px solid ${C.border}`,paddingTop:10}}>
+              <span style={{fontSize:11,color:C.muted}}>
+                {lo ? (hi&&hi.toDateString()!==lo.toDateString() ? `${fmtDate(lo)} – ${fmtDate(hi)}` : fmtDate(lo)) : "Click or drag to select"}
+              </span>
+              <div style={{display:"flex",gap:6}}>
+                <button onClick={()=>{clearSel();setOpen(false);}} style={{padding:"5px 12px",borderRadius:6,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:12,color:C.muted}}>Cancel</button>
+                <button onClick={()=>setOpen(false)} style={{padding:"5px 14px",borderRadius:6,border:"none",background:C.teal,color:C.white,cursor:"pointer",fontSize:12,fontWeight:700}}>Apply</button>
+              </div>
+            </div>
           </div>
-          {/* Days */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:1,userSelect:"none"}}>
-            {grid.map((day,i)=>{
-              if(!day) return <div key={i}/>;
-              const inSel=isInRange(day);
-              const hasDot=hasCheckinDot(day);
-              const isToday=today.getDate()===day&&today.getMonth()===curMonth&&today.getFullYear()===curYear;
-              return (
-                <div key={i}
-                  onMouseDown={()=>handleMouseDown(day)}
-                  onMouseEnter={()=>handleMouseEnter(day)}
-                  onMouseUp={()=>{handleMouseUp(day);setOpen(false);}}
-                  style={{textAlign:"center",padding:"5px 2px",borderRadius:5,fontSize:11,cursor:"pointer",position:"relative",
-                    background:inSel?C.teal:"transparent",
-                    color:inSel?C.white:hasDot?C.dark:C.muted,
-                    fontWeight:inSel||isToday?700:400,
-                    border:isToday?`2px solid ${C.red}`:"2px solid transparent"}}>
-                  {day}
-                  {hasDot&&!inSel&&<div style={{position:"absolute",bottom:1,left:"50%",transform:"translateX(-50%)",width:3,height:3,borderRadius:"50%",background:C.teal}}/>}
-                </div>
-              );
-            })}
-          </div>
-          {/* Legend */}
-          <div style={{marginTop:8,display:"flex",gap:10,fontSize:9,color:C.muted,justifyContent:"center"}}>
-            <span style={{display:"flex",alignItems:"center",gap:3}}><span style={{width:5,height:5,borderRadius:"50%",background:C.teal,display:"inline-block"}}/>check-ins</span>
-            <span style={{display:"flex",alignItems:"center",gap:3}}><span style={{width:8,height:8,borderRadius:2,background:C.teal,display:"inline-block"}}/>selected</span>
-          </div>
-          <p style={{fontSize:9,color:C.muted,textAlign:"center",margin:"6px 0 0"}}>Click or drag to select · closes on pick</p>
         </div>
       )}
     </div>
   );
 }
+
 
 
 
@@ -1946,17 +2024,28 @@ function KPITab() {
     return { date: new Date(+yy, +mm-1, +dd), label: w };
   }), [weeks]);
 
-  // If a calendar range is selected, show all check-ins overlapping that range
-  // Otherwise fall back to the selected week
+  // Filter by exact date if available, otherwise fall back to week range
   const weekCheckins = useMemo(() => {
     let base;
     if (calRangeStart) {
       const lo = calRangeEnd && calRangeEnd < calRangeStart ? calRangeEnd : calRangeStart;
       const hi = calRangeEnd && calRangeEnd > calRangeStart ? calRangeEnd : calRangeStart;
-      const matchedWeeks = weekDateMap
-        .filter(({ date }) => { const sun = new Date(date); sun.setDate(date.getDate()+6); return date <= hi && sun >= lo; })
-        .map(({ label }) => label);
-      base = checkins.filter(c => matchedWeeks.includes(c.week));
+      const loMid = new Date(lo.getFullYear(), lo.getMonth(), lo.getDate(), 0, 0, 0);
+      const hiEnd = new Date(hi.getFullYear(), hi.getMonth(), hi.getDate(), 23, 59, 59);
+      base = checkins.filter(c => {
+        // If check-in has a specific date, use it for exact matching
+        if (c.date && c.date.match(/\d{4}-\d{2}-\d{2}/)) {
+          const [y,m,d] = c.date.split("-").map(Number);
+          const cd = new Date(y, m-1, d);
+          return cd >= loMid && cd <= hiEnd;
+        }
+        // Older data: fall back to week-based matching
+        if (!c.week) return false;
+        const [mm,dd,yy] = c.week.split("/");
+        const mon = new Date(+yy, +mm-1, +dd);
+        const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+        return mon <= hiEnd && sun >= loMid;
+      });
     } else {
       base = checkins.filter(c => c.week === activeWeek);
     }
