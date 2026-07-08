@@ -1977,9 +1977,11 @@ function KPITab() {
   const C = useTheme();
   const EMPTY_CI = { week:"", date:"", client:"", vas:[{name:"",score:""}], type:"weekly", mode:"zoom", status:"showed", am:"", tl:"", notes:"" };
   const STATUS_CFG = {
-    showed: { bg:"#FFFFFF", dot:"#059669", label:" Showed" },
-    skipped:{ bg:"#F0FDF4", dot:"#16A34A", label:"⏭ Skipped (not counted)" },
-    noshow: { bg:"#FFF1F1", dot:C.red,     label:" No Show" },
+    showed:  { bg:"#FFFFFF", dot:"#059669", label:"Showed" },
+    skipped: { bg:"#F0FDF4", dot:"#16A34A", label:"Skipped (not counted)" },
+    noshow:  { bg:"#FFF1F1", dot:C.red,     label:"No Show" },
+    noreply: { bg:"#FFF7ED", dot:"#EA580C", label:"No Reply" },
+    replied: { bg:"#EFF6FF", dot:C.blue,    label:"Replied" },
   };
   const TYPE_CFG   = { weekly:" Weekly", monthly:" Monthly" };
   const MODE_CFG   = { zoom:" Zoom", call:" Call", email:" Email" };
@@ -2057,13 +2059,14 @@ function KPITab() {
   // Per-AM stats broken out by type — computed from tagged check-ins (skipped not counted)
   const amStats = useMemo(() => {
     function rateFor(rows) {
-      const showed    = rows.filter(c => c.status === "showed");
-      const withScore  = showed.flatMap(c => c.vas.filter(v => v.score !== null && v.score !== ""));
+      // showed, noreply, replied all count as "showed" for show rate
+      const showed    = rows.filter(c => ["showed","replied"].includes(c.status));
+      const withScore  = showed.flatMap(c => c.vas.filter(v => v.score !== null && v.score !== "" && String(v.score).toUpperCase() !== "N/A"));
       const passing    = withScore.filter(v => +v.score >= 80);
       return {
         total:    rows.length,
         showed:   showed.length,
-        noShow:   rows.filter(c => c.status === "noshow").length,
+        noShow:   rows.filter(c => ["noshow","noreply"].includes(c.status)).length,
         showRate: rows.length      ? Math.round(showed.length  / rows.length      * 100) : null,
         scRate:   withScore.length ? Math.round(passing.length / withScore.length * 100) : null,
         avgScore: withScore.length ? Math.round(withScore.reduce((a,b) => a+(+b.score), 0) / withScore.length * 10) / 10 : null,
@@ -2080,13 +2083,13 @@ function KPITab() {
   // Overall = aggregate of all tagged check-ins (computed, not from sheet)
   const overallStats = useMemo(() => {
     function rateFor(rows) {
-      const showed    = rows.filter(c => c.status === "showed");
-      const withScore = showed.flatMap(c => c.vas.filter(v => v.score !== null && v.score !== ""));
+      const showed    = rows.filter(c => ["showed","replied"].includes(c.status));
+      const withScore = showed.flatMap(c => c.vas.filter(v => v.score !== null && v.score !== "" && String(v.score).toUpperCase() !== "N/A"));
       const passing   = withScore.filter(v => +v.score >= 80);
       return {
         total:    rows.length,
         showed:   showed.length,
-        noShow:   rows.filter(c => c.status === "noshow").length,
+        noShow:   rows.filter(c => ["noshow","noreply"].includes(c.status)).length,
         showRate: rows.length      ? Math.round(showed.length  / rows.length      * 100) : null,
         scRate:   withScore.length ? Math.round(passing.length / withScore.length * 100) : null,
         avgScore: withScore.length ? Math.round(withScore.reduce((a,b) => a+(+b.score), 0) / withScore.length * 10) / 10 : null,
@@ -2098,12 +2101,12 @@ function KPITab() {
 
   const weekTotals = useMemo(() => {
     const counted = weekCheckins.filter(c=>c.status!=="skipped");
-    const showed  = counted.filter(c=>c.status==="showed");
-    const withScore = showed.flatMap(c=>c.vas.filter(v=>v.score!==null&&v.score!==""));
+    const showed  = counted.filter(c=>["showed","replied"].includes(c.status));
+    const withScore = showed.flatMap(c=>c.vas.filter(v=>v.score!==null&&v.score!==""&&String(v.score).toUpperCase()!=="N/A"));
     return {
       total: counted.length,
       showed: showed.length,
-      noShow: counted.filter(c=>c.status==="noshow").length,
+      noShow: counted.filter(c=>["noshow","noreply"].includes(c.status)).length,
       skipped: weekCheckins.filter(c=>c.status==="skipped").length,
       untagged: weekCheckins.filter(c=>c.status!=="skipped"&&c.am==="").length,
       avgScore: withScore.length ? Math.round(withScore.reduce((a,b)=>a+(+b.score),0)/withScore.length*10)/10 : null,
@@ -2127,7 +2130,7 @@ function KPITab() {
   function setVA(i,field,val){ setNewCI(p=>({...p,vas:p.vas.map((v,j)=>j===i?{...v,[field]:val}:v)})); }
   function saveNew(){
     if(!newCI.client.trim()&&!newCI.week) return;
-    const vasClean = newCI.vas.filter(v=>v.name.trim()).map(v=>({name:v.name.trim(),score:v.score===""?null:parseFloat(v.score)||null}));
+    const vasClean = newCI.vas.filter(v=>v.name.trim()).map(v=>({name:v.name.trim(),score:v.score===""?null:(v.score.trim().toUpperCase()==="N/A"?"N/A":parseFloat(v.score)||null)}));
     upsertCI({...newCI,id:Date.now(),vas:vasClean});
     setNewCI(EMPTY_CI); setAdding(false);
   }
@@ -2135,14 +2138,14 @@ function KPITab() {
   // Inline VA editor for a check-in
   function VaEditor({ ci }) {
     const [localVas, setLocalVas] = useState(ci.vas.length ? ci.vas.map(v=>({...v,score:v.score??''})) : [{name:'',score:''}]);
-    function save() { upCI(ci.id,'vas',localVas.filter(v=>v.name.trim()).map(v=>({name:v.name.trim(),score:v.score===''?null:parseFloat(v.score)||null}))); }
+    function save() { upCI(ci.id,'vas',localVas.filter(v=>v.name.trim()).map(v=>({name:v.name.trim(),score:v.score===''?null:(String(v.score).trim().toUpperCase()==='N/A'?'N/A':parseFloat(v.score)||null)}))); }
     return (
       <div>
         {localVas.map((v,i)=>(
           <div key={i} style={{display:"flex",gap:6,alignItems:"center",marginBottom:4}}>
             <input value={v.name} placeholder="VA name" onChange={e=>{const n=[...localVas];n[i]={...n[i],name:e.target.value};setLocalVas(n);}} onBlur={save}
               style={{flex:"1 1 120px",padding:"4px 7px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:12}}/>
-            <input value={v.score} placeholder="Score %" type="number" min="0" max="100" onChange={e=>{const n=[...localVas];n[i]={...n[i],score:e.target.value};setLocalVas(n);}} onBlur={save}
+            <input value={v.score} placeholder="Score % or N/A" onChange={e=>{const n=[...localVas];n[i]={...n[i],score:e.target.value};setLocalVas(n);}} onBlur={save}
               style={{width:70,padding:"4px 7px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:12}}/>
             <button onClick={()=>{const n=localVas.filter((_,j)=>j!==i);setLocalVas(n.length?n:[{name:'',score:''}]);setTimeout(save,0);}}
               style={{background:"none",border:"none",cursor:"pointer",color:C.muted,fontSize:14,padding:0}}>×</button>
@@ -2214,9 +2217,13 @@ function KPITab() {
               <div style={{fontSize:10,color:C.muted,fontWeight:700,marginBottom:4}}>STATUS</div>
               <select value={ci.status} onChange={e=>upCI(ci.id,'status',e.target.value)}
                 style={{width:"100%",padding:"5px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13,color:cfg.dot}}>
-                <option value="showed"> Showed</option>
-                <option value="skipped">⏭ Skipped</option>
-                <option value="noshow"> No Show</option>
+                <option value="showed">Showed</option>
+                <option value="noshow">No Show</option>
+                <option value="skipped">Skipped</option>
+                <option value="noreply">No Reply</option>
+                <option value="replied">Replied</option>
+                <option value="noreply">No Reply</option>
+                <option value="replied">Replied</option>
               </select>
             </div>
             {/* VAs */}
@@ -2326,9 +2333,13 @@ function KPITab() {
             <div>
               <div style={{fontSize:11,color:C.muted,fontWeight:600,marginBottom:4}}>STATUS</div>
               <select value={newCI.status} onChange={e=>setNewCI(p=>({...p,status:e.target.value}))} style={{...sel,width:"100%"}}>
-                <option value="showed"> Showed</option>
-                <option value="skipped">⏭ Skipped</option>
-                <option value="noshow"> No Show</option>
+                <option value="showed">Showed</option>
+                <option value="noshow">No Show</option>
+                <option value="skipped">Skipped</option>
+                <option value="noreply">No Reply</option>
+                <option value="replied">Replied</option>
+                <option value="noreply">No Reply</option>
+                <option value="replied">Replied</option>
               </select>
             </div>
             {/* VAs */}
@@ -2339,7 +2350,7 @@ function KPITab() {
                   <div style={{fontSize:12,color:C.muted,width:20,textAlign:"right",flexShrink:0}}>#{i+1}</div>
                   <input value={v.name} placeholder="VA full name" onChange={e=>setVA(i,"name",e.target.value)}
                     style={{flex:"1 1 150px",padding:"6px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13}}/>
-                  <input value={v.score} placeholder="Score %" type="number" min="0" max="100" onChange={e=>setVA(i,"score",e.target.value)}
+                  <input value={v.score} placeholder="Score % or N/A" onChange={e=>setVA(i,"score",e.target.value)}
                     style={{width:90,padding:"6px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13}}/>
                   {newCI.vas.length>1&&(
                     <button onClick={()=>removeVA(i)} style={{background:"none",border:"none",cursor:"pointer",color:C.muted,fontSize:16,padding:0,flexShrink:0}}>×</button>
@@ -2492,7 +2503,7 @@ function KPITab() {
                             c.vas.map((v,i)=>(
                               <div key={i} style={{display:"flex",alignItems:"center",gap:6}}>
                                 <span style={{color:C.dark}}>{v.name||"—"}</span>
-                                {v.score!==null&&v.score!==undefined&&<span style={{fontWeight:700,fontSize:12,color:sc(+v.score),background:C.gray,padding:"1px 6px",borderRadius:99}}>{v.score}%</span>}
+                                {v.score!==null&&v.score!==undefined&&<span style={{fontWeight:700,fontSize:12,color:String(v.score).toUpperCase()==='N/A'?C.muted:sc(+v.score),background:C.gray,padding:"1px 6px",borderRadius:99}}>{String(v.score).toUpperCase()==='N/A'?'N/A':`${v.score}%`}</span>}
                               </div>
                             ))
                           }
@@ -2543,7 +2554,7 @@ function KPITab() {
             {["All",...AMs].map(a=>(
               <button key={a} onClick={()=>setAmFilter(a)} style={{padding:"6px 12px",borderRadius:8,border:"none",cursor:"pointer",fontSize:12,background:amFilter===a?(a==="All"?C.dark:AM_COLORS[a]):C.gray,color:amFilter===a?C.white:C.dark,fontWeight:amFilter===a?700:400}}>{a==="All"?"All AMs":a}</button>
             ))}
-            {[["All","All statuses"],["showed"," Showed"],["skipped","⏭ Skipped"],["noshow"," No Show"]].map(([v,l])=>(
+            {[["All","All statuses"],["showed","Showed"],["noshow","No Show"],["skipped","Skipped"],["noreply","No Reply"],["replied","Replied"]].map(([v,l])=>(
               <button key={v} onClick={()=>setStatusFilter(v)} style={{padding:"6px 12px",borderRadius:8,border:`1px solid ${statusFilter===v?C.dark:C.border}`,cursor:"pointer",fontSize:12,background:statusFilter===v?C.dark:C.white,color:statusFilter===v?C.white:C.dark,fontWeight:statusFilter===v?700:400}}>{l}</button>
             ))}
           </div>
@@ -2574,7 +2585,7 @@ function KPITab() {
                             c.vas.map((v,i)=>(
                               <div key={i} style={{display:"flex",alignItems:"center",gap:6}}>
                                 <span>{v.name||"—"}</span>
-                                {v.score!==null&&v.score!==undefined&&<span style={{fontWeight:700,fontSize:12,color:sc(+v.score)}}>{v.score}%</span>}
+                                {v.score!==null&&v.score!==undefined&&<span style={{fontWeight:700,fontSize:12,color:String(v.score).toUpperCase()==='N/A'?C.muted:sc(+v.score)}}>{String(v.score).toUpperCase()==='N/A'?'N/A':`${v.score}%`}</span>}
                               </div>
                             ))
                           }
