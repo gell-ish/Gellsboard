@@ -4219,7 +4219,6 @@ function TLATOTab() {
       .some(v => v && v.toLowerCase().includes(q));
     return ms
       && (statusFilter  === "All" || r.status    === statusFilter)
-      && (companyFilter === "All" || r.company   === companyFilter)
       && (tlFilter      === "All" || r.tl        === tlFilter)
       && (amFilter      === "All" || r.am        === amFilter)
       && (salesFilter   === "All" || r.salesRep  === salesFilter);
@@ -4297,14 +4296,35 @@ function TLATOTab() {
         <table style={{width:"100%",borderCollapse:"collapse",fontSize:12,minWidth:900}}>
           <thead>
             <tr style={{background:C.dark,color:C.white}}>
-              {["Start","Name of VA","VA Tag","Status","Agency POC","TZ"].map((h,i)=>(
+              {["Start","Name of VA","VA Tag"].map((h,i)=>(
                 <th key={i} style={{padding:"9px 12px",textAlign:"left",fontWeight:600,fontSize:11,whiteSpace:"nowrap"}}>{h}</th>
               ))}
               {[
-                {key:"company",label:"Company",opts:["All",...new Set(records.map(r=>r.company).filter(Boolean)).values()].slice(0,50),val:companyFilter,set:setCompanyFilter,ac:C.dark},
-                {key:"tl",label:"TL",opts:["All","Martin","Vince","Karla","Rezyl","ED","RJ"],val:tlFilter,set:setTlFilter,ac:C.teal},
-                {key:"am",label:"AM",opts:["All","Niccole","Karla","Alicia"],val:amFilter,set:setAmFilter,ac:C.red},
-                {key:"sales",label:"Sales Rep",opts:salesOptions,val:salesFilter,set:setSalesFilter,ac:C.purple},
+                {key:"status",  label:"Status",   opts:["All",...new Set(records.map(r=>r.status).filter(Boolean))],  val:statusFilter, set:setStatusFilter, ac:C.dark},
+              ].map(({key,label,opts,val,set,ac})=>(
+                <th key={key} style={{padding:"9px 12px",textAlign:"left",fontWeight:600,fontSize:11,whiteSpace:"nowrap",position:"relative"}}>
+                  <button onClick={e=>{e.stopPropagation();const el=document.getElementById(`tl-ato-${key}`);el.style.display=el.style.display==="block"?"none":"block";}}
+                    style={{background:val!=="All"?ac:"transparent",color:val!=="All"?C.white:"#CBD5E1",border:"none",cursor:"pointer",
+                      fontSize:11,fontWeight:700,padding:val!=="All"?"2px 8px":"0",borderRadius:6,display:"flex",alignItems:"center",gap:4}}>
+                    {val==="All"?label:val} ▾
+                  </button>
+                  <div id={`tl-ato-${key}`} style={{display:"none",position:"absolute",top:"100%",left:0,zIndex:99,background:C.white,
+                    border:`1px solid ${C.border}`,borderRadius:8,boxShadow:"0 4px 16px rgba(0,0,0,0.12)",padding:6,minWidth:130}}>
+                    {opts.map(o=>(
+                      <div key={o} onClick={e=>{e.stopPropagation();set(o);document.getElementById(`tl-ato-${key}`).style.display="none";}}
+                        style={{padding:"6px 10px",cursor:"pointer",borderRadius:6,fontSize:12,color:C.dark,
+                          fontWeight:val===o?700:400,background:val===o?C.gray:"transparent"}}>{o==="All"?`All ${label}s`:o}</div>
+                    ))}
+                  </div>
+                </th>
+              ))}
+              {["Company","Agency POC","TZ"].map((h,i)=>(
+                <th key={`m${i}`} style={{padding:"9px 12px",textAlign:"left",fontWeight:600,fontSize:11,whiteSpace:"nowrap"}}>{h}</th>
+              ))}
+              {[
+                {key:"tl",    label:"TL",       opts:["All","Martin","Vince","Karla","Rezyl","ED","RJ"],  val:tlFilter,     set:setTlFilter,     ac:C.teal},
+                {key:"am",    label:"AM",        opts:["All","Niccole","Karla","Alicia"],                 val:amFilter,     set:setAmFilter,     ac:C.red},
+                {key:"sales", label:"Sales Rep", opts:salesOptions,                                       val:salesFilter,  set:setSalesFilter,  ac:C.purple},
               ].map(({key,label,opts,val,set,ac})=>(
                 <th key={key} style={{padding:"9px 12px",textAlign:"left",fontWeight:600,fontSize:11,whiteSpace:"nowrap",position:"relative"}}>
                   <button onClick={e=>{e.stopPropagation();const el=document.getElementById(`tl-ato-${key}`);el.style.display=el.style.display==="block"?"none":"block";}}
@@ -4344,7 +4364,7 @@ function TLATOTab() {
                     </td>
                     <td style={{padding:"8px 12px",minWidth:160}}>{r.company}</td>
                     <td style={{padding:"8px 12px"}}>{r.agencyPOC}</td>
-                    <td style={{padding:"8px 12px",whiteSpace:"nowrap",color:C.muted}}>{r.timeZone}</td>
+                    <td style={{padding:"8px 12px",color:C.muted,whiteSpace:"nowrap"}}>{r.timeZone}</td>
                     <td style={{padding:"8px 12px",fontWeight:600,color:C.teal}}>{r.tl}</td>
                     <td style={{padding:"8px 12px",fontWeight:600,color:r.am?({Niccole:C.red,Karla:C.blue,Alicia:C.teal}[r.am]||C.dark):C.muted}}>{r.am||"—"}</td>
                     <td style={{padding:"8px 12px"}}>{r.salesRep}</td>
