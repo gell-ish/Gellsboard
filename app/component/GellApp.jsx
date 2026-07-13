@@ -1,4 +1,4 @@
-"use client";"use client";
+"use client";
 
 import React, { useState, useMemo, useRef, useContext, createContext, useEffect, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
@@ -431,6 +431,598 @@ const INIT_ACCOUNTS = [
   {id:43, agency:"VRP Insurance Agency",                                contact:"Vincent Pesce",                        vas:["Jason Kyle Veroy","Juleinee Tayao"],                                                                                                                                                                                                         status:"Active",    phone:"631-738-7300",   state:"NY - EST"},
   {id:44, agency:"Marenco Insurance Agency",                            contact:"Alex Marenco",                         vas:["Daniela Generalao"],                                                                                                                                                                                                                          status:"Active",    phone:"",               state:""},
   {id:45, agency:"World Insurance",                                     contact:"Chris Badger",                         vas:["Kristoffer Randy Ramayla","Princess Jolisse Sastrillas"],                                                                                                                                                                                    status:"Active",    phone:"",               state:""},
+];
+
+const INIT_TL_ATO = [
+  {id:1,start:"7/8/2020",vaName:"King Paje",vaTag:"Gen VA",status:"Active",vaEmail:"kingrayzpaje29@gmail.com",company:"Aspen Insurance Agency",agencyPOC:"Jon Goldenberg",timeZone:"CO - MDT",tl:"Martin",am:"Alicia",salesRep:"Austin"},
+  {id:2,start:"8/25/2020",vaName:"Daneca Mary Joy",vaTag:"Gen VA",status:"Active",vaEmail:"danecaalegria@gmail.com",company:"Grimes Insurance Agency",agencyPOC:"Ryan Reynolds",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:3,start:"9/9/2020",vaName:"Jennifer Pelle",vaTag:"Gen VA",status:"Active",vaEmail:"jennifer26pelle@gmail.com",company:"Grimes Insurance Agency",agencyPOC:"Ryan Reynolds",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:4,start:"9/14/2020",vaName:"Nikko Lim",vaTag:"Gen VA",status:"Active",vaEmail:"kunilim5@gmail.com",company:"Grimes Insurance Agency/McMichael Insurance Agency",agencyPOC:"Ryan Reynolds",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:5,start:"1/28/2021",vaName:"Marc Nadine",vaTag:"Gen VA",status:"Active",vaEmail:"nhad_shimmer14@yahoo.com",company:"Florida Best Quote",agencyPOC:"Nina Mastridge",timeZone:"FL - EST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:6,start:"3/8/2021",vaName:"Joshua Poe Cadano",vaTag:"Gen VA",status:"Resigned",vaEmail:"joshua.cadano.3@gmail.com",company:"Turbodial",agencyPOC:"",timeZone:"",tl:"Karla",am:"Niccole",salesRep:"Austin"},
+  {id:7,start:"3/15/2021",vaName:"Bobby Lyhne",vaTag:"Gen VA",status:"Active",vaEmail:"bobbylyhnem@gmail.com",company:"Grimes Insurance Agency",agencyPOC:"Ryan Reynolds",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:8,start:"3/15/2021",vaName:"Mark Caballles",vaTag:"Gen VA",status:"Active",vaEmail:"standupbenice@gmail.com",company:"Grimes Insurance Agency",agencyPOC:"Ryan Reynolds",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:9,start:"4/12/2021",vaName:"Sebastian Dominique",vaTag:"Gen VA",status:"Resigned",vaEmail:"bastipilay77@gmail.com",company:"Raleigh Insurance Group",agencyPOC:"Daniel Rohrbaugh",timeZone:"NC- EST",tl:"Rezyl",am:"Niccole",salesRep:"Austin"},
+  {id:10,start:"4/19/2021",vaName:"Ma. Mikaela Alonso",vaTag:"Gen VA",status:"Active",vaEmail:"mikaelaalonso0129@gmail.com",company:"Grimes Insurance Agency",agencyPOC:"Ryan Reynolds",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:11,start:"5/19/2021",vaName:"Karla Mae Jardeloza",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"karlajardeloza18@gmail.com",company:"Atlantic Insurance Agency",agencyPOC:"",timeZone:"FL - EST",tl:"",am:"Cancelled",salesRep:"Austin"},
+  {id:12,start:"5/26/2021",vaName:"Samuel Blanco",vaTag:"Gen VA",status:"Active",vaEmail:"samblancojr89@gmail.com",company:"Trailstone Insurance Group",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:13,start:"6/14/2021",vaName:"Ella Marie",vaTag:"Gen VA",status:"Active",vaEmail:"jellamarie18@gmail.com",company:"Trailstone Insurance Group",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:14,start:"7/28/2021",vaName:"Crisben Ian Barra",vaTag:"Gen VA",status:"Terminated",vaEmail:"crisbenian11@gmail.com",company:"Blackwell Insurance Agency",agencyPOC:"Leigh Zellmer / Ken Haraughty",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"Austin"},
+  {id:15,start:"8/3/2021",vaName:"Elvic Trixie Lynn",vaTag:"Gen VA",status:"Resigned",vaEmail:"elvictrixielynnroble@gmail.com",company:"Guardian insurance LLC",agencyPOC:"Chris Dupill",timeZone:"MA - EST",tl:"Rezyl",am:"Niccole",salesRep:"Austin"},
+  {id:16,start:"8/16/2021",vaName:"Kristian  Rhey Piodos",vaTag:"Gen VA",status:"Active",vaEmail:"krpiodos@gmail.com",company:"Florida Best Quote",agencyPOC:"Nina Mastridge",timeZone:"FL - EST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:17,start:"8/23/2021",vaName:"Andrea Magpantay",vaTag:"Gen VA",status:"Active",vaEmail:"acmagpantay4@gmail.com",company:"Trailstone Insurance Group",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:18,start:"8/23/2021",vaName:"John Michael Clarin",vaTag:"Gen VA",status:"Active",vaEmail:"clarin_4@yahoo.com",company:"Priority Risk Management",agencyPOC:"Mark Shoultz",timeZone:"IN - EST",tl:"ED",am:"Niccole",salesRep:"Austin"},
+  {id:19,start:"10/4/2021",vaName:"Melody David",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"Melodydavid.1994@gmail.com",company:"The Thompson Group",agencyPOC:"Sherri Logan",timeZone:"IN - EST",tl:"",am:"Cancelled",salesRep:"Austin"},
+  {id:20,start:"10/19/2021",vaName:"Mark Jayson Javier",vaTag:"Gen VA",status:"Terminated",vaEmail:"seth.zephyr@gmail.com",company:"Agency Automate",agencyPOC:"Bill Jenkins",timeZone:"MN - CST",tl:"Karla",am:"Niccole",salesRep:"Austin"},
+  {id:21,start:"11/1/2021",vaName:"Gee-chelle Mariexris Albellera",vaTag:"Gen VA",status:"Active",vaEmail:"geechellea@gmail.com",company:"D&E Insurance Group",agencyPOC:"Eric Newendrop",timeZone:"AZ - MDT",tl:"Martin",am:"Alicia",salesRep:"Austin"},
+  {id:22,start:"11/8/2021",vaName:"Liezel Ann Corlet",vaTag:"Gen VA",status:"Active",vaEmail:"la.corlet@gmail.com",company:"Foundations Insurance",agencyPOC:"Rebecca Richardson",timeZone:"CO - MDT",tl:"Martin",am:"Karla",salesRep:"Johnny"},
+  {id:23,start:"11/15/2021",vaName:"Patrick Jardinel",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"pdjardinel@gmail.com",company:"Rieder Wellness Ltd./LAVA Automation",agencyPOC:"",timeZone:"",tl:"",am:"Cancelled",salesRep:""},
+  {id:24,start:"12/27/2021",vaName:"Denver Eneluna",vaTag:"Gen VA",status:"Active",vaEmail:"dusteneluna@gmail.com",company:"Associated Insurance Services",agencyPOC:"Kimberly Mathews",timeZone:"IN - EST",tl:"Rezyl",am:"Karla",salesRep:"Austin"},
+  {id:25,start:"1/10/2022",vaName:"Anna Katrina Cabatingan",vaTag:"Gen VA",status:"Active",vaEmail:"katrina1917@gmail.com",company:"Prostar Insurance",agencyPOC:"John Pfeil",timeZone:"WA - PST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:26,start:"2/7/2022",vaName:"Robert Lucio Calope",vaTag:"Gen VA",status:"Active",vaEmail:"robertcalope@gmail.com",company:"Florida Best Quote",agencyPOC:"Nina Mastridge",timeZone:"FL - EST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:27,start:"2/7/2022",vaName:"Jason Cedric Xavier",vaTag:"Gen VA",status:"Active",vaEmail:"jasoncedricxavier@gmail.com",company:"Prostar Insurance",agencyPOC:"John Pfeil",timeZone:"WA - PST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:28,start:"3/21/2022",vaName:"MARY ROSE JOFEL",vaTag:"Gen VA",status:"Terminated",vaEmail:"mrjvillacampa@gmail.com",company:"PCFG Insurance",agencyPOC:"Liam O'Brien",timeZone:"NY - EST",tl:"",am:"Cancelled",salesRep:""},
+  {id:29,start:"3/21/2022",vaName:"Tatiana Rose",vaTag:"Gen VA",status:"Terminated",vaEmail:"etatianarose91596@gmail.com",company:"Pinnacle Partners Insurance Companies",agencyPOC:"Steve Kohlbrenner",timeZone:"PA - EST",tl:"Karla",am:"Niccole",salesRep:"Johnny"},
+  {id:30,start:"4/4/2022",vaName:"Vincent Giorgio",vaTag:"Gen VA",status:"Active",vaEmail:"vincentmusne@gmail.com",company:"Trailstone Insurance Group",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:31,start:"4/6/2022",vaName:"Erlan James Liguan",vaTag:"Gen VA",status:"Active",vaEmail:"erlanjames.today@gmail.com",company:"Florida Best Quote",agencyPOC:"Nina Mastridge",timeZone:"FL - EST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:32,start:"4/18/2022",vaName:"Jonard",vaTag:"Gen VA",status:"Terminated",vaEmail:"jonard.asoy24@gmail.com",company:"Heaton Bennett Insurance",agencyPOC:"Ross Bennett",timeZone:"TX - CST",tl:"Karla",am:"Niccole",salesRep:"Austin"},
+  {id:33,start:"5/2/2022",vaName:"Camille Katrina",vaTag:"Gen VA",status:"Terminated",vaEmail:"misscamilleang@gmail.com",company:"PMIA",agencyPOC:"Matt Clark",timeZone:"",tl:"",am:"Cancelled",salesRep:""},
+  {id:34,start:"5/2/2022",vaName:"Ryan Mendoza",vaTag:"Gen VA",status:"Terminated",vaEmail:"ryandoysabas@gmail.com",company:"PMIA",agencyPOC:"Matt Clark",timeZone:"",tl:"",am:"Cancelled",salesRep:""},
+  {id:35,start:"5/2/2022",vaName:"Shaina",vaTag:"Gen VA",status:"Terminated",vaEmail:"smheyres@gmail.com",company:"PCFG Insurance",agencyPOC:"Liam O'Brien",timeZone:"NY - EST",tl:"",am:"Cancelled",salesRep:""},
+  {id:36,start:"5/9/2022",vaName:"Maria Angela Alonso",vaTag:"Gen VA",status:"Resigned",vaEmail:"maangela.alonso@gmail.com",company:"Heaton Bennett Insurance",agencyPOC:"Ross Bennett",timeZone:"TX - CST",tl:"Karla",am:"Niccole",salesRep:"Austin"},
+  {id:37,start:"5/23/2022",vaName:"Chelsea Canete",vaTag:"Gen VA",status:"Active",vaEmail:"canetechelseap207@gmail.com",company:"Best Insutance Group",agencyPOC:"Brian Smith",timeZone:"AL - CST",tl:"RJ",am:"Alicia",salesRep:"Mike"},
+  {id:38,start:"5/23/2022",vaName:"Steven",vaTag:"Gen VA",status:"Terminated",vaEmail:"IAMSTEVEnumber1@gmail.com",company:"Little Giant Marketing",agencyPOC:"John Graham",timeZone:"",tl:"",am:"Cancelled",salesRep:"Johnny"},
+  {id:39,start:"5/31/2022",vaName:"Arlyne Julia",vaTag:"Gen VA",status:"Terminated",vaEmail:"aj.taganas@yahoo.com",company:"PMIA",agencyPOC:"Matt Clark",timeZone:"",tl:"",am:"Cancelled",salesRep:""},
+  {id:40,start:"5/31/2022",vaName:"Krist Edu",vaTag:"Gen VA",status:"Terminated",vaEmail:"kristjovenier@gmail.com",company:"PMIA",agencyPOC:"Matt Clark",timeZone:"",tl:"",am:"Cancelled",salesRep:""},
+  {id:41,start:"6/7/2022",vaName:"Jaenelle Mikaela",vaTag:"Gen VA",status:"Terminated",vaEmail:"gabutero.mikaela@gmail.com",company:"Pinnacle Partners Insurance Companies",agencyPOC:"Steve Kohlbrenner",timeZone:"PA - EST",tl:"Vince",am:"Niccole",salesRep:"Johnny"},
+  {id:42,start:"6/7/2022",vaName:"Jaenelle Mikaela",vaTag:"Gen VA",status:"Terminated",vaEmail:"gabutero.mikaela@gmail.com",company:"Halo Insurance and Benefits Group",agencyPOC:"Carlyne Weber",timeZone:"",tl:"",am:"Cancelled",salesRep:"Johnny"},
+  {id:43,start:"6/9/2022",vaName:"Faith del Rosario",vaTag:"Gen VA",status:"Active",vaEmail:"faithdelrosario34@gmail.com",company:"Valley Insurance Agency Alliance",agencyPOC:"Robert Qaoud",timeZone:"MO - CST",tl:"Vince",am:"Niccole",salesRep:"Johnny"},
+  {id:44,start:"6/9/2022",vaName:"Ryan James Villarmia",vaTag:"Gen VA",status:"BuyOut",vaEmail:"rjbvillarmia13@gmail.com",company:"Valley Insurance Agency Alliance",agencyPOC:"Robert Qaoud",timeZone:"MO - CST",tl:"Vince",am:"Niccole",salesRep:"Johnny"},
+  {id:45,start:"6/17/2022",vaName:"Antonio Miguel",vaTag:"Gen VA",status:"Terminated",vaEmail:"migueleugenio94@gmail.com",company:"Heaton Bennett Insurance",agencyPOC:"Ross Bennett",timeZone:"TX - CST",tl:"Karla",am:"Niccole",salesRep:"Austin"},
+  {id:46,start:"6/20/2022",vaName:"Kenny Salvaña",vaTag:"Gen VA",status:"Active",vaEmail:"forcaster93@gmail.com",company:"Trailstone Insurance Group",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:47,start:"6/29/2022",vaName:"Jeff Espinosa",vaTag:"Gen VA",status:"Terminated",vaEmail:"Zeff.A.Espinosa@gmail.com",company:"Florida Best Quote",agencyPOC:"Nina Mastridge",timeZone:"FL - EST",tl:"Karla",am:"Niccole",salesRep:"Austin"},
+  {id:48,start:"7/7/2022",vaName:"Jhon Reyel Jimenez",vaTag:"Gen VA",status:"Terminated",vaEmail:"reyeljimenez555@gmail.com",company:"Valley Insurance Agency Alliance",agencyPOC:"Robert Qaoud",timeZone:"MO - CST",tl:"Karla",am:"Niccole",salesRep:"Johnny"},
+  {id:49,start:"7/13/2022",vaName:"Rojie May Cudal",vaTag:"Gen VA",status:"Active",vaEmail:"rojiemayc@gmail.com",company:"Valley Insurance Agency Alliance",agencyPOC:"Robert Qaoud",timeZone:"MO - CST",tl:"Vince",am:"Niccole",salesRep:"Johnny"},
+  {id:50,start:"7/26/2022",vaName:"Khristian Dignos",vaTag:"Gen VA",status:"Terminated",vaEmail:"khristiandignos038@gmail.com",company:"Little Giant Marketing",agencyPOC:"John Graham",timeZone:"",tl:"",am:"Cancelled",salesRep:"Johnny"},
+  {id:51,start:"8/8/2022",vaName:"Leslie Daffodil Cabonilas",vaTag:"Gen VA",status:"Terminated",vaEmail:"leslie14cabs@gmail.com",company:"Trailstone Insurance Group",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:52,start:"10/24/2022",vaName:"Christian Paul Cervantes",vaTag:"Gen VA",status:"Active",vaEmail:"christianpaulcervantes0209@gmail.com",company:"The Weikum Group",agencyPOC:"Ken Weikum",timeZone:"GA - EST",tl:"Rezyl",am:"Karla",salesRep:"Johnny"},
+  {id:53,start:"11/9/2022",vaName:"Shadrach Cabunoc",vaTag:"Gen VA",status:"Active",vaEmail:"berhelentize@gmail.com",company:"Great Park Insurance",agencyPOC:"Daniel Seong",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Austin"},
+  {id:54,start:"12/27/2022",vaName:"Diane Marie Dotollo",vaTag:"Gen VA",status:"Resigned",vaEmail:"diane.dotollo@gmail.com",company:"Michael Sailor Insurance",agencyPOC:"Michael Sailor",timeZone:"CO - MDT",tl:"",am:"Karla",salesRep:"Johnny"},
+  {id:55,start:"1/6/2023",vaName:"Althea Sajeda N. Clao",vaTag:"Gen VA",status:"Active",vaEmail:"altheasajedaclao@gmail.com",company:"Grimes Insurance Agency",agencyPOC:"Ryan Reynolds",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:56,start:"1/18/2023",vaName:"Leslie Montenegro",vaTag:"Gen VA",status:"Resigned",vaEmail:"lesliemontenegro18@gmail.com",company:"Creekside Risk",agencyPOC:"Chris Badger",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:57,start:"1/21/2023",vaName:"Weneliza Eyo",vaTag:"Gen VA",status:"Active",vaEmail:"kenli2015lp@gmail.com",company:"Florida Best Quote",agencyPOC:"Nina Mastridge",timeZone:"FL - EST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:58,start:"2/26/2023",vaName:"Christine Joyce Dasalla Gicain",vaTag:"Gen VA",status:"Active",vaEmail:"tinegicainj@gmail.com",company:"Meridian Investigative Group",agencyPOC:"Shawn Rae",timeZone:"FL - EST",tl:"Rezyl",am:"Karla",salesRep:"Johnny"},
+  {id:59,start:"2/28/2023",vaName:"Gemma Salonga",vaTag:"Gen VA",status:"Active",vaEmail:"letiwaffle@gmail.com",company:"4 State Insurance Agency",agencyPOC:"Margaret Rutherford",timeZone:"OK - CST",tl:"RJ",am:"Karla",salesRep:"Johnny"},
+  {id:60,start:"3/8/2023",vaName:"Rixer Llego",vaTag:"Gen VA",status:"Resigned",vaEmail:"rixer.llego@gmail.com",company:"Great Park Insurance",agencyPOC:"Daniel Seong",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Austin"},
+  {id:61,start:"3/16/2023",vaName:"Peter Lorenz Acosta",vaTag:"Gen VA",status:"Active",vaEmail:"peterlorenzacosta27@gmail.com",company:"Grimes Insurance",agencyPOC:"Niki Saavedra",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:62,start:"3/16/2023",vaName:"Edgar Sarmieno",vaTag:"Gen VA",status:"Terminated",vaEmail:"edgdvsarmiento@addu.edu.ph",company:"Priority Risk Management",agencyPOC:"Mark Shoultz",timeZone:"IN - EST",tl:"Karla",am:"Niccole",salesRep:"Austin"},
+  {id:63,start:"3/20/2023",vaName:"John Enrico Auxillan",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"johnenrico1998@gmail.com",company:"Chris Mann Insurance Services, Inc",agencyPOC:"Christopher Mann",timeZone:"",tl:"",am:"Cancelled",salesRep:"Mike"},
+  {id:64,start:"3/21/2023",vaName:"Garliet Aguilar",vaTag:"Gen VA",status:"Active",vaEmail:"aguilargarliet@gmail.com",company:"Florida Best Quote",agencyPOC:"Nina Mastridge",timeZone:"FL - EST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:65,start:"3/21/2023",vaName:"Rosanna Katrina Obeal",vaTag:"Gen VA",status:"Active",vaEmail:"katrina.obeal26@gmail.com",company:"Florida Best Quote",agencyPOC:"Nina Mastridge",timeZone:"FL - EST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:66,start:"3/29/2023",vaName:"Karl Loyd Sison",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"karlloydsison1997@gmail.com",company:"Pines Insurance Group",agencyPOC:"Jack McClelland",timeZone:"NC - EST",tl:"",am:"Cancelled",salesRep:"Austin"},
+  {id:67,start:"4/3/2023",vaName:"Kara Matinong",vaTag:"Gen VA",status:"Terminated",vaEmail:"karamatinong0728@gmail.com",company:"Rushdi Insurance",agencyPOC:"",timeZone:"",tl:"",am:"Cancelled",salesRep:""},
+  {id:68,start:"4/3/2023",vaName:"Razmia Abutazil",vaTag:"Gen VA",status:"Terminated",vaEmail:"abutazilrazmia@gmail.com",company:"Procare",agencyPOC:"Filip Lundstedt",timeZone:"FL - EST",tl:"Rezyl",am:"Karla",salesRep:"Mike"},
+  {id:69,start:"4/10/2023",vaName:"Christine Joy Aquino",vaTag:"Gen VA",status:"Terminated",vaEmail:"christinea616@gmail.com",company:"Florida Best Quote",agencyPOC:"Nina Mastridge",timeZone:"FL - EST",tl:"Karla",am:"Niccole",salesRep:"Austin"},
+  {id:70,start:"4/11/2023",vaName:"Mary Jane Tejero",vaTag:"Gen VA",status:"Active",vaEmail:"maryjanetejero0107@gmail.com",company:"Heaton Bennett Insurance",agencyPOC:"Ross Bennett",timeZone:"TX - CST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:71,start:"4/11/2023",vaName:"Reno Diansay",vaTag:"Gen VA",status:"Active",vaEmail:"diansayreno143@gmail.com",company:"Heaton Bennett Insurance",agencyPOC:"Ross Bennett",timeZone:"TX - CST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:72,start:"4/13/2023",vaName:"John Vergel Entize",vaTag:"Gen VA",status:"Terminated",vaEmail:"berhelentize@gmail.com",company:"Great Park Insurance",agencyPOC:"Daniel Seong",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Austin"},
+  {id:73,start:"4/17/2023",vaName:"Jenevieve Carillo",vaTag:"Gen VA",status:"Terminated",vaEmail:"carillojenevieve@gmail.com",company:"Extra Mile Insurance Solutions",agencyPOC:"Niki Henley",timeZone:"",tl:"",am:"Cancelled",salesRep:"Celina"},
+  {id:74,start:"4/20/2023",vaName:"Kimberly Dawn Maglanoc",vaTag:"Gen VA",status:"Active",vaEmail:"kimaglanoc@gmail.com",company:"Procare Consluting",agencyPOC:"Filip Lundstedt",timeZone:"FL - EST",tl:"Rezyl",am:"Karla",salesRep:"Mike"},
+  {id:75,start:"4/24/2023",vaName:"Apple Mae Ybas",vaTag:"Gen VA",status:"Terminated",vaEmail:"powerple21@gmail.com",company:"Rushdi Insurance",agencyPOC:"",timeZone:"",tl:"",am:"Cancelled",salesRep:""},
+  {id:76,start:"4/24/2023",vaName:"Mikko Amadeo Bueno",vaTag:"Gen VA",status:"Active",vaEmail:"mikko.bueno.bd.ph@gmail.com",company:"Hays and Hagan Insurance",agencyPOC:"Cory Hagan",timeZone:"TX - CST",tl:"",am:"Cancelled",salesRep:"Mike"},
+  {id:77,start:"4/24/2023",vaName:"Raynard Aquino",vaTag:"Gen VA",status:"Terminated",vaEmail:"raynking.aquino@gmail.com",company:"Underwood Agency",agencyPOC:"Chuch Clark",timeZone:"",tl:"",am:"Cancelled",salesRep:""},
+  {id:78,start:"5/1/2023",vaName:"Jerome Suazo",vaTag:"Gen VA",status:"Resigned",vaEmail:"jeromesuazo@gmail.com",company:"Priority Risk Management",agencyPOC:"Mark Shoultz",timeZone:"IN - EST",tl:"ED",am:"Niccole",salesRep:"Austin"},
+  {id:79,start:"5/1/2023",vaName:"Jacob Martin Heje",vaTag:"Gen VA",status:"Terminated",vaEmail:"jacobheje.2000@gmail.com",company:"Underwood Agency",agencyPOC:"Chuch Clark",timeZone:"",tl:"",am:"Cancelled",salesRep:""},
+  {id:80,start:"5/2/2023",vaName:"Gifford Nale",vaTag:"Gen VA",status:"Active",vaEmail:"gifford.nale1995@gmail.com",company:"Steele Insurance Agency",agencyPOC:"Steve Renteria",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Austin"},
+  {id:81,start:"5/2/2023",vaName:"Jesselyn Xena Paronda",vaTag:"Gen VA",status:"Active",vaEmail:"xenaparonda@gmail.com",company:"Steele Insurance Agency",agencyPOC:"Steve Renteria",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Austin"},
+  {id:82,start:"5/3/2023",vaName:"John Paul Maceda",vaTag:"Gen VA",status:"Terminated",vaEmail:"jpmaceda39@gmail.com",company:"Hagan Insurance",agencyPOC:"Cory Hagan",timeZone:"TX - CST",tl:"RJ",am:"Cancelled",salesRep:"Mike"},
+  {id:83,start:"5/5/2023",vaName:"An Ampong",vaTag:"Gen VA",status:"Terminated",vaEmail:"amponggmz@gmail.com",company:"Trailstone Insurance",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:84,start:"5/5/2023",vaName:"Shaine Daryl Javido",vaTag:"Gen VA",status:"Resigned",vaEmail:"ShaineJavido@gmail.com",company:"Trailstone Insurance",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:85,start:"5/8/2023",vaName:"Nathalie Mae Santisas",vaTag:"Gen VA",status:"Active",vaEmail:"nathsantisas@gmail.com",company:"Grimes Insurance Agency",agencyPOC:"Ryan Reynolds",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:86,start:"5/8/2023",vaName:"Saramie Oani",vaTag:"Gen VA",status:"Active",vaEmail:"saramieoani@gmail.com",company:"Grimes Insurance Agency",agencyPOC:"Ryan Reynolds",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:87,start:"5/8/2023",vaName:"Ghaylee Mae Jarligo",vaTag:"Gen VA",status:"Resigned",vaEmail:"ghaylejarligo@gmail.com",company:"Carnegie Home & Auto",agencyPOC:"",timeZone:"",tl:"",am:"Cancelled",salesRep:""},
+  {id:88,start:"5/11/2023",vaName:"Raymond Vincent Vivar",vaTag:"Gen VA",status:"Terminated",vaEmail:"ravenvivarian10@gmail.com",company:"Jerry Farcone",agencyPOC:"Jerry Farcone",timeZone:"",tl:"",am:"Cancelled",salesRep:"Mike"},
+  {id:89,start:"5/15/2023",vaName:"Jose Rey Solatorio",vaTag:"Gen VA",status:"Active",vaEmail:"josereysolatorio@gmail.com",company:"CT3 Insurance Group",agencyPOC:"Tommy Sellars",timeZone:"NC - EST",tl:"Rezyl",am:"Alicia",salesRep:"Mike"},
+  {id:90,start:"5/15/2023",vaName:"Laurence Balaota",vaTag:"Gen VA",status:"Terminated",vaEmail:"balaotalaurence@gmail.com",company:"Community Association Insurance Consulting, LLC",agencyPOC:"Maureen Porter CAIC",timeZone:"MN",tl:"",am:"Cancelled",salesRep:"Mike"},
+  {id:91,start:"5/16/2023",vaName:"Analyn Enterina",vaTag:"Gen VA",status:"Terminated",vaEmail:"analynenterina04@gmail.com",company:"Florida Best Quote",agencyPOC:"Nina Mastridge",timeZone:"FL - EST",tl:"Karla",am:"Niccole",salesRep:"Austin"},
+  {id:92,start:"5/16/2023",vaName:"Joshua Bajao",vaTag:"Gen VA",status:"Terminated",vaEmail:"joshuabajao19@gmail.com",company:"One Choice Insurance",agencyPOC:"",timeZone:"",tl:"",am:"Cancelled",salesRep:""},
+  {id:93,start:"5/16/2023",vaName:"Ylaissa Noreen Navales",vaTag:"Gen VA",status:"Terminated",vaEmail:"ylaissanoreennavales@gmail.com",company:"Florida Best Quote",agencyPOC:"Nina Mastridge",timeZone:"FL - EST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:94,start:"5/22/2023",vaName:"Daryl Tagadiad",vaTag:"Gen VA",status:"Active",vaEmail:"darylptagadiad@gmail.com",company:"Family Insurance Services",agencyPOC:"Nick Mesaros",timeZone:"IN - EST",tl:"Rezyl",am:"Alicia",salesRep:"Austin"},
+  {id:95,start:"5/23/2023",vaName:"Glenn Mejorada",vaTag:"Combo",status:"Reprofiled",vaEmail:"glennmejorada0621@gmail.com",company:"Mappus Insurance",agencyPOC:"Andrew Muller",timeZone:"SC - EST",tl:"Rezyl",am:"Karla",salesRep:"Mike"},
+  {id:96,start:"5/23/2023",vaName:"Joseph Adrian Muñoz",vaTag:"Gen VA",status:"Terminated",vaEmail:"josefeena08@gmail.com",company:"Marcure Insurance, Inc",agencyPOC:"",timeZone:"",tl:"",am:"Cancelled",salesRep:""},
+  {id:97,start:"5/23/2023",vaName:"Lesley Alyssa Baño",vaTag:"Gen VA",status:"Resigned",vaEmail:"lesleyalyssabano@gmail.com",company:"Aspen Insurance Agency",agencyPOC:"Jon Goldenberg",timeZone:"CO - MDT",tl:"Martin",am:"Alicia",salesRep:"Austin"},
+  {id:98,start:"5/23/2023",vaName:"Ruth Nicolae Rosales",vaTag:"Combo",status:"Resigned",vaEmail:"rosales.nicolae@gmail.com",company:"Mappus Insurance",agencyPOC:"Andrew Muller",timeZone:"SC - EST",tl:"Rezyl",am:"Karla",salesRep:"Mike"},
+  {id:99,start:"5/24/2023",vaName:"Danielle Ayezza Taghoy",vaTag:"Gen VA",status:"Terminated",vaEmail:"damtaghoy@gmail.com",company:"Nerissa Berry Insurance Agency",agencyPOC:"Nerissa Berry",timeZone:"OK - CST",tl:"RJ",am:"Karla",salesRep:"Mike"},
+  {id:100,start:"5/24/2023",vaName:"Reina Mae Narisma",vaTag:"Gen VA",status:"Terminated",vaEmail:"rein.narisma@gmail.com",company:"Navigate Risk Advisors",agencyPOC:"TJ Worsencroft",timeZone:"OH - EST",tl:"Karla",am:"Niccole",salesRep:"Johnny"},
+  {id:101,start:"5/24/2023",vaName:"Rushiel Mae Baroman",vaTag:"Gen VA",status:"Terminated",vaEmail:"rushielhayley3094@gmail.com",company:"Stacks Insurance Brokerage",agencyPOC:"Amber Stockert/Taylor Stacks",timeZone:"FL - EST",tl:"Rezyl",am:"Alicia",salesRep:"Johnny"},
+  {id:102,start:"5/30/2023",vaName:"Nicole Mendoza",vaTag:"Gen VA",status:"Terminated",vaEmail:"nicoledavidmendoza@gmail.com",company:"Premiere Home & Auto",agencyPOC:"Peter Manfra",timeZone:"NJ - EST",tl:"Karla",am:"Niccole",salesRep:"Johnny"},
+  {id:103,start:"5/31/2023",vaName:"Dominic Emmanuel Roxas",vaTag:"Gen VA",status:"Resigned",vaEmail:"nikkouniinusky121703@gmail.com",company:"SJ Adams Insurance",agencyPOC:"Shaun Adams",timeZone:"NC- EST",tl:"Rezyl",am:"Karla",salesRep:"Johnny"},
+  {id:104,start:"5/31/2023",vaName:"Therese Bullet Regis",vaTag:"Gen VA",status:"Resigned",vaEmail:"Theresebulletregis00@gmail.com",company:"Brady Insurance Group, LLC",agencyPOC:"Jack Jones",timeZone:"TN - CST",tl:"RJ",am:"Alicia",salesRep:"Austin"},
+  {id:105,start:"6/2/2023",vaName:"Ken Kriesler Guinang",vaTag:"Gen VA",status:"Terminated",vaEmail:"guinangkenkriesler@gmail.com",company:"Trailstone Insurance",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:106,start:"6/5/2023",vaName:"Jeamie Abadies",vaTag:"Combo",status:"Terminated",vaEmail:"jeamieabadies@gmail.com",company:"Genesis One Insurance",agencyPOC:"Greg Adams",timeZone:"",tl:"",am:"Cancelled",salesRep:"Mike"},
+  {id:107,start:"6/6/2023",vaName:"Jay Encomienda",vaTag:"Gen VA",status:"Active",vaEmail:"encomiendero94@gmail.com",company:"Stacks Insurance Brokerage",agencyPOC:"Amber Stockert/Taylor Stacks",timeZone:"FL - EST",tl:"Rezyl",am:"Alicia",salesRep:"Johnny"},
+  {id:108,start:"6/12/2023",vaName:"Juhn Rafael Yee",vaTag:"Combo",status:"Reprofiled",vaEmail:"rafael.yeah123@gmail.com",company:"Arcadia Insurance Group",agencyPOC:"Aaron Pietila",timeZone:"",tl:"",am:"Cancelled",salesRep:"Mike"},
+  {id:109,start:"6/13/2023",vaName:"Iris Bayson",vaTag:"Combo",status:"Resigned",vaEmail:"irisbayson7@gmail.com",company:"Trailstone Insurance Group - Morgan",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:110,start:"6/13/2023",vaName:"Maylene Licayan",vaTag:"Gen VA",status:"Terminated",vaEmail:"luchavezmaymay@gmail.com",company:"Derek Wiley Agency",agencyPOC:"Derek Wiley",timeZone:"VA - EST",tl:"Rezyl",am:"Cancelled",salesRep:"Johnny"},
+  {id:111,start:"6/15/2023",vaName:"Mariah Nicole Seville",vaTag:"Gen VA",status:"Active",vaEmail:"mariahnicoleseville@gmail.com",company:"Steele Insurance Agency",agencyPOC:"Steve Renteria",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Austin"},
+  {id:112,start:"6/15/2023",vaName:"Rezyl Jane Regondon",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"rjaneregondon816@gmail.com",company:"Glenn Harris & Associates",agencyPOC:"Laurie Bly",timeZone:"",tl:"",am:"Cancelled",salesRep:"Austin"},
+  {id:113,start:"6/16/2023",vaName:"Andrei Lera",vaTag:"Gen VA",status:"Terminated",vaEmail:"dreilera@gmail.com",company:"Derek Wiley Agency",agencyPOC:"Derek Wiley",timeZone:"VA - EST",tl:"Rezyl",am:"Cancelled",salesRep:"Johnny"},
+  {id:114,start:"6/19/2023",vaName:"Jessabell Requillo",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"Jessabell.requillo@gmail.com",company:"Doing the Most LLC",agencyPOC:"Daniel Linger",timeZone:"",tl:"",am:"Cancelled",salesRep:"Johnny"},
+  {id:115,start:"6/26/2023",vaName:"Crystel Mae Montero",vaTag:"Gen VA",status:"Terminated",vaEmail:"crystelmaemontero123@gmail.com",company:"The Firm of Louisiana",agencyPOC:"Andy Dressler",timeZone:"LA - PST",tl:"ED",am:"Cancelled",salesRep:"Mike"},
+  {id:116,start:"6/26/2023",vaName:"Sandy Camacho",vaTag:"Gen VA",status:"Terminated",vaEmail:"shamdy0316@gmail.com",company:"The Firm of Louisiana",agencyPOC:"Andy Dressler",timeZone:"LA - PST",tl:"ED",am:"Cancelled",salesRep:"Mike"},
+  {id:117,start:"6/29/2023",vaName:"Aled Geronimo",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"geronimoaled@gmail.com",company:"The Firm of Louisiana",agencyPOC:"Andy Dressler",timeZone:"LA - PST",tl:"ED",am:"Cancelled",salesRep:"Mike"},
+  {id:118,start:"6/29/2023",vaName:"Elisa Alexandra Lazarraga",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"lazarragaelisa@gmail.com",company:"The Firm of Louisiana",agencyPOC:"Andy Dressler",timeZone:"LA - PST",tl:"ED",am:"Cancelled",salesRep:"Mike"},
+  {id:119,start:"6/29/2023",vaName:"Pamela Dianne Faye Layo",vaTag:"Gen VA",status:"Terminated",vaEmail:"pameladflayo@gmail.com",company:"The Firm of Louisiana",agencyPOC:"Andy Dressler",timeZone:"LA - PST",tl:"ED",am:"Cancelled",salesRep:"Mike"},
+  {id:120,start:"7/5/2023",vaName:"Jemavelle Mie Sasam",vaTag:"Combo",status:"Resigned",vaEmail:"jemavellemie@gmail.com",company:"Millennium Brokers Insurance Group",agencyPOC:"Brandon Thompson",timeZone:"MO - CST",tl:"RJ",am:"Alicia",salesRep:"Johnny"},
+  {id:121,start:"7/5/2023",vaName:"Gray Marie Lagolos",vaTag:"Gen VA",status:"Terminated",vaEmail:"nikolaiferrazteves@gmail.com",company:"Sterling Peaks Insurance LLC",agencyPOC:"Robert Bates/Bobby Bates",timeZone:"CO - MDT",tl:"",am:"Cancelled",salesRep:"Johnny"},
+  {id:122,start:"7/5/2023",vaName:"Martin Dominic Salcedo",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"martinsalcedo.work@gmail.com",company:"Glenn Harris & Associates",agencyPOC:"Laurie Bly",timeZone:"",tl:"",am:"Cancelled",salesRep:"Austin"},
+  {id:123,start:"7/10/2023",vaName:"Nikolai Teves",vaTag:"Combo",status:"Terminated",vaEmail:"",company:"Reliant Insurance Group",agencyPOC:"Ben Klesinger",timeZone:"IN - EST",tl:"Karla",am:"Niccole",salesRep:"Johnny"},
+  {id:124,start:"7/11/2023",vaName:"Catherene Bonsucan",vaTag:"Gen VA",status:"Terminated",vaEmail:"catherene.bonsucan@gmail.com",company:"Webb Insurance Group",agencyPOC:"Laura Webb",timeZone:"FL - EST",tl:"",am:"Cancelled",salesRep:"Johnny"},
+  {id:125,start:"7/11/2023",vaName:"Melody Tesorero",vaTag:"Gen VA",status:"Terminated",vaEmail:"melodytesorero36@gmail.com",company:"Webb Insurance Group",agencyPOC:"Laura Webb",timeZone:"FL - EST",tl:"",am:"Cancelled",salesRep:"Johnny"},
+  {id:126,start:"7/17/2023",vaName:"Allana Lou Dapetilla",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"allanalou99@gmail.com",company:"The Firm of Louisiana",agencyPOC:"Andy Dressler",timeZone:"LA - PST",tl:"ED",am:"Cancelled",salesRep:"Mike"},
+  {id:127,start:"7/17/2023",vaName:"Karla Jeanne Tigullo",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"tigullokj@gmail.com",company:"The Firm of Louisiana",agencyPOC:"Andy Dressler",timeZone:"LA - PST",tl:"ED",am:"Cancelled",salesRep:"Mike"},
+  {id:128,start:"7/21/2023",vaName:"New",vaTag:"Gen VA",status:"Active",vaEmail:"galimbasricheljoy@gmail.com",company:"Trailstone Insurance",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:129,start:"7/21/2023",vaName:"Queenie Decena",vaTag:"Gen VA",status:"Resigned",vaEmail:"Qddecena@gmail.com",company:"Trailstone Insurance",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:130,start:"7/24/2023",vaName:"John Enrico Auxillan",vaTag:"Combo",status:"Active",vaEmail:"johnenrico1998@gmail.com",company:"Kilgo Insurance",agencyPOC:"Jason Kilgo",timeZone:"VA - EST",tl:"Rezyl",am:"Alicia",salesRep:"Johnny"},
+  {id:131,start:"8/3/2023",vaName:"Rodelyn Muana",vaTag:"Gen VA",status:"Active",vaEmail:"rodelynmuana18@gmail.com",company:"Snyder Insurance Agency",agencyPOC:"Katie Bruch",timeZone:"PA - EST",tl:"Rezyl",am:"Alicia",salesRep:"Johnny"},
+  {id:132,start:"8/7/2023",vaName:"Mary Ann Villarba",vaTag:"Gen VA",status:"Resigned",vaEmail:"maryannvillarba8@gmail.com",company:"Great Park Insurance",agencyPOC:"Daniel Seong",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Austin"},
+  {id:133,start:"8/8/2023",vaName:"Edger Calope",vaTag:"Gen VA",status:"Terminated",vaEmail:"ei.eidah04@gmail.com",company:"Grimes Insurance Agency",agencyPOC:"Ryan Reynolds",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:134,start:"8/8/2023",vaName:"Maria Alexandra Faye Cabigas",vaTag:"Gen VA",status:"Active",vaEmail:"fayealexandra7@gmail.com",company:"Bailey Family insurance",agencyPOC:"Mark Bailey",timeZone:"IL - CST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:135,start:"8/9/2023",vaName:"Dohnna Joy Maranga",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"deejaymars1982@gmail.com",company:"Wize Insurance & Risk Management",agencyPOC:"Ralph Wize",timeZone:"IN - EST",tl:"",am:"Cancelled",salesRep:"Johnny"},
+  {id:136,start:"8/9/2023",vaName:"Jessa Adlawan",vaTag:"Gen VA",status:"Terminated",vaEmail:"adlawanjee@gmail.com",company:"Community Association Insurance Consulting, LLC",agencyPOC:"Melissa Blenker",timeZone:"WI - CST",tl:"RJ",am:"Alicia",salesRep:"Mike"},
+  {id:137,start:"8/14/2023",vaName:"Jason Guipitacio",vaTag:"Gen VA",status:"Active",vaEmail:"jasonguipitacio244@gmail.com",company:"Heaton Bennett Insurance",agencyPOC:"Ross Bennett",timeZone:"TX - CST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:138,start:"8/14/2023",vaName:"Jerrick Jai Braza",vaTag:"Combo",status:"Terminated",vaEmail:"jerrickjaib@gmail.com",company:"Independence Insurance Center",agencyPOC:"",timeZone:"",tl:"",am:"Cancelled",salesRep:""},
+  {id:139,start:"8/14/2023",vaName:"Jhun Bart Macirin",vaTag:"Combo",status:"Terminated",vaEmail:"jhunbartm@gmail.com",company:"JMJ Insurance",agencyPOC:"Michael James",timeZone:"",tl:"",am:"Cancelled",salesRep:"Johnny"},
+  {id:140,start:"8/21/2023",vaName:"Jahziel Alolino",vaTag:"Gen VA",status:"Active",vaEmail:"hikariyami07@gmail.com",company:"McGlothin Insurance & Financial",agencyPOC:"Brock McGlothin",timeZone:"OH - EST",tl:"Vince",am:"Alicia",salesRep:"Mike"},
+  {id:141,start:"8/21/2023",vaName:"John Clyde Recososa",vaTag:"Gen VA",status:"Terminated",vaEmail:"recososajohnclyde9@gmail.com",company:"McGlothin Insurance& Financial",agencyPOC:"Brock McGlothin",timeZone:"OH - EST",tl:"Rezyl",am:"Alicia",salesRep:"Mike"},
+  {id:142,start:"8/23/2023",vaName:"Juvelyn Quibuyen",vaTag:"Gen VA",status:"Terminated",vaEmail:"quibuyenuvel@gmail.com",company:"Blackwell Insurance",agencyPOC:"Leigh Zellmer / Ken Haraughty",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Austin"},
+  {id:143,start:"8/24/2023",vaName:"Richard Sawanaka",vaTag:"Gen VA",status:"Active",vaEmail:"richardsawanaka@gmail.com",company:"Zagweb",agencyPOC:"Robert Cesaric",timeZone:"FL - EST",tl:"Rezyl",am:"Niccole",salesRep:"Austin"},
+  {id:144,start:"8/28/2023",vaName:"Andre Miguelle Lao",vaTag:"Gen VA",status:"Terminated",vaEmail:"miguellito2600@gmail.com",company:"Lead Paths",agencyPOC:"",timeZone:"",tl:"",am:"Cancelled",salesRep:""},
+  {id:145,start:"8/28/2023",vaName:"Denny Marc Eleido Maquiling",vaTag:"Gen VA",status:"Terminated",vaEmail:"maquilingdennymarc@gmail.com",company:"Agency Automate",agencyPOC:"Bill Jenkins",timeZone:"MN - CST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:146,start:"8/28/2023",vaName:"Ivan Raphael Geralde",vaTag:"Gen VA",status:"Active",vaEmail:"irgeralde@yahoo.com",company:"SJ Adams Insurance",agencyPOC:"Shaun Adams",timeZone:"NC- EST",tl:"Rezyl",am:"Karla",salesRep:"Johnny"},
+  {id:147,start:"8/28/2023",vaName:"Colin Eder",vaTag:"Gen VA",status:"Active",vaEmail:"collineder789@gmail.com",company:"Parkway LTC Consulting",agencyPOC:"Novel Martin",timeZone:"VA - EST",tl:"Vince",am:"Niccole",salesRep:""},
+  {id:148,start:"8/30/2023",vaName:"Laurence Lesmoras",vaTag:"Gen VA",status:"Terminated",vaEmail:"llesmoras@proton.me",company:"Lead Paths",agencyPOC:"",timeZone:"",tl:"",am:"Cancelled",salesRep:""},
+  {id:149,start:"8/31/2023",vaName:"Shammah Krisha Casulla",vaTag:"Gen VA",status:"Terminated",vaEmail:"shammahcsll@gmail.com",company:"Chris Mann Insurance Services, Inc",agencyPOC:"Christopher Mann",timeZone:"",tl:"",am:"Cancelled",salesRep:"Mike"},
+  {id:150,start:"9/5/2023",vaName:"Ann Hope Garcia",vaTag:"Gen VA",status:"Terminated",vaEmail:"hopegarcia15@gmail.com",company:"Securum Insurance Solutions",agencyPOC:"Loshanda Johnson",timeZone:"",tl:"",am:"Cancelled",salesRep:""},
+  {id:151,start:"9/5/2023",vaName:"Joylan Panungcat",vaTag:"Gen VA",status:"Terminated",vaEmail:"joylanpanungcat.jobs@gmail.com",company:"Agency Automate",agencyPOC:"Bill Jenkins",timeZone:"MN - CST",tl:"Karla",am:"Niccole",salesRep:"Austin"},
+  {id:152,start:"9/7/2023",vaName:"Mel Francis Ramos",vaTag:"Gen VA",status:"Terminated",vaEmail:"melfrancisbuzz.ramos@gmail.com",company:"Lead Paths",agencyPOC:"",timeZone:"",tl:"",am:"Cancelled",salesRep:""},
+  {id:153,start:"9/11/2023",vaName:"Adrienne Nicole Tenchavez",vaTag:"Gen VA",status:"Resigned",vaEmail:"antenchavez@gmail.com",company:"Navigate Risk Advisors",agencyPOC:"TJ Worsencroft",timeZone:"OH - EST",tl:"Karla",am:"Niccole",salesRep:"Johnny"},
+  {id:154,start:"9/11/2023",vaName:"Mary Lou Cabigas",vaTag:"Gen VA",status:"Active",vaEmail:"cabigasmary@gmail.com",company:"Navigate Risk Advisors",agencyPOC:"TJ Worsencroft",timeZone:"OH - EST",tl:"Vince",am:"Niccole",salesRep:"Johnny"},
+  {id:155,start:"9/18/2023",vaName:"Bryan May Salazar",vaTag:"Gen VA",status:"Terminated",vaEmail:"bboyz1234598@gmail.com",company:"Coverland Brokerages Inc",agencyPOC:"Frank Firriolo",timeZone:"NY - EST",tl:"Rezyl",am:"Cancelled",salesRep:"Mike"},
+  {id:156,start:"9/18/2023",vaName:"Jan Niko Atinen",vaTag:"Combo",status:"Terminated",vaEmail:"jndatinen@gmail.com",company:"Pinnacle Point Insurance",agencyPOC:"Aaron England",timeZone:"TX - CST",tl:"RJ",am:"Niccole",salesRep:"Johnny"},
+  {id:157,start:"9/18/2023",vaName:"Shawlly Lou Guday",vaTag:"Gen VA",status:"Terminated",vaEmail:"shaw.gmnglh@gmail.com",company:"Pinnacle Point Insurance",agencyPOC:"Aaron England",timeZone:"TX - CST",tl:"RJ",am:"Niccole",salesRep:"Johnny"},
+  {id:158,start:"9/18/2023",vaName:"Vilfe Bacus",vaTag:"Gen VA",status:"Resigned",vaEmail:"bvilfe162015@gmail.com",company:"Coverland Brokerages Inc",agencyPOC:"Frank Firriolo",timeZone:"NY - EST",tl:"Rezyl",am:"Cancelled",salesRep:"Mike"},
+  {id:159,start:"9/20/2023",vaName:"Margaret Floirendo",vaTag:"Gen VA",status:"Active",vaEmail:"margz1927@gmail.com",company:"Chan Wright Insurance Agency",agencyPOC:"Chan Wright",timeZone:"NC- EST",tl:"Vince",am:"Karla",salesRep:"Mike"},
+  {id:160,start:"9/25/2023",vaName:"Raymond Vincent Vivar",vaTag:"Combo",status:"Terminated",vaEmail:"ravenvivarian10@gmail.com",company:"Top Flite Insurance Agency",agencyPOC:"Fiona Swaenepoel",timeZone:"NC- EST",tl:"Rezyl",am:"Cancelled",salesRep:"Johnny"},
+  {id:161,start:"9/25/2023",vaName:"Karl Antoinette Tair",vaTag:"Combo",status:"Terminated",vaEmail:"antoinettetair@gmail.com",company:"Reliant Insurance Group",agencyPOC:"Ben Klesinger",timeZone:"IN - EST",tl:"Karla",am:"Niccole",salesRep:"Johnny"},
+  {id:162,start:"9/27/2023",vaName:"Vanessa May Bagay",vaTag:"Combo",status:"Terminated",vaEmail:"vanessa.t.bagay@gmail.com",company:"Top Flite Insurance Agency",agencyPOC:"Fiona Swaenepoel",timeZone:"NC- EST",tl:"Rezyl",am:"Cancelled",salesRep:"Johnny"},
+  {id:163,start:"10/2/2023",vaName:"Aster Pearl Baghari",vaTag:"Gen VA",status:"Resigned",vaEmail:"asterpearl19@outlook.com",company:"Coverland Brokerages Inc",agencyPOC:"Frank Firriolo",timeZone:"NY - EST",tl:"Rezyl",am:"Cancelled",salesRep:"Mike"},
+  {id:164,start:"10/2/2023",vaName:"Faith Ann Fuentes",vaTag:"Combo",status:"Terminated",vaEmail:"fuentesfaithann6@gmail.com",company:"Golden Oak Insurance",agencyPOC:"Seth Murray",timeZone:"",tl:"",am:"Cancelled",salesRep:"Mike"},
+  {id:165,start:"10/2/2023",vaName:"John Mark Canoy",vaTag:"Gen VA",status:"Terminated",vaEmail:"johnmark7231993@gmail.com",company:"United Risk Insurance",agencyPOC:"Cale Merrill",timeZone:"MS - CST",tl:"RJ",am:"Karla",salesRep:"Johnny"},
+  {id:166,start:"10/2/2023",vaName:"Kristine Escol",vaTag:"Combo",status:"Terminated",vaEmail:"kristinebescol@gmail.com",company:"Linda Meyer Insurance Brokerage",agencyPOC:"Linda Meyer",timeZone:"TX - CST",tl:"RJ",am:"Alicia",salesRep:"Mike"},
+  {id:167,start:"10/2/2023",vaName:"Michael Vincent Cael",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"vincentcael@yahoo.com",company:"Pinnacle Partners Insurance Companies",agencyPOC:"Steve Kohlbrenner",timeZone:"PA - EST",tl:"Karla",am:"Niccole",salesRep:"Johnny"},
+  {id:168,start:"10/5/2023",vaName:"John Carlo Flauta",vaTag:"Combo",status:"Active",vaEmail:"cj.atualfo@gmail.com",company:"Top Flite Insurance Agency",agencyPOC:"Fiona Swaenepoel",timeZone:"NC- EST",tl:"Rezyl",am:"Cancelled",salesRep:"Johnny"},
+  {id:169,start:"10/9/2023",vaName:"Jeffrey Dela Cruz",vaTag:"Combo",status:"Active",vaEmail:"jdccadc@gmail.com",company:"Evergreen Insurance Inc",agencyPOC:"Jesse Villafranca",timeZone:"WA - PST",tl:"ED",am:"Niccole",salesRep:"Mike"},
+  {id:170,start:"10/10/2023",vaName:"Dexter Andatuan",vaTag:"Gen VA",status:"Terminated",vaEmail:"mirandadexter48@gmail.com",company:"Webb Insurance Group",agencyPOC:"Laura Webb",timeZone:"FL - EST",tl:"",am:"Cancelled",salesRep:"Johnny"},
+  {id:171,start:"10/16/2023",vaName:"Darwin Nacpil",vaTag:"Combo",status:"Resigned",vaEmail:"Nacpildarwin@gmail.com",company:"Linda Meyer Insurance Brokerage",agencyPOC:"Linda Meyer",timeZone:"TX - CST",tl:"RJ",am:"Alicia",salesRep:"Mike"},
+  {id:172,start:"10/16/2023",vaName:"John Vincent Sosing",vaTag:"Combo",status:"Active",vaEmail:"vincentjvs@yahoo.com",company:"Vermost Insurance Agency",agencyPOC:"Darren Vermost",timeZone:"FL - EST",tl:"Vince",am:"Karla",salesRep:"Johnny"},
+  {id:173,start:"10/16/2023",vaName:"Marc Lester Cang",vaTag:"Combo",status:"Active",vaEmail:"marc.lester.cang@gmail.com",company:"Vermost Insurance Agency",agencyPOC:"Darren Vermost",timeZone:"FL - EST",tl:"Vince",am:"Karla",salesRep:"Johnny"},
+  {id:174,start:"10/16/2023",vaName:"Mira Lyne Sagales",vaTag:"Gen VA",status:"Terminated",vaEmail:"mirasagales.611@gmail.com",company:"Finance Freedom Builders LLC",agencyPOC:"Mike Racaniello",timeZone:"",tl:"",am:"Cancelled",salesRep:"Mike"},
+  {id:175,start:"10/23/2023",vaName:"Alec Dwayne Quimco",vaTag:"Combo",status:"Resigned",vaEmail:"admquimco@gmail.com",company:"Reliant Insurance Group",agencyPOC:"Ben Klesinger",timeZone:"IN - EST",tl:"Vince",am:"Niccole",salesRep:"Johnny"},
+  {id:176,start:"10/23/2023",vaName:"Kim Gutib",vaTag:"Combo",status:"Terminated",vaEmail:"kim.gutib@gmail.com",company:"AVIA",agencyPOC:"Morgan Hege",timeZone:"",tl:"",am:"Cancelled",salesRep:"Mike"},
+  {id:177,start:"10/30/2023",vaName:"Janelle Faith Sanchez",vaTag:"Gen VA",status:"Terminated",vaEmail:"jfsanchez1007@gmail.com",company:"Nav Sav",agencyPOC:"Courtney Lee",timeZone:"FL - EST",tl:"",am:"Cancelled",salesRep:"Austin"},
+  {id:178,start:"10/30/2023",vaName:"Krizza Tenorio Salisi",vaTag:"Combo",status:"Active",vaEmail:"krizzahoneyfaithsalisi@gmail.com",company:"Gartman Insurance Agency",agencyPOC:"Nick Gartman",timeZone:"MS - CST",tl:"RJ",am:"Alicia",salesRep:"Mike"},
+  {id:179,start:"10/30/2023",vaName:"Mira Lyne Sagales",vaTag:"Gen VA",status:"Terminated",vaEmail:"mirasagales.611@gmail.com",company:"Nav Sav",agencyPOC:"Courtney Lee",timeZone:"FL - EST",tl:"",am:"Cancelled",salesRep:"Austin"},
+  {id:180,start:"11/1/2023",vaName:"Gellimea Berona",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"gellimeaberonal@gmail.com",company:"McEvoy Insurance & Financial Services",agencyPOC:"Rick McEvoy",timeZone:"VA - EST",tl:"",am:"Cancelled",salesRep:"Johnny"},
+  {id:181,start:"11/6/2023",vaName:"Mack Peniel Como",vaTag:"Combo",status:"Terminated",vaEmail:"c.mackpniel@gmail.com",company:"Jump Insurance",agencyPOC:"",timeZone:"",tl:"",am:"Cancelled",salesRep:""},
+  {id:182,start:"11/9/2023",vaName:"John Ryan Ilumba",vaTag:"Gen VA",status:"Terminated",vaEmail:"johnryan.ilumba92@gmail.com",company:"McGlothin Insurance & Financial",agencyPOC:"Brock McGlothin",timeZone:"OH - EST",tl:"Rezyl",am:"Alicia",salesRep:"Mike"},
+  {id:183,start:"11/14/2023",vaName:"Joeren Romasanta",vaTag:"Gen VA",status:"Resigned",vaEmail:"joerenromasanta04@gmail.com",company:"Grimes Insurance Agency",agencyPOC:"Ryan Reynolds",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:184,start:"11/20/2023",vaName:"Ana Katrina Faraon",vaTag:"Gen VA",status:"Active",vaEmail:"iamkatey04@gmail.com",company:"Grimes Insurance Agency",agencyPOC:"Ryan Reynolds",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:185,start:"11/20/2023",vaName:"Jose Joshua Jabol",vaTag:"Combo",status:"Terminated",vaEmail:"josejoshuajabol@gmail.com",company:"Thousand Oaks Insurance Agency",agencyPOC:"",timeZone:"",tl:"",am:"Cancelled",salesRep:"Mike"},
+  {id:186,start:"11/20/2023",vaName:"Phoebe Kate Fernandez",vaTag:"Combo",status:"Terminated",vaEmail:"phoebekatef21@gmail.com",company:"ICA Group",agencyPOC:"",timeZone:"",tl:"",am:"Cancelled",salesRep:""},
+  {id:187,start:"11/20/2023",vaName:"Reyanne Talan",vaTag:"Combo",status:"Terminated",vaEmail:"reyannetalan2021@gmail.com",company:"Frank Slaughter Insurance Agency",agencyPOC:"Angela Taylor",timeZone:"",tl:"",am:"Cancelled",salesRep:"Johnny"},
+  {id:188,start:"11/20/2023",vaName:"Rosshiel Ann Bahidi",vaTag:"Gen VA",status:"Terminated",vaEmail:"annbahidi@gmail.com",company:"Fairhouse Insurance",agencyPOC:"Asif Dhodi",timeZone:"TN - CST",tl:"",am:"Cancelled",salesRep:"Mike"},
+  {id:189,start:"11/27/2023",vaName:"Cassandra Apostol",vaTag:"Gen VA",status:"Terminated",vaEmail:"cassandratapostol@gmail.com",company:"DCI Group",agencyPOC:"Julie Janowicz",timeZone:"",tl:"",am:"Cancelled",salesRep:"Celina"},
+  {id:190,start:"11/27/2023",vaName:"Jessabell Requillo",vaTag:"Gen VA",status:"Terminated",vaEmail:"Jessabell.requillo@gmail.com",company:"Dishon Insurance",agencyPOC:"Johnny Dishon",timeZone:"",tl:"",am:"Cancelled",salesRep:"Austin"},
+  {id:191,start:"12/4/2023",vaName:"Mayolito Jr. Salva",vaTag:"Gen VA",status:"Active",vaEmail:"salvamayolitojr@gmail.com",company:"SJ Adams Insurance",agencyPOC:"Shaun Adams",timeZone:"NC- EST",tl:"Rezyl",am:"Karla",salesRep:"Johnny"},
+  {id:192,start:"12/18/2023",vaName:"Jeshryll Funa",vaTag:"Combo",status:"Terminated",vaEmail:"jeshryll13@gmail.com",company:"CSP Insurance Services",agencyPOC:"Lawson Walker",timeZone:"SC - EST",tl:"Rezyl",am:"Karla",salesRep:"Johnny"},
+  {id:193,start:"12/18/2023",vaName:"Kathleen Pagador",vaTag:"Gen VA",status:"Terminated",vaEmail:"kathleenpagador@gmail.com",company:"Risk Management",agencyPOC:"",timeZone:"",tl:"",am:"Cancelled",salesRep:""},
+  {id:194,start:"12/18/2023",vaName:"Pierre Anthony Marc Santos",vaTag:"Combo",status:"Reprofiled",vaEmail:"p.saintz187@gmail.com",company:"Lock Insurance",agencyPOC:"Don Westerfeld",timeZone:"FL - EST",tl:"Rezyl",am:"Karla",salesRep:"Johnny"},
+  {id:195,start:"1/3/2024",vaName:"Vincent Angelo Pichon",vaTag:"Gen VA",status:"Active",vaEmail:"vincentangelopichon@gmail.com",company:"LTC Specialists, LLC",agencyPOC:"Andrew Goetz",timeZone:"MD - EST",tl:"Rezyl",am:"Alicia",salesRep:"Johnny"},
+  {id:196,start:"1/15/2024",vaName:"Apple Rose Florenosos",vaTag:"Combo",status:"Active",vaEmail:"florenosos.applerose2003@gmail.com",company:"Powdersville Insurance",agencyPOC:"Jeff Knight",timeZone:"SC - EST",tl:"Rezyl",am:"Karla",salesRep:"Mike"},
+  {id:197,start:"1/22/2024",vaName:"Christianne Ellie Antonio",vaTag:"Gen VA",status:"Active",vaEmail:"christianneellie@gmail.com",company:"Creekside Risk Management",agencyPOC:"Chris Badger",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:198,start:"1/22/2024",vaName:"Clint Warren Decierdo",vaTag:"Gen VA",status:"Active",vaEmail:"clintwarren.decierdo@gmail.com",company:"Creekside Risk",agencyPOC:"Chris Badger",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:199,start:"1/24/2024",vaName:"Ken Froilan Melitado",vaTag:"Gen VA",status:"Active",vaEmail:"thekenmelitado@gmail.com",company:"McGlothin Insurance & Financial",agencyPOC:"Brock McGlothin",timeZone:"OH - EST",tl:"Vince",am:"Alicia",salesRep:"Mike"},
+  {id:200,start:"1/31/2024",vaName:"Efren Herrera",vaTag:"Gen VA",status:"Active",vaEmail:"efrenbherrera@gmail.com",company:"Kowalewski Jawork Insurance Agency Inc",agencyPOC:"Sandy Kowalewski",timeZone:"PA - EST",tl:"Rezyl",am:"Alicia",salesRep:"Mike"},
+  {id:201,start:"2/5/2024",vaName:"Arnold Faderogao",vaTag:"Gen VA",status:"Terminated",vaEmail:"fadarnold1994@gmail.com",company:"Heaton Bennett Insurance",agencyPOC:"Ross Bennett",timeZone:"TX - CST",tl:"Karla",am:"Niccole",salesRep:"Austin"},
+  {id:202,start:"2/7/2024",vaName:"Julie Anne Deloria",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"majbnph@gmail.com",company:"Apex Insurance & Investment Group LLC",agencyPOC:"Paul Jacques",timeZone:"FL - EST",tl:"Rezyl",am:"Alicia",salesRep:"Mike"},
+  {id:203,start:"2/12/2024",vaName:"Arturo Jr. Gales",vaTag:"Combo",status:"Reprofiled",vaEmail:"arturogales65@gmail.com",company:"Vibrant Insurance Group",agencyPOC:"Ryan Swalve",timeZone:"IA - CST",tl:"RJ",am:"Alicia",salesRep:"Johnny"},
+  {id:204,start:"2/12/2024",vaName:"Dianne Depalubos",vaTag:"Gen VA",status:"Terminated",vaEmail:"depalubosdianne@gmail.com",company:"Trailstone Insurance",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:205,start:"2/12/2024",vaName:"Jayson Sasuman",vaTag:"Gen VA",status:"Active",vaEmail:"geezhon27@gmail.com",company:"Trailstone Insurance",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:206,start:"2/12/2024",vaName:"Marcejean Pableo",vaTag:"Combo",status:"Active",vaEmail:"mvpableo@icloud.com",company:"Vibrant Insurance Group",agencyPOC:"Ryan Swalve",timeZone:"IA - CST",tl:"RJ",am:"Alicia",salesRep:"Johnny"},
+  {id:207,start:"2/14/2024",vaName:"Alejandre Liwag",vaTag:"Gen VA",status:"Active",vaEmail:"alejandreliwag.22@gmail.com",company:"360 Insurance Solutions, Inc",agencyPOC:"Jason Armogida",timeZone:"VA - EST",tl:"Rezyl",am:"Alicia",salesRep:"Mike"},
+  {id:208,start:"2/19/2024",vaName:"Maria Carmina Quijada",vaTag:"Gen VA",status:"Active",vaEmail:"animracquijada@gmail.com",company:"Raleigh Insurance Group",agencyPOC:"Daniel Rohrbaugh",timeZone:"NC- EST",tl:"Rezyl",am:"Niccole",salesRep:"Austin"},
+  {id:209,start:"2/19/2024",vaName:"Paula Sedigo",vaTag:"Combo",status:"Terminated",vaEmail:"paupausedigo@gmail.com",company:"Arcadia Insurance Group",agencyPOC:"Aaron Pietila",timeZone:"",tl:"",am:"Cancelled",salesRep:"Mike"},
+  {id:210,start:"2/26/2024",vaName:"Carlos Miguel Flores",vaTag:"Gen VA",status:"Active",vaEmail:"migzflores22@gmail.com",company:"Suncoast Insurance",agencyPOC:"Patricia Southerland",timeZone:"FL - EST",tl:"Vince",am:"Karla",salesRep:"Mike"},
+  {id:211,start:"2/26/2024",vaName:"Nhayma Caballero",vaTag:"Gen VA",status:"Resigned",vaEmail:"nhaymacaballero0722@gmail.com",company:"IFG Insurance",agencyPOC:"Alan Chu",timeZone:"HI - HST",tl:"Karla",am:"Niccole",salesRep:"Mike"},
+  {id:212,start:"2/26/2024",vaName:"Tara Nathalia Hizon-Dumapias",vaTag:"Gen VA",status:"Terminated",vaEmail:"trnthlhzn@outlook.com",company:"Navigate Risk Advisors",agencyPOC:"TJ Worsencroft",timeZone:"OH - EST",tl:"Karla",am:"Niccole",salesRep:"Johnny"},
+  {id:213,start:"2/29/2024",vaName:"Gemma Lou Berame",vaTag:"Gen VA",status:"Terminated",vaEmail:"glberame@gmail.com",company:"Arcadia Insurance Group",agencyPOC:"Aaron Pietila",timeZone:"",tl:"",am:"Cancelled",salesRep:"Mike"},
+  {id:214,start:"3/4/2024",vaName:"Camille Ricamora",vaTag:"Gen VA",status:"Resigned",vaEmail:"Camillericamora031@gmail.com",company:"Premier Home and Auto, LLC",agencyPOC:"Peter Manfra",timeZone:"NJ - EST",tl:"Karla",am:"Niccole",salesRep:"Johnny"},
+  {id:215,start:"3/4/2024",vaName:"Carmela Nova Edig",vaTag:"Gen VA",status:"Active",vaEmail:"novaedig@gmail.com",company:"Bailey Family Insurance",agencyPOC:"Mark Bailey",timeZone:"IL - CST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:216,start:"3/7/2024",vaName:"Angelito Pedrosa",vaTag:"Gen VA",status:"Terminated",vaEmail:"angelito.pedrosa11@gmail.com",company:"Great Park Insurance",agencyPOC:"Daniel Seong",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Austin"},
+  {id:217,start:"3/18/2024",vaName:"Pete Christian Bogal",vaTag:"Combo",status:"Active",vaEmail:"christiangran23@gmail.com",company:"Eastside Insurance Services",agencyPOC:"Matt Rubin",timeZone:"WA - PST",tl:"ED",am:"Karla",salesRep:"Mike"},
+  {id:218,start:"3/25/2024",vaName:"Mark John Ibarra",vaTag:"Combo",status:"Active",vaEmail:"ibarramark92@gmail.com",company:"Southern Insurance Group",agencyPOC:"David Ashton",timeZone:"NC- EST",tl:"Rezyl",am:"Alicia",salesRep:"Mike"},
+  {id:219,start:"3/25/2024",vaName:"Reychelle May Macaspac",vaTag:"Combo",status:"Active",vaEmail:"reych101@gmail.com",company:"JWI Group, Inc",agencyPOC:"Chris Januski",timeZone:"NY - EST",tl:"Vince",am:"Niccole",salesRep:"Mike"},
+  {id:220,start:"3/25/2024",vaName:"Juhn Rafael Yee",vaTag:"Gen VA",status:"Terminated",vaEmail:"rafael.yeah123@gmail.com",company:"JMJ Insurance",agencyPOC:"Michael James",timeZone:"",tl:"",am:"Cancelled",salesRep:"Johnny"},
+  {id:221,start:"3/25/2024",vaName:"Sakura Sakamoto",vaTag:"Gen VA",status:"Terminated",vaEmail:"sakurasakamoto26@gmail.com",company:"Creekside Risk",agencyPOC:"Chris Badger",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:222,start:"3/28/2024",vaName:"Camila Tagusi",vaTag:"Gen VA",status:"Terminated",vaEmail:"camilatagusi19@gmail.com",company:"Creekside Risk",agencyPOC:"Chris Badger",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:223,start:"4/1/2024",vaName:"Nhunkie Garingan",vaTag:"Gen VA",status:"Resigned",vaEmail:"ngaringan@yahoo.com",company:"Peer Executive Groups",agencyPOC:"David Crowley",timeZone:"PA - EST",tl:"",am:"Cancelled",salesRep:"Johnny"},
+  {id:224,start:"4/1/2024",vaName:"Shaira Beah Jaralve",vaTag:"Combo",status:"Resigned",vaEmail:"shairabeah.jaralve@gmail.com",company:"Rain Tree Group",agencyPOC:"Joey Capps",timeZone:"OK - CST",tl:"RJ",am:"Karla",salesRep:"Mike"},
+  {id:225,start:"4/8/2024",vaName:"Edwin Cabag Jr.",vaTag:"Gen VA",status:"Active",vaEmail:"summervalentine.042014@gmail.com",company:"Gartman Insurance Agency",agencyPOC:"Nick Gartman",timeZone:"MS - CST",tl:"RJ",am:"Alicia",salesRep:"Mike"},
+  {id:226,start:"4/8/2024",vaName:"Madylen Mae Bajala",vaTag:"Gen VA",status:"Terminated",vaEmail:"mady.bajala@gmail.com",company:"Greco Insurance Group",agencyPOC:"Joey Greco",timeZone:"NE - CST",tl:"RJ",am:"Karla",salesRep:"Johnny"},
+  {id:227,start:"4/15/2024",vaName:"Alice Avenido",vaTag:"Combo",status:"Reprofiled",vaEmail:"avenidoalice@gmail.com",company:"Innovators Insurance Group LLC",agencyPOC:"Daniel Dieterlen",timeZone:"IN - EST",tl:"Rezyl",am:"Alicia",salesRep:"Johnny"},
+  {id:228,start:"4/15/2024",vaName:"Kim De Gamo",vaTag:"Gen VA",status:"Resigned",vaEmail:"kimdegamo838@gmail.com",company:"Pinnacle Mutual",agencyPOC:"Jenell Lessley",timeZone:"PA - EST",tl:"Vince",am:"Niccole",salesRep:"Johnny"},
+  {id:229,start:"4/15/2024",vaName:"Alemar Ortiz",vaTag:"Gen VA",status:"Active",vaEmail:"ortizalemar19@gmail.com",company:"Grimes Insurance Agency",agencyPOC:"Ryan Reynolds",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:230,start:"4/15/2024",vaName:"Edriz Jann Somono",vaTag:"Gen VA",status:"Active",vaEmail:"edreeezzy@gmail.com",company:"Grimes Insurance Agency",agencyPOC:"Ryan Reynolds",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:231,start:"4/15/2024",vaName:"Mery Gail Desquitado",vaTag:"Gen VA",status:"Resigned",vaEmail:"mdesquitado08@gmail.com",company:"Nerissa Berry Insurance Agency",agencyPOC:"Nerissa Berry",timeZone:"OK - CST",tl:"RJ",am:"Karla",salesRep:"Mike"},
+  {id:232,start:"4/15/2024",vaName:"Vincent Sequerra",vaTag:"Combo",status:"Terminated",vaEmail:"sequerrav@gmail.com",company:"R. T. Thomas Insurance LLC",agencyPOC:"Raina Walton",timeZone:"MO - CST",tl:"RJ",am:"Alicia",salesRep:"Johnny"},
+  {id:233,start:"4/22/2024",vaName:"Eliza Lazarraga",vaTag:"Combo",status:"Terminated",vaEmail:"lazarragaelizaalessandra@gmail.com",company:"Dillehay Insurance",agencyPOC:"Kyle Dillehay - Valley Group",timeZone:"MO - CST",tl:"RJ",am:"Alicia",salesRep:"Johnny"},
+  {id:234,start:"4/22/2024",vaName:"Arlene Joy Cabase",vaTag:"Combo",status:"Active",vaEmail:"arlenezoi29@gmail.com",company:"Wiley Insurance Agency",agencyPOC:"Traci Wiley - Valley Group",timeZone:"MO - CST",tl:"RJ",am:"Alicia",salesRep:"Mike"},
+  {id:235,start:"4/22/2024",vaName:"Edsel John Arcales",vaTag:"Combo",status:"Active",vaEmail:"ejarcales@gmail.com",company:"Partners Insurance Inc.",agencyPOC:"Jason Wamsganz-Valley Group",timeZone:"MO - CST",tl:"RJ",am:"Karla",salesRep:"Celina"},
+  {id:236,start:"4/22/2024",vaName:"Johann Vera Cruz",vaTag:"Combo",status:"Terminated",vaEmail:"veracruzjohann@gmail.com",company:"Rock Island Insurance, LLC",agencyPOC:"Erik Svoboda - Valley Group",timeZone:"MO - CST",tl:"RJ",am:"Alicia",salesRep:"Mike"},
+  {id:237,start:"4/22/2024",vaName:"Kevin Rey Tsuchida",vaTag:"Combo",status:"Active",vaEmail:"kevintsuchida411@gmail.com",company:"Bull Insurance Agency",agencyPOC:"Kevin Bull - Valley Group",timeZone:"MO - CST",tl:"RJ",am:"Alicia",salesRep:"Celina"},
+  {id:238,start:"4/22/2024",vaName:"Miko Acolentava",vaTag:"Combo",status:"Reprofiled",vaEmail:"okimacolentava@gmail.com",company:"Faith Insurance Agency",agencyPOC:"Jordan Wilson - Valley Group",timeZone:"MO - CST",tl:"RJ",am:"Karla",salesRep:"Johnny"},
+  {id:239,start:"4/22/2024",vaName:"Lovelydel Matuod",vaTag:"Combo",status:"Terminated",vaEmail:"iamlovelydelbmatuod@gmail.com",company:"Rock Island Insurance, LLC",agencyPOC:"Erik Svoboda - Valley Group",timeZone:"MO - CST",tl:"RJ",am:"Alicia",salesRep:"Mike"},
+  {id:240,start:"4/29/2024",vaName:"Mira Gulane",vaTag:"Combo",status:"Active",vaEmail:"gulanemira13@gmail.com",company:"Rock Island Insurance, LLC",agencyPOC:"Erik Svoboda - Valley Group",timeZone:"MO - CST",tl:"RJ",am:"Alicia",salesRep:"Mike"},
+  {id:241,start:"4/29/2024",vaName:"Angel Domingo",vaTag:"Combo",status:"Active",vaEmail:"domingoangelj@gmail.com",company:"Robertson Insurance and Risk Management",agencyPOC:"Neil Robertson",timeZone:"PA - EST",tl:"Vince",am:"Karla",salesRep:"Mike"},
+  {id:242,start:"4/30/2024",vaName:"Rhea Mecaela Curayag",vaTag:"Combo",status:"Active",vaEmail:"rheacurayag@gmail.com",company:"Graves Insurance Group",agencyPOC:"Robert Graves - Valley Group",timeZone:"MO - CST",tl:"RJ",am:"Alicia",salesRep:"Austin"},
+  {id:243,start:"5/13/2024",vaName:"Bryan Christian Salvador",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"brianamoguis@yahoo.com",company:"Reliant Insurance Group",agencyPOC:"Ben Klesinger",timeZone:"IN - EST",tl:"Karla",am:"Niccole",salesRep:"Johnny"},
+  {id:244,start:"5/13/2024",vaName:"Jefer Sera",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"jefersera26@gmail.com",company:"Vibrant Insurance Group",agencyPOC:"Ryan Swalve",timeZone:"IA - CST",tl:"RJ",am:"Alicia",salesRep:"Johnny"},
+  {id:245,start:"5/13/2024",vaName:"Mike Lorenz Arnado",vaTag:"Gen VA",status:"Active",vaEmail:"mikearnado123@gmail.com",company:"Turbodial",agencyPOC:"",timeZone:"",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:246,start:"5/13/2024",vaName:"Ragel Zhen Alves",vaTag:"Combo",status:"Terminated",vaEmail:"alvesragel@gmail.com",company:"Reliable Insurance",agencyPOC:"Ben Klesinger",timeZone:"IN - EST",tl:"Karla",am:"Niccole",salesRep:"Johnny"},
+  {id:247,start:"5/20/2024",vaName:"Rolriann Kirk Biala",vaTag:"Combo",status:"Active",vaEmail:"kirkbiala@gmail.com",company:"JELMS Insurance Group",agencyPOC:"Brian Cichon",timeZone:"AZ - MDT",tl:"Martin",am:"Karla",salesRep:"Johnny"},
+  {id:248,start:"5/20/2024",vaName:"Albert De Asis",vaTag:"Gen VA",status:"Active",vaEmail:"albertdeasis00@gmail.com",company:"Omni Insurance Brokerage",agencyPOC:"Mitchell Hancock",timeZone:"NV - PST",tl:"ED",am:"Alicia",salesRep:"Johnny"},
+  {id:249,start:"5/28/2024",vaName:"Paul Jeane Michael Maglaqui",vaTag:"Gen VA",status:"Terminated",vaEmail:"mymail4u2is@gmail.com",company:"Heaton Bennett Insurance",agencyPOC:"Ross Bennett",timeZone:"TX - CST",tl:"Karla",am:"Niccole",salesRep:"Austin"},
+  {id:250,start:"6/3/2024",vaName:"Florabelle Gamilla",vaTag:"Gen VA",status:"Terminated",vaEmail:"gamilla.fbvielle07@gmail.com",company:"Davis Insurance Associates Inc.",agencyPOC:"Brad Davis",timeZone:"SC - EST",tl:"Karla",am:"Niccole",salesRep:"Johnny"},
+  {id:251,start:"6/3/2024",vaName:"Mary Ann Manguiran",vaTag:"Combo",status:"Terminated",vaEmail:"maryann.zoobooksystems@gmail.com",company:"Synergy Insurance Advisors",agencyPOC:"Scott Starita",timeZone:"CO - MDT",tl:"Martin",am:"Karla",salesRep:"Johnny"},
+  {id:252,start:"6/5/2024",vaName:"Bajram 'BASH' Elisha Veton Montesa",vaTag:"Gen VA",status:"Terminated",vaEmail:"bashmontesa@gmail.com",company:"Creekside Risk",agencyPOC:"Chris Badger",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:253,start:"6/5/2024",vaName:"Ailene Ruth Rojo",vaTag:"Gen VA",status:"Active",vaEmail:"rojoailene@gmail.com",company:"Leif Assurance",agencyPOC:"AJ Schrage",timeZone:"MO - CST",tl:"RJ",am:"Karla",salesRep:"Johnny"},
+  {id:254,start:"6/10/2024",vaName:"Gie Talisic",vaTag:"Gen VA",status:"Resigned",vaEmail:"greatvagie@gmail.com",company:"The Sterling Insurance Group",agencyPOC:"Teresa Kitchens",timeZone:"TX - CST",tl:"Karla",am:"Niccole",salesRep:"Mike"},
+  {id:255,start:"6/10/2024",vaName:"Glenn Mejorada",vaTag:"Gen VA",status:"BuyOut",vaEmail:"glennmejorada0621@gmail.com",company:"Fusco Orsini & Associates",agencyPOC:"Michael Fusco",timeZone:"CA - PST",tl:"ED",am:"Cancelled",salesRep:"Austin"},
+  {id:256,start:"6/10/2024",vaName:"Merce Joy Sta. Maria",vaTag:"Gen VA",status:"Terminated",vaEmail:"mjjolloso@icloud.com",company:"Insurance Plus LLC /Accounting Plus Inc",agencyPOC:"Lance Hall",timeZone:"MO - CST",tl:"RJ",am:"Karla",salesRep:"Johnny"},
+  {id:257,start:"6/12/2024",vaName:"Mhea Rose Pizon",vaTag:"Gen VA",status:"Terminated",vaEmail:"mheapizon05@gmail.com",company:"Trailstone Insurance",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:258,start:"6/13/2024",vaName:"Jacky Arado",vaTag:"Gen VA",status:"Active",vaEmail:"aradojacky@gmail.com",company:"Cord Insurance",agencyPOC:"Steve Renteria",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Johnny"},
+  {id:259,start:"6/21/2024",vaName:"Ferlene Ria Carrillo",vaTag:"Gen VA",status:"Terminated",vaEmail:"ferlene.carrillo@gmail.com",company:"Lafaro Insurance Agency",agencyPOC:"Robert Lafaro",timeZone:"PA - EST",tl:"Rezyl",am:"Alicia",salesRep:"Mike"},
+  {id:260,start:"6/21/2024",vaName:"Phoebe Euanna May Maranga",vaTag:"Gen VA",status:"Active",vaEmail:"phoebeeuannamay@gmail.com",company:"Florida Best Quotes",agencyPOC:"Nina Mastridge",timeZone:"FL - EST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:261,start:"6/21/2024",vaName:"Michael Joseph Cabigas",vaTag:"Gen VA",status:"Active",vaEmail:"michaelcabigas639@gmail.com",company:"Priority Risk Management",agencyPOC:"Mark Shoultz",timeZone:"IN - EST",tl:"ED",am:"Niccole",salesRep:"Austin"},
+  {id:262,start:"6/21/2024",vaName:"Edhen Mae Amores",vaTag:"Gen VA",status:"Active",vaEmail:"edhenamores@gmail.com",company:"Lafaro Insurance Agency",agencyPOC:"Robert Lafaro",timeZone:"PA - EST",tl:"Rezyl",am:"Alicia",salesRep:"Mike"},
+  {id:263,start:"6/24/2024",vaName:"Joseph Benedict Sullan",vaTag:"Gen VA",status:"Active",vaEmail:"josephbenedictsullan@gmail.com",company:"Trailstone",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:264,start:"6/25/2024",vaName:"John Jazel Alex Gaviola",vaTag:"Gen VA",status:"Terminated",vaEmail:"thelastjeremiah@gmail.com",company:"Turbodial",agencyPOC:"",timeZone:"",tl:"Karla",am:"Niccole",salesRep:"Austin"},
+  {id:265,start:"6/26/2024",vaName:"Jefryle Jude Rivero",vaTag:"Gen VA",status:"Resigned",vaEmail:"judasaiyan3@gmail.com",company:"Cord Insurance",agencyPOC:"Steve Renteria",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Johnny"},
+  {id:266,start:"7/1/2024",vaName:"Emille Patricia Campaña",vaTag:"Combo",status:"Terminated",vaEmail:"epatriciacamp@gmail.com",company:"The Salvati Insurance Group, Inc",agencyPOC:"Thomas Salvati",timeZone:"MI - EST",tl:"Rezyl",am:"Karla",salesRep:"Johnny"},
+  {id:267,start:"7/1/2024",vaName:"Francis Remce Salino",vaTag:"Combo",status:"Terminated",vaEmail:"francesremce@gmail.com",company:"Glenn S Caldwell Insurance Services Inc",agencyPOC:"Candice Myers",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"Celina"},
+  {id:268,start:"7/1/2024",vaName:"Gem Camille Elaya",vaTag:"Combo",status:"Reprofiled",vaEmail:"elaya.gem@gmail.com",company:"Neighborhood Insurance Agency",agencyPOC:"Martin Felix",timeZone:"CA - PST",tl:"ED",am:"Karla",salesRep:"Mike"},
+  {id:269,start:"7/1/2024",vaName:"Gregg Nilo Jr Bation",vaTag:"Combo",status:"Terminated",vaEmail:"greggnilobjr@gmail.com",company:"Faith Insurance Agency",agencyPOC:"Jordan Wilson - Valley Group",timeZone:"MO - CST",tl:"RJ",am:"Karla",salesRep:"Johnny"},
+  {id:270,start:"7/1/2024",vaName:"Hans Matthew Delos Santos",vaTag:"Combo",status:"Resigned",vaEmail:"hmtdelossantos@gmail.com",company:"Kwan Insurance Services",agencyPOC:"Karson Kwan",timeZone:"CA - PST",tl:"ED",am:"Karla",salesRep:"Johnny"},
+  {id:271,start:"7/1/2024",vaName:"Jairus Misajon",vaTag:"Combo",status:"Active",vaEmail:"jairus.misajon@gmail.com",company:"Choice+ Insurance Services, Inc.",agencyPOC:"Zach Davis",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"Celina"},
+  {id:272,start:"7/1/2024",vaName:"Francis Anthony Gabriento",vaTag:"Combo",status:"Active",vaEmail:"work.fgabriento@gmail.com",company:"3R Insurance Agency",agencyPOC:"Andy Roy",timeZone:"CO - MDT",tl:"Martin",am:"Alicia",salesRep:"Celina"},
+  {id:273,start:"7/1/2024",vaName:"Frances Maxine Trigo",vaTag:"Gen VA",status:"Active",vaEmail:"trigomaxine56@gmail.com",company:"Meridian",agencyPOC:"Shawn Rae",timeZone:"FL - EST",tl:"Rezyl",am:"Karla",salesRep:"Johnny"},
+  {id:274,start:"7/1/2024",vaName:"James Paul Sargado",vaTag:"Combo",status:"Active",vaEmail:"japsargado@gmail.com",company:"Luminary Insurance Group",agencyPOC:"Lance Gray",timeZone:"GA - EST",tl:"Rezyl",am:"Karla",salesRep:"Johnny"},
+  {id:275,start:"7/1/2024",vaName:"Isaiah Melchor Tan",vaTag:"Combo",status:"Active",vaEmail:"isaiahmelchortan@gmail.com",company:"Jackie Dees Insurance",agencyPOC:"Jackie Dee",timeZone:"NC- EST",tl:"Martin",am:"Alicia",salesRep:"Celina"},
+  {id:276,start:"7/1/2024",vaName:"Fe Angeli Tomale",vaTag:"Combo",status:"Active",vaEmail:"fetomaleva@gmail.com",company:"Advantage Auto Tag and Insurance",agencyPOC:"Gregory Kramer",timeZone:"PA - EST",tl:"Rezyl",am:"Alicia",salesRep:"Austin"},
+  {id:277,start:"7/1/2024",vaName:"Jan Alfred Ranile",vaTag:"Combo",status:"Active",vaEmail:"jan.ranile@outlook.com",company:"CSP Insurance",agencyPOC:"Lawson Walker",timeZone:"SC - EST",tl:"Rezyl",am:"Karla",salesRep:"Johnny"},
+  {id:278,start:"7/1/2024",vaName:"Jake Boston",vaTag:"Combo",status:"Active",vaEmail:"jakeboston2000@gmail.com",company:"Worthen Insurance Group",agencyPOC:"Caroline Johnson",timeZone:"TX - CST",tl:"RJ",am:"Alicia",salesRep:"Mike"},
+  {id:279,start:"7/1/2024",vaName:"Mimi Brendamae Estorba",vaTag:"Gen VA",status:"Resigned",vaEmail:"mimifreelances@gmail.com",company:"Allco Fullerton Insurance Agency",agencyPOC:"Andrew Kadera",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"Austin"},
+  {id:280,start:"7/8/2024",vaName:"Princess Mae Inderio",vaTag:"Combo",status:"Active",vaEmail:"oberesp7366@gmail.com",company:"FHC Insurance",agencyPOC:"Anthony Bucca",timeZone:"FL - EST",tl:"Rezyl",am:"Alicia",salesRep:"Mike"},
+  {id:281,start:"7/9/2024",vaName:"Honey Grace Tioaquen",vaTag:"Gen VA",status:"Terminated",vaEmail:"h.tioaquen96@gmail.com",company:"Rod Dunlap Insurance",agencyPOC:"Rod Dunlap",timeZone:"OR - PST",tl:"ED",am:"Karla",salesRep:"Mike"},
+  {id:282,start:"7/10/2024",vaName:"Ronald Allan Jr Sy",vaTag:"Gen VA",status:"Terminated",vaEmail:"ronaldsy97@gmail.com",company:"Paducah Insurance Agency LLC",agencyPOC:"Jared Morgan",timeZone:"KY - EST",tl:"Rezyl",am:"Alicia",salesRep:"Mike"},
+  {id:283,start:"7/26/2024",vaName:"Sheena Mae Yurag",vaTag:"Gen VA",status:"Terminated",vaEmail:"sheenayurag87@gmail.com",company:"Florida Best Quote",agencyPOC:"Nina Mastridge",timeZone:"FL - EST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:284,start:"7/29/2024",vaName:"Anneka Beatriz Celis",vaTag:"Gen VA",status:"Resigned",vaEmail:"aecelis02@gmail.com",company:"FHC Insurance",agencyPOC:"Anthony Bucca",timeZone:"FL - EST",tl:"Rezyl",am:"Alicia",salesRep:"Mike"},
+  {id:285,start:"7/29/2024",vaName:"Jessa Mae But-ay",vaTag:"Gen VA",status:"Active",vaEmail:"jessamebutay@gmail.com",company:"Scheier Insurance Agency",agencyPOC:"Allison Scheier",timeZone:"CA - PST",tl:"RJ",am:"Alicia",salesRep:"Johnny"},
+  {id:286,start:"8/5/2024",vaName:"John Reybond Ho",vaTag:"Combo",status:"Active",vaEmail:"johnho1906@gmail.com/outlook.com",company:"Gannon Coyne & Associates, Inc.",agencyPOC:"Chris Coyne / Emma Coyne",timeZone:"PA - EST",tl:"Vince",am:"Alicia",salesRep:"Mike"},
+  {id:287,start:"8/5/2024",vaName:"Prince John Demabildo",vaTag:"Combo",status:"Active",vaEmail:"demabilp@gmail.com",company:"MaxInsurance",agencyPOC:"Joe Luminiello",timeZone:"TX - CST",tl:"RJ",am:"Karla",salesRep:"Celina"},
+  {id:288,start:"8/6/2024",vaName:"Jarvy Jayme",vaTag:"Gen VA",status:"Active",vaEmail:"jarvyjayme42@gmail.com",company:"Trailstone Insurance",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:289,start:"8/8/2024",vaName:"Ayessa Kyla Siton",vaTag:"Gen VA",status:"Terminated",vaEmail:"ayessaky.siton@gmail.com",company:"Matt Roberts Agency",agencyPOC:"Matt Roberts",timeZone:"NC- EST",tl:"Rezyl",am:"Alicia",salesRep:"Mike"},
+  {id:290,start:"8/12/2024",vaName:"Frederick Fedee",vaTag:"Gen VA",status:"Active",vaEmail:"freggieweggie123@gmail.com",company:"Cord Insurance",agencyPOC:"Steve Renteria",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Johnny"},
+  {id:291,start:"8/12/2024",vaName:"Maika Silagan",vaTag:"Gen VA",status:"Active",vaEmail:"mtsilagan@gmail.com",company:"Cord Insurance",agencyPOC:"Steve Renteria",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Johnny"},
+  {id:292,start:"8/12/2024",vaName:"Michael John Baquero",vaTag:"Gen VA",status:"Resigned",vaEmail:"mikzlindzz@gmail.com",company:"Premiere Home & Auto",agencyPOC:"Peter Manfra",timeZone:"NJ - EST",tl:"Vince",am:"Niccole",salesRep:"Johnny"},
+  {id:293,start:"8/12/2024",vaName:"Yousef Abdulrahman Zeinaldin",vaTag:"Gen VA",status:"Active",vaEmail:"otapzeinaldin@gmail.com",company:"Premiere Home & Auto",agencyPOC:"Peter Manfra",timeZone:"NJ - EST",tl:"Vince",am:"Niccole",salesRep:"Johnny"},
+  {id:294,start:"8/12/2024",vaName:"Rona Mae Ramo",vaTag:"Combo",status:"Active",vaEmail:"ronamaeramo@gmail.com",company:"My Compass Insurance",agencyPOC:"Brandon Vanderbeck",timeZone:"NY - EST",tl:"Rezyl",am:"Karla",salesRep:"Johnny"},
+  {id:295,start:"8/19/2024",vaName:"Allyza Legaspi",vaTag:"Gen VA",status:"Active",vaEmail:"allyzaquesada@gmail.com",company:"Cord Insurance",agencyPOC:"Steve Renteria",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Johnny"},
+  {id:296,start:"8/19/2024",vaName:"Diane Layne Fernandez",vaTag:"Gen VA",status:"Active",vaEmail:"dianelaynefernandez@gmail.com",company:"Cord Insurance",agencyPOC:"Steve Renteria",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Johnny"},
+  {id:297,start:"8/19/2024",vaName:"Jose Lorenzo Ponce De Leon",vaTag:"Gen VA",status:"Active",vaEmail:"jolopdl99@gmail.com",company:"Cord Insurance",agencyPOC:"Steve Renteria",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Johnny"},
+  {id:298,start:"8/26/2024",vaName:"Herma Mae Lima",vaTag:"Gen VA",status:"Active",vaEmail:"limahermamae@gmail.com",company:"Navigate Risk Advisors",agencyPOC:"TJ Worsencroft",timeZone:"OH - EST",tl:"Vince",am:"Niccole",salesRep:"Johnny"},
+  {id:299,start:"9/3/2024",vaName:"Jayson Mark Aguirre",vaTag:"Combo",status:"Reprofiled",vaEmail:"jmdgaguirre@gmail.com",company:"Green Planet Insurance",agencyPOC:"Daniel Ahluwailia",timeZone:"AZ - MDT",tl:"Martin",am:"Karla",salesRep:"Johnny"},
+  {id:300,start:"9/3/2024",vaName:"Zhaina Karylle Carbonell",vaTag:"Gen VA",status:"Active",vaEmail:"zhainakarylle8@gmail.com",company:"LTC Specialists, LLC",agencyPOC:"Andrew Goetz",timeZone:"MD - EST",tl:"Rezyl",am:"Alicia",salesRep:"Johnny"},
+  {id:301,start:"9/9/2024",vaName:"Dyniela Buhia",vaTag:"Gen VA",status:"Active",vaEmail:"dynielabuhia@gmail.com",company:"Cord Insurance",agencyPOC:"Steve Renteria",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Johnny"},
+  {id:302,start:"9/9/2024",vaName:"Miljun Magno",vaTag:"Gen VA",status:"Active",vaEmail:"miljunrealme23@gmail.com",company:"TrustPoint Services LLC",agencyPOC:"Kristina Reiling",timeZone:"KS - CST",tl:"RJ",am:"Alicia",salesRep:"Johnny"},
+  {id:303,start:"9/9/2024",vaName:"T.j Kent Serafica",vaTag:"Gen VA",status:"Terminated",vaEmail:"tjkentserafica@gmail.com",company:"Hifi Associates",agencyPOC:"Ron Hirschhorn",timeZone:"NJ - EST",tl:"Rezyl",am:"Karla",salesRep:"Johnny"},
+  {id:304,start:"9/16/2024",vaName:"Jan Micheal Bello",vaTag:"Gen VA",status:"Active",vaEmail:"mtmlsbellojb@gmail.com",company:"Soliman Insurance",agencyPOC:"Max Soliman/Yesenia Rodriguez",timeZone:"AZ - MDT",tl:"Martin",am:"Karla",salesRep:"Mike"},
+  {id:305,start:"9/16/2024",vaName:"Mikaella Beatrize Bouffard",vaTag:"Combo",status:"Terminated",vaEmail:"beatrizebouffard@gmail.com",company:"Copeland Insurance Agency",agencyPOC:"Vonda Copeland",timeZone:"KS - CST",tl:"Martin",am:"Niccole",salesRep:"Johnny"},
+  {id:306,start:"10/7/2024",vaName:"Joel Rey Bueno",vaTag:"Combo",status:"Reprofiled",vaEmail:"bueno.joelrey@gmail.com",company:"Gaffney Insurance Agency & Financial Services, LLC",agencyPOC:"Stephan Gaffney",timeZone:"TN - CST",tl:"RJ",am:"Karla",salesRep:"Johnny"},
+  {id:307,start:"10/8/2024",vaName:"Christian Vern Aguilar",vaTag:"Combo",status:"Reprofiled",vaEmail:"aguilarvern06@gmail.com",company:"Family Insurance",agencyPOC:"Mark Bailey",timeZone:"IL - CST",tl:"Karla",am:"Niccole",salesRep:"Austin"},
+  {id:308,start:"10/8/2024",vaName:"Bryn John Cornejo",vaTag:"Gen VA",status:"Active",vaEmail:"brynbydsgn@gmail.com",company:"Trailstone",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:309,start:"10/21/2024",vaName:"Aubrey Gail Estomago",vaTag:"Combo",status:"Resigned",vaEmail:"aubreyestomago407@gmail.com",company:"P3 Insurance Solutioins",agencyPOC:"Dariet Wallace",timeZone:"TN - CST",tl:"RJ",am:"Karla",salesRep:"Mike"},
+  {id:310,start:"10/21/2024",vaName:"Kate Justin Diamante",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"katejustind@gmail.com",company:"Community Association Insurance Consulting, LLC",agencyPOC:"Melissa Blenker",timeZone:"WI - CST",tl:"RJ",am:"Alicia",salesRep:"Mike"},
+  {id:311,start:"10/21/2024",vaName:"Phoebe Espaldon",vaTag:"Gen VA",status:"Active",vaEmail:"phoebeespaldon23@gmail.com",company:"Beach Break Insurance",agencyPOC:"Rich Sabatowski",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Austin"},
+  {id:312,start:"10/28/2024",vaName:"Elisa Alexandra Lazarraga",vaTag:"Combo",status:"Inactive",vaEmail:"lazarragaelisa@gmail.com",company:"Ovation Insurance",agencyPOC:"Joel Dunham",timeZone:"IN - EST",tl:"Rezyl",am:"Alicia",salesRep:"Johnny"},
+  {id:313,start:"10/28/2024",vaName:"John Elias Ibarra",vaTag:"Combo",status:"Active",vaEmail:"derpibarra@gmail.com",company:"Aspen Agency Inc",agencyPOC:"Rob Boyd",timeZone:"NY - EST",tl:"Rezyl",am:"Karla",salesRep:"Johnny"},
+  {id:314,start:"10/28/2024",vaName:"Aled Espinosa Geronimo",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"geronimoaled@gmail.com",company:"Manna Insurance Group",agencyPOC:"Daniel Vander Kooi",timeZone:"WA - PST",tl:"ED",am:"Alicia",salesRep:"Mike"},
+  {id:315,start:"10/28/2024",vaName:"Mohaimen 'Eden' Dampac",vaTag:"Gen VA",status:"Resigned",vaEmail:"mohaimendampac20@gmail.com",company:"K Taylor Insurance Solutions",agencyPOC:"Ken Taylor Jr.",timeZone:"CA - PST",tl:"ED",am:"Karla",salesRep:"Mike"},
+  {id:316,start:"10/29/2024",vaName:"Allana Lou Dapetilla",vaTag:"Gen VA",status:"Terminated",vaEmail:"allanalou99@gmail.com",company:"Loveland Insurance, LLC",agencyPOC:"Scott Loveland",timeZone:"MO - CST",tl:"RJ",am:"Karla",salesRep:"Mike"},
+  {id:317,start:"11/4/2024",vaName:"Dianne Mangoranda",vaTag:"Gen VA",status:"Terminated",vaEmail:"diannemangoranda.vaph@gmail.com",company:"Vibrant Insurance Group",agencyPOC:"Ryan Swalve",timeZone:"IA - CST",tl:"RJ",am:"Alicia",salesRep:"Johnny"},
+  {id:318,start:"11/5/2024",vaName:"Angelie grace Fortaleza",vaTag:"Gen VA",status:"Terminated",vaEmail:"fortalezaangelie@gmail.com",company:"Kiesau Insurance services",agencyPOC:"Jeffrey Kiesau",timeZone:"CA - PST",tl:"ED",am:"Karla",salesRep:"Mike"},
+  {id:319,start:"11/5/2024",vaName:"Iona Eunice Fornolles",vaTag:"Gen VA",status:"Terminated",vaEmail:"fornollesionaeunice26@gmail.com",company:"Kiesau Insurance services",agencyPOC:"Jeffrey Kiesau",timeZone:"CA - PST",tl:"ED",am:"Karla",salesRep:"Mike"},
+  {id:320,start:"11/5/2024",vaName:"Sheldon Fritz Villasand",vaTag:"Gen VA",status:"Terminated",vaEmail:"villasandfritz@gmail.com",company:"Utopia Mngt. & Insurance Services, Inc.",agencyPOC:"Grant Moseley",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"Mike"},
+  {id:321,start:"11/12/2024",vaName:"Jules Harriet Consigna",vaTag:"Gen VA",status:"Active",vaEmail:"julesconsigna@gmail.com",company:"Barber Insurance Agency",agencyPOC:"Cheryl Fessenden",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"Johnny"},
+  {id:322,start:"11/13/2024",vaName:"Bien Laddin Akmad",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"bien.akmd@gmail.com",company:"EG Bowman",agencyPOC:"Jelani Fenton",timeZone:"NY - EST",tl:"Via",am:"Niccole",salesRep:"Mike"},
+  {id:323,start:"11/18/2024",vaName:"Nico Fernandez",vaTag:"Combo",status:"Active",vaEmail:"nicofernandez100700@gmail.com",company:"Choice+ Insurance Services, Inc.",agencyPOC:"Zach Davis",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"Celina"},
+  {id:324,start:"11/18/2024",vaName:"Shaira Mae Cantil",vaTag:"Combo",status:"Terminated",vaEmail:"cantilshai99@gmail.com",company:"Jordan and Jordan Insurance Group",agencyPOC:"Linda Jordan",timeZone:"TX - CST",tl:"RJ",am:"Alicia",salesRep:"Mike"},
+  {id:325,start:"11/24/2024",vaName:"Nicole Santisas",vaTag:"Gen VA",status:"Active",vaEmail:"santisas.nicole@gmail.com",company:"Cook Insurance Agency",agencyPOC:"Luke Cook",timeZone:"AR - CST",tl:"RJ",am:"Alicia",salesRep:"Johnny"},
+  {id:326,start:"11/25/2024",vaName:"Al Sean Jr Sala",vaTag:"Gen VA",status:"Active",vaEmail:"jrsalaalsean@gmail.com",company:"Trailstone Insurance Group",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:327,start:"11/25/2024",vaName:"Kevin Matthew Dublin",vaTag:"Gen VA",status:"Active",vaEmail:"dublinkevinmatthew@gmail.com",company:"Trailstone Insurance Group",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:328,start:"11/25/2024",vaName:"Elijah Kent Nana",vaTag:"Combo",status:"Active",vaEmail:"elijahkentnana@gmail.com",company:"Muir Insurance Group",agencyPOC:"Mike Muir",timeZone:"IL - CST",tl:"RJ",am:"Karla",salesRep:"Celina"},
+  {id:329,start:"12/2/2024",vaName:"Rosalyn Esmero",vaTag:"Gen VA",status:"Active",vaEmail:"rosalyesmero@gmail.com",company:"Heaton Bennett Insurance",agencyPOC:"Ross Bennett",timeZone:"TX - CST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:330,start:"12/6/2024",vaName:"John Louis Oliveros",vaTag:"Gen VA",status:"Terminated",vaEmail:"oliverosjohnlouis@gmail.com",company:"Heaton Bennett Insurance",agencyPOC:"Ross Bennett",timeZone:"TX - CST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:331,start:"12/9/2024",vaName:"Mary Joy Indac",vaTag:"Combo",status:"Active",vaEmail:"mjindac.ipeasc@gmail.com",company:"Ryan P Conway Agency LLC",agencyPOC:"Ryan Conway",timeZone:"IL - CST",tl:"RJ",am:"Karla",salesRep:"Mike"},
+  {id:332,start:"12/16/2024",vaName:"Brisbane Alexander Cordero",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"brisbanecordero46@gmail.com",company:"Haymes Insurance Agency",agencyPOC:"Jennie Haymes",timeZone:"MO - CST",tl:"RJ",am:"Alicia",salesRep:"Johnny"},
+  {id:333,start:"12/16/2024",vaName:"Melody David",vaTag:"Combo",status:"Resigned",vaEmail:"Melodydavid.1994@gmail.com",company:"Weer Insurance Group",agencyPOC:"Scott Weer",timeZone:"IL - CST",tl:"RJ",am:"Alicia",salesRep:"Mike"},
+  {id:334,start:"12/17/2024",vaName:"Thea Arns Timbal",vaTag:"Gen VA",status:"Terminated",vaEmail:"thearnsotto1@gmail.com",company:"America Insurance Agency",agencyPOC:"Nathan Breece",timeZone:"PA - EST",tl:"Rezyl",am:"Karla",salesRep:"Johnny"},
+  {id:335,start:"12/23/2024",vaName:"Bryan Christian Salvador",vaTag:"Combo",status:"Terminated",vaEmail:"brianamoguis@yahoo.com",company:"Ramey King Insurance",agencyPOC:"Mandy Smith",timeZone:"TX - CST",tl:"RJ",am:"Karla",salesRep:"Mike"},
+  {id:336,start:"12/30/2024",vaName:"Kyle Guissepphe Guille Dacup",vaTag:"Combo",status:"Terminated",vaEmail:"kyleguille@gmail.com",company:"Fort Collins Insurance",agencyPOC:"Ryan Jackson",timeZone:"CO - MDT",tl:"Martin",am:"Alicia",salesRep:"Mike"},
+  {id:337,start:"12/30/2024",vaName:"Lorie Angie Pardillo",vaTag:"Combo",status:"Reprofiled",vaEmail:"pardillolor@gmail.com",company:"The Hanks Group",agencyPOC:"Rod Hanks",timeZone:"TX - CST",tl:"RJ",am:"Niccole",salesRep:"Mike"},
+  {id:338,start:"12/30/2024",vaName:"Mary Joy Bocawe",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"maryjoybocawe611@gmail.com",company:"The Insurance Pad",agencyPOC:"Kim Rankin",timeZone:"OH - EST",tl:"Rezyl",am:"Karla",salesRep:"Mike"},
+  {id:339,start:"12/30/2024",vaName:"Joshua Elijah Sindao",vaTag:"Combo",status:"Active",vaEmail:"joshuaelijahsindao@gmail.com",company:"Browning Reagle Insurance Agency",agencyPOC:"David Reagle",timeZone:"MD - EST",tl:"Vince",am:"Karla",salesRep:"Mike"},
+  {id:340,start:"12/30/2024",vaName:"Charmeine Chatto",vaTag:"Combo",status:"Active",vaEmail:"charmeinegchatto@gmail.com",company:"Centennial Insurance Group, INC",agencyPOC:"Tami Birkes",timeZone:"OK - CST",tl:"RJ",am:"Alicia",salesRep:"Celina"},
+  {id:341,start:"12/30/2024",vaName:"Brad Ford Rosal",vaTag:"Combo",status:"Active",vaEmail:"bfdrosal@gmail.com",company:"Nowlin Insurance Group LLC",agencyPOC:"Lance Nowlin",timeZone:"TX - CST",tl:"RJ",am:"Alicia",salesRep:"Johnny"},
+  {id:342,start:"1/6/2025",vaName:"Micahel Jerien Taño",vaTag:"Gen VA",status:"Terminated",vaEmail:"tanomikmik@gmail.com",company:"Cavalry Insurance Services",agencyPOC:"Nicole Wu",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"Johnny"},
+  {id:343,start:"1/6/2025",vaName:"Rommel Cuta",vaTag:"Combo",status:"Terminated",vaEmail:"rommelcuta@gmail.com",company:"Allison Insurance",agencyPOC:"Scott Nesbitt",timeZone:"AL - CST",tl:"RJ",am:"Karla",salesRep:"Mike"},
+  {id:344,start:"1/7/2025",vaName:"Rosie Fe Ocho",vaTag:"Gen VA",status:"Active",vaEmail:"rosiefeocho0920@gmail.com",company:"Kraken Insurance - Tyler Pearson",agencyPOC:"Tyler Pearson",timeZone:"CA - PST",tl:"ED",am:"Karla",salesRep:"Johnny"},
+  {id:345,start:"1/9/2025",vaName:"Fairie Pearl Tamargo",vaTag:"Gen VA",status:"Active",vaEmail:"tamargofaye@gmail.com",company:"Prostar Insurance",agencyPOC:"John Pfeil",timeZone:"WA - PST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:346,start:"1/13/2025",vaName:"Aella Katryn Campo",vaTag:"Gen VA",status:"Resigned",vaEmail:"campo.aella@gmail.com",company:"Navigate Risk Advisors",agencyPOC:"TJ Worsencroft",timeZone:"OH - EST",tl:"Karla",am:"Niccole",salesRep:"Johnny"},
+  {id:347,start:"1/14/2025",vaName:"Jenneth Castillanes",vaTag:"Combo",status:"Active",vaEmail:"qaseoknam@gmail.com",company:"LH&W Insurance",agencyPOC:"Michael Whitcraft",timeZone:"PA - EST",tl:"Rezyl",am:"Alicia",salesRep:"Johnny"},
+  {id:348,start:"1/20/2025",vaName:"Hazel Ann Baui",vaTag:"Combo",status:"Terminated",vaEmail:"hazelann.baui@gmail.com",company:"Meyer Insurance",agencyPOC:"Eric Meyer/Lisa Peterson",timeZone:"SD - CST",tl:"RJ",am:"Alicia",salesRep:"Johnny"},
+  {id:349,start:"1/20/2025",vaName:"Armando Jr Labton",vaTag:"Combo",status:"Active",vaEmail:"labtonarman@gmail.com",company:"Stevens Investments & Insurance",agencyPOC:"Jodi Stevens",timeZone:"OH - EST",tl:"Rezyl",am:"Alicia",salesRep:"Johnny"},
+  {id:350,start:"1/27/2025",vaName:"Jeoffrey Poe Cadano",vaTag:"Gen VA",status:"Resigned",vaEmail:"cjeoffreypoe@gmail.com",company:"Agency Automate",agencyPOC:"Bill Jenkins",timeZone:"MN - CST",tl:"Vince",am:"Alicia",salesRep:"Austin"},
+  {id:351,start:"1/27/2025",vaName:"Ralph David Malubay",vaTag:"Combo",status:"Active",vaEmail:"davidxbusiness@gmail.com",company:"Sutkay Insurance",agencyPOC:"Paul Sutkay",timeZone:"IL - CST",tl:"RJ",am:"Alicia",salesRep:"Celina"},
+  {id:352,start:"2/3/2025",vaName:"Clark Aron Sastrellas",vaTag:"Gen VA",status:"Resigned",vaEmail:"sastrellasclark@gmail.com",company:"Procare",agencyPOC:"Filip Lundstedt",timeZone:"FL - EST",tl:"Rezyl",am:"Karla",salesRep:"Mike"},
+  {id:353,start:"2/10/2025",vaName:"Charlene Cuas",vaTag:"Gen VA",status:"Active",vaEmail:"charlenecuas98@gmail.com",company:"Jessica Liu Insurance Services",agencyPOC:"Jessica Liu",timeZone:"CA - PST",tl:"ED",am:"Karla",salesRep:"Johnny"},
+  {id:354,start:"2/10/2025",vaName:"Francis Ean Jon Lumbayon",vaTag:"Gen VA",status:"Active",vaEmail:"franslumbayon@gmail.com",company:"Stacks Brokerage",agencyPOC:"Austin Kaszuba/Taylor Stacks",timeZone:"FL - EST",tl:"Rezyl",am:"Alicia",salesRep:"Johnny"},
+  {id:355,start:"2/10/2025",vaName:"Leo Angelo Saycon",vaTag:"Combo",status:"Active",vaEmail:"lasaycon@gmail.com",company:"The Salvati Insurance Group",agencyPOC:"Thomas Salvati",timeZone:"MI - EST",tl:"Rezyl",am:"Karla",salesRep:"Johnny"},
+  {id:356,start:"2/10/2025",vaName:"Fatima Comawas",vaTag:"Combo",status:"Active",vaEmail:"fatimacomawas968@gmail.com",company:"The Gordon Agency",agencyPOC:"Michael Gordon",timeZone:"WI - CST",tl:"RJ",am:"Karla",salesRep:"Celina"},
+  {id:357,start:"2/12/2025",vaName:"Rowie Sarillana",vaTag:"Combo",status:"Resigned",vaEmail:"rowie.c.sarillana@gmail.com",company:"Pinnacle Point Insurance",agencyPOC:"Aaron England",timeZone:"TX - CST",tl:"RJ",am:"Niccole",salesRep:"Johnny"},
+  {id:358,start:"2/16/2025",vaName:"Andrea Arce",vaTag:"Gen VA",status:"Active",vaEmail:"aarce0813@gmail.com",company:"Grimes Insurance",agencyPOC:"Ryan Reynolds",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:359,start:"2/17/2025",vaName:"Lord John Oliveros",vaTag:"Gen VA",status:"Active",vaEmail:"ljoliveros45@gmail.com",company:"Great Park Insurance",agencyPOC:"Daniel Seong",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Austin"},
+  {id:360,start:"2/17/2025",vaName:"Shanaz Gani",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"shanazgani12@gmail.com",company:"Legacy Lines Insurance & Financial",agencyPOC:"Kacey Thomas",timeZone:"NV - PST",tl:"ED",am:"Alicia",salesRep:"Mike"},
+  {id:361,start:"2/24/2025",vaName:"Daven Jay Piloton",vaTag:"Gen VA",status:"Active",vaEmail:"daven.piloton17@gmail.com",company:"Sale Power CRM",agencyPOC:"David Lefevre",timeZone:"FL - EST",tl:"Vince",am:"Niccole",salesRep:""},
+  {id:362,start:"2/24/2025",vaName:"Almie Jane Romanillos",vaTag:"Gen VA",status:"Active",vaEmail:"sollinamoralmie@gmail.com",company:"Rain Tree Group",agencyPOC:"Joey Capps",timeZone:"OK - CST",tl:"RJ",am:"Karla",salesRep:"Mike"},
+  {id:363,start:"2/24/2025",vaName:"Noreen Velez",vaTag:"Gen VA",status:"Active",vaEmail:"noreenvelez27@gmail.com",company:"Varde Insurance Group",agencyPOC:"Grant Johnson",timeZone:"OK - CST",tl:"RJ",am:"Alicia",salesRep:"John"},
+  {id:364,start:"2/24/2025",vaName:"Patricia Arielle Pascual",vaTag:"Gen VA",status:"Resigned",vaEmail:"patriciaariellep@gmail.com",company:"GlobalGreen Insurance Agency",agencyPOC:"Hassan Jaafar",timeZone:"MI - EST",tl:"Rezyl",am:"Karla",salesRep:"Austin"},
+  {id:365,start:"3/10/2025",vaName:"Joshua Villocino",vaTag:"Gen VA",status:"Terminated",vaEmail:"joshuavillocino@gmail.com",company:"Legacy Lines Insurance & Financial",agencyPOC:"Michael Smith",timeZone:"NV - PST",tl:"ED",am:"Alicia",salesRep:"Celina"},
+  {id:366,start:"3/17/2025",vaName:"Louie Jay Elio",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"ljve1398@gmail.com",company:"Eskew Insurance Agency",agencyPOC:"Nic Eskew",timeZone:"WY - MDT",tl:"Martin",am:"Karla",salesRep:"Johnny"},
+  {id:367,start:"3/17/2025",vaName:"Dolly Mae Sementela",vaTag:"Gen VA",status:"Active",vaEmail:"sementeladollymae@gmail.com",company:"Murphy Business",agencyPOC:"Joe Chiarello",timeZone:"FL - EST",tl:"Rezyl",am:"Alicia",salesRep:"Mike"},
+  {id:368,start:"3/17/2025",vaName:"Leonard Joshua Perez",vaTag:"Combo",status:"Active",vaEmail:"perezleonardjoshua@gmail.com",company:"Hardenbergh Insurace Group",agencyPOC:"Jon Sharp / Tracey Smith /Heather Pinard",timeZone:"PA - EST",tl:"Rezyl",am:"Alicia",salesRep:"Celina"},
+  {id:369,start:"3/17/2025",vaName:"Tracy Nicole Dumogho",vaTag:"Gen VA",status:"Resigned",vaEmail:"tracyworks.dvo@gmail.com",company:"Ram Risk Group",agencyPOC:"Daniel Tighe",timeZone:"FL - EST",tl:"Rezyl",am:"Alicia",salesRep:"Celina"},
+  {id:370,start:"3/18/2025",vaName:"Psyche Diana Enojo",vaTag:"Gen VA",status:"Resigned",vaEmail:"enojopsychediana@gmail.com",company:"The Salvati Insurance Group",agencyPOC:"Thomas Salvati",timeZone:"MI - EST",tl:"Rezyl",am:"Karla",salesRep:"Johnny"},
+  {id:371,start:"3/24/2025",vaName:"Jeazelle Mia Maslog",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"miamaslog08@gmail.com",company:"Trustpoint Insurance",agencyPOC:"Kristina Reiling",timeZone:"KS - CST",tl:"RJ",am:"Alicia",salesRep:"Johnny"},
+  {id:372,start:"3/31/2025",vaName:"Jay Ryan Dedumo",vaTag:"Gen VA",status:"Terminated",vaEmail:"ryanjd2497@gmail.com",company:"AA Lares Insurance Services, Inc.",agencyPOC:"Patty Lares",timeZone:"CA - PST",tl:"ED",am:"Karla",salesRep:"Austin"},
+  {id:373,start:"3/31/2025",vaName:"Bryan Neil Silva",vaTag:"Gen VA",status:"Active",vaEmail:"silvabryaneil@gmail.com",company:"Omega Insurance Group",agencyPOC:"Ryan Sanne",timeZone:"NE - CST",tl:"RJ",am:"Niccole",salesRep:"Mike"},
+  {id:374,start:"4/2/2025",vaName:"Alyannah Villarosa",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"alyannahvillarosa123@gmail.com",company:"Redmon Insurance Agency",agencyPOC:"Kai Redmon",timeZone:"IL - CST",tl:"RJ",am:"Karla",salesRep:"Celina"},
+  {id:375,start:"4/7/2025",vaName:"Dhahran Dilangalen",vaTag:"Combo",status:"Reprofiled",vaEmail:"dhahran.dilangalen1997@gmail.com",company:"Wilde Wealth Insurance Services LLC",agencyPOC:"Taylor Whatcott",timeZone:"AZ - MDT",tl:"Martin",am:"Alicia",salesRep:"Johnny"},
+  {id:376,start:"4/7/2025",vaName:"Edna Bonilla",vaTag:"Gen VA",status:"Terminated",vaEmail:"nadiebonilla12@gmail.com",company:"V.I.P. Insurance Services",agencyPOC:"Tiffany Leone",timeZone:"AZ - MDT",tl:"Martin",am:"Karla",salesRep:"Celina"},
+  {id:377,start:"4/7/2025",vaName:"Christian Mark Abang",vaTag:"Combo",status:"Active",vaEmail:"markchristianabang20@gmail.com",company:"Jennings Bryan-Chappell Insurance Agency",agencyPOC:"Josh Chappell",timeZone:"NC- EST",tl:"Rezyl",am:"Alicia",salesRep:"Mike"},
+  {id:378,start:"4/7/2025",vaName:"Niel Perez",vaTag:"Combo",status:"Active",vaEmail:"mrnielperez@gmail.com",company:"Jennings Bryan-Chappell Insurance Services",agencyPOC:"Josh Chappell",timeZone:"NC- EST",tl:"Rezyl",am:"Alicia",salesRep:"Mike"},
+  {id:379,start:"4/7/2025",vaName:"Rembrant Dagatan",vaTag:"Combo",status:"Terminated",vaEmail:"dagatanrembrant3@gmail.com",company:"Slaughter Insurance Agency",agencyPOC:"Adam Slaughter",timeZone:"TX - CST",tl:"RJ",am:"Karla",salesRep:"Mike"},
+  {id:380,start:"4/8/2025",vaName:"Gideon Joash Gili",vaTag:"Gen VA",status:"Terminated",vaEmail:"joashhhgili@gmail.com",company:"Jessica Liu Insurance Services",agencyPOC:"Jessica Liu",timeZone:"CA - PST",tl:"ED",am:"Karla",salesRep:"Johnny"},
+  {id:381,start:"4/8/2025",vaName:"Leah Mae Abella",vaTag:"Gen VA",status:"Active",vaEmail:"leahmaecozoabella@gmail.com",company:"Cord Insurance",agencyPOC:"Steve Renteria",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Johnny"},
+  {id:382,start:"4/14/2025",vaName:"Mary Jane Verdida",vaTag:"Combo",status:"Terminated",vaEmail:"darylmitzmolina1297@gmail.com",company:"Franke Insurance Services",agencyPOC:"Michael Franke",timeZone:"TX - CST",tl:"RJ",am:"Alicia",salesRep:"Mike"},
+  {id:383,start:"4/21/2025",vaName:"John Richard Bajao",vaTag:"Combo",status:"Resigned",vaEmail:"john.drahcirr@gmail.com",company:"Optimal Insurance AZ",agencyPOC:"Jeremy Besse",timeZone:"AZ - MDT",tl:"Martin",am:"Karla",salesRep:"Johnny"},
+  {id:384,start:"4/21/2025",vaName:"Pauline Ingrid Broas",vaTag:"Gen VA",status:"Active",vaEmail:"plnbroas@gmail.com",company:"Priority Risk Management",agencyPOC:"Mark Shoultz",timeZone:"IN - EST",tl:"ED",am:"Niccole",salesRep:"Austin"},
+  {id:385,start:"4/28/2025",vaName:"Eugene Belong",vaTag:"Gen VA",status:"Terminated",vaEmail:"eugenebelong.va3@gmail.com",company:"Kiesau Insurance Services",agencyPOC:"Jeffrey Kiesau",timeZone:"CA - PST",tl:"ED",am:"Karla",salesRep:"Mike"},
+  {id:386,start:"4/28/2025",vaName:"Leane Dane Sadiang-abay",vaTag:"Gen VA",status:"Terminated",vaEmail:"ln.dn1625@gmail.com",company:"Allison Scheier Insurance Agency",agencyPOC:"Allison Scheier",timeZone:"CA - PST",tl:"RJ",am:"Alicia",salesRep:"Johnny"},
+  {id:387,start:"4/28/2025",vaName:"Clinton Orio",vaTag:"Gen VA",status:"Active",vaEmail:"nabzstyle21@gmail.com",company:"Kiesau Insurance Services",agencyPOC:"Jeffrey Kiesau",timeZone:"CA - PST",tl:"ED",am:"Karla",salesRep:"Mike"},
+  {id:388,start:"4/28/2025",vaName:"Renz Michael Dayanghirang",vaTag:"Gen VA",status:"Active",vaEmail:"dayanghirangkael@gmail.com",company:"Kiesau Insurance Services",agencyPOC:"Jeffrey Kiesau",timeZone:"CA - PST",tl:"ED",am:"Karla",salesRep:"Mike"},
+  {id:389,start:"4/28/2025",vaName:"Kiarra Nichole Arabejo",vaTag:"Gen VA",status:"Active",vaEmail:"knicholearabejo@gmail.com",company:"Barfield Insurance Agency",agencyPOC:"James Barfield",timeZone:"FL - EST",tl:"Rezyl",am:"Karla",salesRep:"Celina"},
+  {id:390,start:"5/5/2025",vaName:"Pierce Jyro Fernandez",vaTag:"Gen VA",status:"Terminated",vaEmail:"pfernandez3797@gmail.com",company:"TrustPoint Insurance & Real Estate",agencyPOC:"Kristina Reiling",timeZone:"KS - CST",tl:"RJ",am:"Alicia",salesRep:"Johnny"},
+  {id:391,start:"5/5/2025",vaName:"Rodolfo Miguel Jabrica",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"rmcjabrica@gmail.com",company:"The Insurance Team",agencyPOC:"Steve Fisher",timeZone:"AZ - MDT",tl:"Martin",am:"Niccole",salesRep:"Celina"},
+  {id:392,start:"5/12/2025",vaName:"Ella Mae Alberio",vaTag:"Gen VA",status:"Active",vaEmail:"alberioellamae@gmail.com",company:"Trailstone",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:393,start:"5/12/2025",vaName:"Rhona May Bahidi",vaTag:"Combo",status:"Active",vaEmail:"rhonamaybahidi@gmail.com",company:"Nusure Insurance",agencyPOC:"Michael Alvarez",timeZone:"FL - EST",tl:"Rezyl",am:"Karla",salesRep:"John"},
+  {id:394,start:"5/12/2025",vaName:"Edna Marie Villarino",vaTag:"Gen VA",status:"Active",vaEmail:"villarinoednamarie@gmail.com",company:"Navigate Risk",agencyPOC:"TJ Worsencroft",timeZone:"OH - EST",tl:"Vince",am:"Niccole",salesRep:"Johnny"},
+  {id:395,start:"5/12/2025",vaName:"Kate Justin Diamante",vaTag:"Gen VA",status:"Active",vaEmail:"katejustind@gmail.com",company:"Grimes Insurance",agencyPOC:"Niki Saavedra",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:396,start:"5/13/2025",vaName:"Hazel Joyce Bubuli",vaTag:"Gen VA",status:"Terminated",vaEmail:"hazeljoyce120599@gmail.com",company:"Varde Insurance Group",agencyPOC:"Grant Johnson",timeZone:"OK - CST",tl:"RJ",am:"Alicia",salesRep:"John"},
+  {id:397,start:"5/19/2025",vaName:"Jerome Caballero",vaTag:"Combo",status:"Terminated",vaEmail:"jeromecaballero53@gmail.com",company:"Flathead Insurance",agencyPOC:"James Entzi",timeZone:"ID - MDT",tl:"Martin",am:"Karla",salesRep:"Celina"},
+  {id:398,start:"5/19/2025",vaName:"Maye Caila Joy Maniquez",vaTag:"Combo",status:"Terminated",vaEmail:"cailamaniquez@gmail.com",company:"Brighton Insurance",agencyPOC:"Vernon Williams",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"John"},
+  {id:399,start:"5/19/2025",vaName:"Monsur Jundam",vaTag:"Gen VA",status:"Terminated",vaEmail:"jundammonsur31@gmail.com",company:"Trailstone Insurance Group",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:400,start:"5/19/2025",vaName:"Melody Llaguno",vaTag:"Combo",status:"Active",vaEmail:"melodyllgno@gmail.com",company:"Community Insurance",agencyPOC:"Melissa Blenker",timeZone:"WI - CST",tl:"RJ",am:"Alicia",salesRep:"Johnny"},
+  {id:401,start:"5/19/2025",vaName:"Xymon Franz De Jesus",vaTag:"Gen VA",status:"Resigned",vaEmail:"dejesusxfl@gmail.com",company:"Grimes Insurance",agencyPOC:"Niki Saavedra",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:402,start:"5/27/2025",vaName:"Erika Joyce Marcos",vaTag:"Gen VA",status:"Terminated",vaEmail:"ejoycemarcos@gmail.com",company:"Steele Insurance Agency",agencyPOC:"Steve Renteria",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"Austin"},
+  {id:403,start:"5/27/2025",vaName:"Floitte Jamie Santiago",vaTag:"Combo",status:"Resigned",vaEmail:"sfloitte@gmail.com",company:"Zeigler Insurance",agencyPOC:"Dirk Zeigler",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"Austin"},
+  {id:404,start:"5/27/2025",vaName:"James Erick Leorito",vaTag:"Gen VA",status:"Active",vaEmail:"jamesleorito@gmail.com",company:"Hardenbergh Insurance Group",agencyPOC:"Jon Sharp / Tracey Smith /Heather Pinard",timeZone:"PA - EST",tl:"Rezyl",am:"Alicia",salesRep:"Celina"},
+  {id:405,start:"5/27/2025",vaName:"Jan Jocef Juanillo",vaTag:"Gen VA",status:"Active",vaEmail:"janjocefjuan@gmail.com",company:"Hardenbergh Insurance Group",agencyPOC:"Jon Sharp / Tracey Smith /Heather Pinard",timeZone:"PA - EST",tl:"Rezyl",am:"Alicia",salesRep:"Celina"},
+  {id:406,start:"5/27/2025",vaName:"Marlou Queen Fernandez",vaTag:"Gen VA",status:"Active",vaEmail:"marlouf944@gmail.com",company:"Belmont Insurance Services",agencyPOC:"Landon Phillips",timeZone:"SC - EST",tl:"Rezyl",am:"Karla",salesRep:"Mike"},
+  {id:407,start:"6/2/2025",vaName:"John Winnie Marqueda",vaTag:"Gen VA",status:"Resigned",vaEmail:"jowiemar243@gmail.com",company:"AllTrust Insurance Agency LLC",agencyPOC:"Kelly Wang",timeZone:"MO - CST",tl:"RJ",am:"Karla",salesRep:"Mike"},
+  {id:408,start:"6/3/2025",vaName:"Kimberly Salazar",vaTag:"Gen VA",status:"Active",vaEmail:"kim.salazar0810@gmail.com",company:"Jessica Liu Insurance Services",agencyPOC:"Jessica Liu",timeZone:"CA - PST",tl:"ED",am:"Karla",salesRep:"Johnny"},
+  {id:409,start:"6/9/2025",vaName:"Dhel Navacilla",vaTag:"Gen VA",status:"Terminated",vaEmail:"dhelnicanava@gmail.com",company:"Clear View Insurance",agencyPOC:"Jim Jennings",timeZone:"MO - CST",tl:"RJ",am:"Karla",salesRep:"Celina"},
+  {id:410,start:"6/9/2025",vaName:"Mc Luize Laurence Saral",vaTag:"Combo",status:"Active",vaEmail:"mcluizelaurence@gmail.com",company:"Jordan and Jordan Insurance Group",agencyPOC:"Linda Jordan",timeZone:"TX - CST",tl:"RJ",am:"Karla",salesRep:"Mike"},
+  {id:411,start:"6/13/2025",vaName:"Antonio Miguel Eugenio",vaTag:"Gen VA",status:"Active",vaEmail:"migueleugenio94@gmail.com",company:"Heaton Bennett Insurance",agencyPOC:"Ross Bennett",timeZone:"TX - CST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:412,start:"6/16/2025",vaName:"Dianne Nicole Manalo",vaTag:"Gen VA",status:"Active",vaEmail:"dnpmanalo@gmail.com",company:"Allco Fullerton Insurance Agency",agencyPOC:"Andrew Kadera",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"Austin"},
+  {id:413,start:"6/16/2025",vaName:"Onmejey Obus",vaTag:"Gen VA",status:"Active",vaEmail:"omnejeyo@gmail.com",company:"Allco Fullerton Insurance Agency",agencyPOC:"Andrew Kadera",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"Austin"},
+  {id:414,start:"6/18/2025",vaName:"Razdyl Jade Banghal",vaTag:"Gen VA",status:"Active",vaEmail:"rj.banghal@gmail.com",company:"Bradley Insurance",agencyPOC:"Jack Jones",timeZone:"TN - CST",tl:"RJ",am:"Alicia",salesRep:"Austin"},
+  {id:415,start:"6/23/2025",vaName:"Ma. Ross 'Flame' Rica Villanueva",vaTag:"Gen VA",status:"Active",vaEmail:"vmariarossrica@gmail.com",company:"Soliman Insurance",agencyPOC:"Max Soliman/Yesenia",timeZone:"AZ - MDT",tl:"Martin",am:"Karla",salesRep:"Mike"},
+  {id:416,start:"6/23/2025",vaName:"Kenn Peter Viscayno",vaTag:"Combo",status:"Active",vaEmail:"kptviscayno@gmail.com",company:"Copeland Insurance Agency",agencyPOC:"Vonda Copeland",timeZone:"KS - CST",tl:"Martin",am:"Niccole",salesRep:"Johnny"},
+  {id:417,start:"6/23/2025",vaName:"Wilter Dajao",vaTag:"Gen VA",status:"Resigned",vaEmail:"dajaowilter1995@gmail.com",company:"Taylor Moore Insurance Agency",agencyPOC:"Ryan Moore",timeZone:"VT - EST",tl:"Rezyl",am:"Alicia",salesRep:"Austin"},
+  {id:418,start:"6/26/2025",vaName:"Sergei Vaughn Calumpong",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"svc.clmpng@gmail.com",company:"Masters of Disasters",agencyPOC:"Larry Maistros",timeZone:"OH - EST",tl:"Rezyl",am:"Niccole",salesRep:"Celina"},
+  {id:419,start:"6/30/2025",vaName:"Angelica Berondo",vaTag:"Combo",status:"Active",vaEmail:"berondoangelica@gmail.com",company:"PrimeWest Insurance Brokerage, Inc.",agencyPOC:"Gabby Rodriguez / Chris Rodriguez",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"Austin"},
+  {id:420,start:"7/14/2025",vaName:"Joash Gili",vaTag:"Gen VA",status:"Terminated",vaEmail:"joashhhgili@gmail.com",company:"Taylor Moore Insurance Agency",agencyPOC:"Ryan Moore",timeZone:"VT - EST",tl:"Rezyl",am:"Alicia",salesRep:"Austin"},
+  {id:421,start:"7/14/2025",vaName:"Mark Knoffer Sabac",vaTag:"Gen VA",status:"Terminated",vaEmail:"marksabac07@gmail.com",company:"The Salvati Insurance Group",agencyPOC:"Thomas Salvati",timeZone:"MI - EST",tl:"Rezyl",am:"Karla",salesRep:"Johnny"},
+  {id:422,start:"7/14/2025",vaName:"Dwight Padalapat",vaTag:"Gen VA",status:"Active",vaEmail:"dwightinahhp@gmail.com",company:"Choice Plus Insurance Services Inc",agencyPOC:"Zach Davis",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"Celina"},
+  {id:423,start:"7/14/2025",vaName:"Kie An Hannah Hernane",vaTag:"Gen VA",status:"Active",vaEmail:"broccolihannah@gmail.com",company:"Choice Plus Insurance Services Inc",agencyPOC:"Zach Davis",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"Celina"},
+  {id:424,start:"7/14/2025",vaName:"Shannen Lurot",vaTag:"Gen VA",status:"Active",vaEmail:"shannenlurot.16@gmail.com",company:"Bucher Family Allstate",agencyPOC:"Cass Catalano",timeZone:"IN - EST",tl:"Rezyl",am:"Karla",salesRep:"Mike"},
+  {id:425,start:"7/14/2025",vaName:"Sherry Nikolette Edmilao",vaTag:"Gen VA",status:"Terminated",vaEmail:"sherry.edmilao@gmail.com",company:"Taylor Moore Insurance Agency",agencyPOC:"Ryan Moore",timeZone:"VT - EST",tl:"Rezyl",am:"Alicia",salesRep:"Austin"},
+  {id:426,start:"7/21/2025",vaName:"Dominic Dianne Parada",vaTag:"Combo",status:"Terminated",vaEmail:"dparada060398@gmail.com",company:"AA Lares Insurance Services, Inc.",agencyPOC:"Patty Lares",timeZone:"CA - PST",tl:"ED",am:"Karla",salesRep:"Austin"},
+  {id:427,start:"7/28/2025",vaName:"Eric Luke Buluran",vaTag:"Combo",status:"Terminated",vaEmail:"ericlukeb.1997@gmail.com",company:"Southwestern Insurance Group",agencyPOC:"David Stuart",timeZone:"TN - CST",tl:"RJ",am:"Alicia",salesRep:"Mike"},
+  {id:428,start:"7/28/2025",vaName:"Fiona Maurrice Bahian",vaTag:"Combo",status:"Active",vaEmail:"fionabahian2@gmail.com",company:"The Salvati Insurance Group",agencyPOC:"Thomas Salvati",timeZone:"MI - EST",tl:"Rezyl",am:"Karla",salesRep:"Johnny"},
+  {id:429,start:"7/28/2025",vaName:"Thea Arns Timbal",vaTag:"Gen VA",status:"Resigned",vaEmail:"thearnsotto1@gmail.com",company:"ACG Insure",agencyPOC:"Chris Shepherd",timeZone:"KS - CST",tl:"RJ",am:"Alicia",salesRep:"Celina"},
+  {id:430,start:"8/4/2025",vaName:"Aziljun Fontaños",vaTag:"Combo",status:"Resigned",vaEmail:"aziljun97@gmail.com",company:"My Compass Insurance LLC",agencyPOC:"Brandon Vanderbeck",timeZone:"NY - EST",tl:"Rezyl",am:"Karla",salesRep:"Johnny"},
+  {id:431,start:"8/4/2025",vaName:"Joed Aguilar",vaTag:"Combo",status:"Active",vaEmail:"aguilarjoed153@gmail.com",company:"Dulles Insurance",agencyPOC:"Nick Ladavaere",timeZone:"FL - EST",tl:"Martin",am:"Alicia",salesRep:"Johnny"},
+  {id:432,start:"8/5/2025",vaName:"Rechile Pineda",vaTag:"Gen VA",status:"Terminated",vaEmail:"rechilepineda@gmail.com",company:"Glenn S. Caldwell Insurance Services Inc.",agencyPOC:"Candice Myers",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"Celina"},
+  {id:433,start:"8/5/2025",vaName:"Sitty Nazerin Aseri",vaTag:"Gen VA",status:"Active",vaEmail:"aserisittynazerin@gmail.com",company:"Batchelder Bros. Insurance",agencyPOC:"Andrew Thayer",timeZone:"ME - EST",tl:"Martin",am:"Karla",salesRep:"Mike"},
+  {id:434,start:"8/6/2025",vaName:"Anna Patricia Fara-On",vaTag:"Gen VA",status:"Terminated",vaEmail:"annapatriciafaraon@gmail.com",company:"HiFi Associates",agencyPOC:"Ron Hirschhorn",timeZone:"NJ - EST",tl:"Rezyl",am:"Karla",salesRep:"Johnny"},
+  {id:435,start:"8/7/2025",vaName:"Christian Vern Aguilar",vaTag:"Combo",status:"Active",vaEmail:"aguilarvern06@gmail.com",company:"Cord Insurance/Steele Insurance",agencyPOC:"Niccole Williams",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Johnny"},
+  {id:436,start:"8/11/2025",vaName:"Joanna Bubutan",vaTag:"Gen VA",status:"Active",vaEmail:"jnnbbtn@gmail.com",company:"Beach Break Insurance Agency",agencyPOC:"Rich Sabatowski",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Austin"},
+  {id:437,start:"8/11/2025",vaName:"Doris Mae Tabuno",vaTag:"Gen VA",status:"Active",vaEmail:"tabunodorismae@gmail.com",company:"Terral Insurance, LLC",agencyPOC:"Richard Davis",timeZone:"MS - CST",tl:"RJ",am:"Alicia",salesRep:"Celina"},
+  {id:438,start:"8/12/2025",vaName:"Rembrant Dagatan",vaTag:"Gen VA",status:"Active",vaEmail:"dagatanrembrant3@gmail.com",company:"Trailstone",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:439,start:"8/18/2025",vaName:"Lauro Bunda",vaTag:"Gen VA",status:"Active",vaEmail:"bundalauro@gmail.com",company:"ACG Insure",agencyPOC:"Chris Shepherd",timeZone:"KS - CST",tl:"RJ",am:"Alicia",salesRep:"Celina"},
+  {id:440,start:"8/25/2025",vaName:"Jayson Mark Aguirre",vaTag:"Combo",status:"Active",vaEmail:"jmdgaguirre@gmail.com",company:"Meyer Insurance Agency",agencyPOC:"Eric Meyer",timeZone:"SD - CST",tl:"RJ",am:"Alicia",salesRep:"Johnny"},
+  {id:441,start:"8/25/2025",vaName:"Vience Jhon Banzali",vaTag:"Combo",status:"Active",vaEmail:"viencejhonalimento.banzali@gmail.com",company:"Schultz Insurance Services Inc.",agencyPOC:"Mike Schultz",timeZone:"IL - CST",tl:"RJ",am:"Karla",salesRep:"Johnny"},
+  {id:442,start:"8/27/2025",vaName:"Ivan Kent Cano",vaTag:"Combo",status:"Active",vaEmail:"ivankentcano.va@gmail.com / canoivankent.13@gmail.com",company:"My Compass Insurance LLC",agencyPOC:"Brandon Vanderbeck",timeZone:"NY - EST",tl:"Rezyl",am:"Karla",salesRep:"Johnny"},
+  {id:443,start:"8/28/2025",vaName:"Paul Janray Billones",vaTag:"Gen VA",status:"Resigned",vaEmail:"billonespau@gmail.com",company:"GlobalGreen Insurance Agency",agencyPOC:"Hassan Jaafar",timeZone:"MI - EST",tl:"Rezyl",am:"Karla",salesRep:"Austin"},
+  {id:444,start:"9/2/2025",vaName:"Ezekiel Luis Arellano",vaTag:"Gen VA",status:"Active",vaEmail:"ginko.arellano@gmail.com",company:"Caldwell Insurance Services Inc",agencyPOC:"Candice Myers",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"Celina"},
+  {id:445,start:"9/2/2025",vaName:"Jian Paculaba",vaTag:"Gen VA",status:"Active",vaEmail:"jian.paculaba13@gmail.com",company:"Combined Benefits Administrators",agencyPOC:"Sidney Dahlhauser",timeZone:"LA - PDT",tl:"ED",am:"Karla",salesRep:"Celina"},
+  {id:446,start:"9/2/2025",vaName:"Jhoanne Malla",vaTag:"Combo",status:"Active",vaEmail:"jhoannebilbao.work@gmail.com",company:"Integrity Insurance Group",agencyPOC:"Michael Smith",timeZone:"PA - EST",tl:"Rezyl",am:"Niccole",salesRep:"John"},
+  {id:447,start:"9/2/2025",vaName:"Joren Carcallas",vaTag:"Gen VA",status:"Active",vaEmail:"jorenc123@gmail.com",company:"Worthen Insurance Group",agencyPOC:"Caroline Johnson",timeZone:"TX - CST",tl:"RJ",am:"Alicia",salesRep:"Mike"},
+  {id:448,start:"9/8/2025",vaName:"Alex James William Lu",vaTag:"Combo",status:"Reprofiled",vaEmail:"alexlu0421@gmail.com",company:"Garcia Agency",agencyPOC:"Jonathan Garcia",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"Mike"},
+  {id:449,start:"9/8/2025",vaName:"Fernando Sabijon",vaTag:"Combo",status:"Terminated",vaEmail:"fernandosabijon0506@gmail.com",company:"Brighton Financial & Insurance Services",agencyPOC:"Vernon Williams",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"Austin"},
+  {id:450,start:"9/8/2025",vaName:"Neil John Misoles",vaTag:"Combo",status:"Active",vaEmail:"nj.misoles@gmail.com",company:"Neverman Insurance",agencyPOC:"John Horvath",timeZone:"OH - EST",tl:"Rezyl",am:"Alicia",salesRep:"Mike"},
+  {id:451,start:"9/8/2025",vaName:"Jayvee Boy Fuertes",vaTag:"Combo",status:"Active",vaEmail:"fuertesjayveeboy@gmail.com",company:"Waldo Agencies",agencyPOC:"Dellas Waldo",timeZone:"OR - PST",tl:"ED",am:"Karla",salesRep:"Johnny"},
+  {id:452,start:"9/9/2025",vaName:"Honey Grace Tioaquen",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"h.tioaquen96@gmail.com",company:"Blackwell Insurance",agencyPOC:"Leigh Zellmer / Ken Haraughty",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"Austin"},
+  {id:453,start:"9/22/2025",vaName:"Alyannah Villarosa",vaTag:"Combo",status:"Active",vaEmail:"alyannahvillarosa123@gmail.com",company:"Thomas Insurance Advisors",agencyPOC:"Gary Thomas",timeZone:"MO - CST",tl:"RJ",am:"Karla",salesRep:"Mike"},
+  {id:454,start:"9/22/2025",vaName:"Zigfred Gementiza",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"zigfredg@gmail.com",company:"Dickey Mccay Insurance",agencyPOC:"Lisa Johnson",timeZone:"TN - EST",tl:"Rezyl",am:"Niccole",salesRep:"Austin"},
+  {id:455,start:"9/25/2025",vaName:"Maria Alyssa Amante",vaTag:"Gen VA",status:"Terminated",vaEmail:"alyssaamante16@gmail.com",company:"Grimes Insurance Agency",agencyPOC:"Ryan Reynolds",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:456,start:"9/29/2025",vaName:"Cecile Caputol",vaTag:"Gen VA",status:"Active",vaEmail:"cecilecaputol31@gmail.com",company:"Florida Best Quote",agencyPOC:"Nina Mastridge",timeZone:"FL - EST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:457,start:"9/29/2025",vaName:"Jayson Lauresta",vaTag:"Gen VA",status:"Active",vaEmail:"jaysonlauresta02@gmail.com",company:"Guardian Insurance",agencyPOC:"Chris Dupill",timeZone:"MA - EST",tl:"Rezyl",am:"Niccole",salesRep:"Austin"},
+  {id:458,start:"9/29/2025",vaName:"Dhahran Dilangalen",vaTag:"Combo",status:"Active",vaEmail:"dhahran.dilangalen1997@gmail.com",company:"The Stevens Group",agencyPOC:"Jodi Stevens",timeZone:"OH - EST",tl:"Rezyl",am:"Alicia",salesRep:"Johnny"},
+  {id:459,start:"9/29/2025",vaName:"Kristoffer Randy Ramayla",vaTag:"Gen VA",status:"Active",vaEmail:"krc.ramayla@gmail.com",company:"Creekside Risk Management/ World Insurance",agencyPOC:"Chris Badger",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:460,start:"10/6/2025",vaName:"Shaira Gayle Loregas",vaTag:"Gen VA",status:"Active",vaEmail:"shairadespa@gmail.com",company:"Caliber One Insurance",agencyPOC:"Vanessa Neil",timeZone:"FL - EST",tl:"RJ",am:"Niccole",salesRep:"Austin"},
+  {id:461,start:"10/6/2025",vaName:"Jeazelle Maslog",vaTag:"Gen VA",status:"Active",vaEmail:"miamaslog08@gmail.com",company:"Mainguard Insurance Partners",agencyPOC:"Lexi Barron",timeZone:"TX - CST",tl:"RJ",am:"Karla",salesRep:"Celina"},
+  {id:462,start:"10/13/2025",vaName:"Carl Jasper Sarad",vaTag:"Gen VA",status:"Terminated",vaEmail:"carljaspersarad@gmail.com",company:"Greco Insurance Group",agencyPOC:"Joey Greco",timeZone:"NE - CST",tl:"RJ",am:"Karla",salesRep:"Johnny"},
+  {id:463,start:"10/13/2025",vaName:"Cybille Charriz Icoy",vaTag:"Gen VA",status:"Active",vaEmail:"cybillecharrizicoy@gmail.com",company:"Synergy Insurance Advisors",agencyPOC:"Scott Starita",timeZone:"CO - MDT",tl:"Martin",am:"Karla",salesRep:"Johnny"},
+  {id:464,start:"10/20/2025",vaName:"Mary Rose Navarro",vaTag:"Combo",status:"Active",vaEmail:"trakepod@gmail.com",company:"All American Insurance Services",agencyPOC:"Damon Hanons",timeZone:"OK - CST",tl:"RJ",am:"Alicia",salesRep:"Mike"},
+  {id:465,start:"10/27/2025",vaName:"Adrian Paul Plasabas",vaTag:"Gen VA",status:"Terminated",vaEmail:"plasabasa30@gmail.com",company:"VRP Insurance Agency",agencyPOC:"Vincent Pesce",timeZone:"NY - EST",tl:"ED",am:"Karla",salesRep:"Johnny"},
+  {id:466,start:"10/27/2025",vaName:"Jane Pearl Lagaac",vaTag:"Gen VA",status:"Terminated",vaEmail:"lagaacjanepearl@gmail.com",company:"Navigate Risk Advisors",agencyPOC:"TJ Worsencroft",timeZone:"OH - EST",tl:"Karla",am:"Niccole",salesRep:"Johnny"},
+  {id:467,start:"10/27/2025",vaName:"Mary Ann Manguiran",vaTag:"Gen VA",status:"Active",vaEmail:"maryann.zoobooksystems@gmail.com",company:"Gartman Insurance Agency",agencyPOC:"Nick Gartman",timeZone:"MS - CST",tl:"RJ",am:"Alicia",salesRep:"Mike"},
+  {id:468,start:"10/27/2025",vaName:"Janine Rae Cuares",vaTag:"Gen VA",status:"Active",vaEmail:"janineraecuares@gmail.com",company:"Morgan Management Group",agencyPOC:"Tony Morgan",timeZone:"NY - EST",tl:"Rezyl",am:"Karla",salesRep:"Mike"},
+  {id:469,start:"10/27/2025",vaName:"Shanaz Gani",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"shanazgani12@gmail.com",company:"Garcia Agency",agencyPOC:"Jonathan Garcia",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"Mike"},
+  {id:470,start:"10/30/2025",vaName:"Rodolfo Miguel Jabrica",vaTag:"Combo",status:"Terminated",vaEmail:"rmcjabrica@gmail.com",company:"The Salvati Insurance Group, Inc.",agencyPOC:"Thomas Salvati",timeZone:"MI - EST",tl:"Rezyl",am:"Karla",salesRep:"Johnny"},
+  {id:471,start:"10/30/2025",vaName:"Harold Wilson Lastima",vaTag:"Combo",status:"Active",vaEmail:"lastimaharoldwilson04@gmail.com",company:"Southwestern Insurance Group",agencyPOC:"David Stuart",timeZone:"TN - CST",tl:"RJ",am:"Alicia",salesRep:"Mike"},
+  {id:472,start:"11/3/2025",vaName:"Paige Kimberly Sue Demavibas",vaTag:"Combo",status:"Terminated",vaEmail:"pksdemavibas@gmail.com",company:"New Buffalo Insurance Agency",agencyPOC:"Liz Benz",timeZone:"NY - EST",tl:"Martin",am:"Alicia",salesRep:"Celina"},
+  {id:473,start:"11/3/2025",vaName:"Ramadinah Aleah Beruar",vaTag:"Combo",status:"Terminated",vaEmail:"beruarramadinahaleah@gmail.com",company:"April Jones Insurance",agencyPOC:"April Jones",timeZone:"NC- EST",tl:"ED",am:"Karla",salesRep:"Mike"},
+  {id:474,start:"11/3/2025",vaName:"Marella Patiño",vaTag:"Combo",status:"Active",vaEmail:"mrllpatino15@gmail.com",company:"Pinnacle Point Insurance",agencyPOC:"Aaron England",timeZone:"TX - CST",tl:"RJ",am:"Niccole",salesRep:"Johnny"},
+  {id:475,start:"11/10/2025",vaName:"Glaisa Escatror",vaTag:"Gen VA",status:"Terminated",vaEmail:"glaisaescatron@gmail.com",company:"Florida Best Quote",agencyPOC:"Nina Mastridge",timeZone:"FL - EST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:476,start:"11/10/2025",vaName:"Hazel Grace Umacob",vaTag:"Gen VA",status:"Terminated",vaEmail:"azelumb@gmail.com",company:"Greco Insurance Group",agencyPOC:"Joey Greco",timeZone:"NE - CST",tl:"RJ",am:"Karla",salesRep:"Johnny"},
+  {id:477,start:"11/10/2025",vaName:"Jason Kyle Veroy",vaTag:"Gen VA",status:"Active",vaEmail:"veroykyle@gmail.com",company:"VRP Insurance Agency",agencyPOC:"Vincent Pesce",timeZone:"NY - EST",tl:"ED",am:"Karla",salesRep:"Johnny"},
+  {id:478,start:"11/10/2025",vaName:"Juleinee Tayao",vaTag:"Gen VA",status:"Active",vaEmail:"juleineetayao@gmail.com",company:"VRP Insurance Agency",agencyPOC:"Vincent Pesce",timeZone:"NY - EST",tl:"ED",am:"Karla",salesRep:"Johnny"},
+  {id:479,start:"11/10/2025",vaName:"Kathy Beghanilum",vaTag:"Gen VA",status:"Resigned",vaEmail:"kathybeghanilum16@gmail.com",company:"Classic Coverage Group",agencyPOC:"Michael Arkin",timeZone:"NY - EST",tl:"Martin",am:"Alicia",salesRep:"Mike"},
+  {id:480,start:"11/17/2025",vaName:"Aldren Kent Cirunay",vaTag:"Gen VA",status:"Terminated",vaEmail:"aldrencirunay@gmail.com",company:"Agency Automate",agencyPOC:"Bill Jenkins",timeZone:"MN - CST",tl:"Karla",am:"Niccole",salesRep:"Austin"},
+  {id:481,start:"11/17/2025",vaName:"Wilfredo Vistal Jr.",vaTag:"Gen VA",status:"Active",vaEmail:"wil.vistal@gmail.com",company:"Risk Advisors",agencyPOC:"David Watson",timeZone:"SC - EST",tl:"Rezyl",am:"Alicia",salesRep:"Mike"},
+  {id:482,start:"12/1/2025",vaName:"Eliza Lazarraga",vaTag:"Gen VA",status:"Active",vaEmail:"lazarragaelizaalessandra@gmail.com",company:"Trailstone",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:483,start:"12/1/2025",vaName:"Jammi Jay Jr. Deriada",vaTag:"Gen VA",status:"Active",vaEmail:"onlyjabee@gmail.com",company:"Trailstone",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:484,start:"12/8/2025",vaName:"Mizpah Joy Gavile",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"mizzy.va@gmail.com",company:"Autumn Stong",agencyPOC:"Autumn Strong",timeZone:"",tl:"Martin",am:"Karla",salesRep:"Mike"},
+  {id:485,start:"12/8/2025",vaName:"George Michael Presilda",vaTag:"Gen VA",status:"Active",vaEmail:"george.presilda28@gmail.com",company:"Navigate Risk",agencyPOC:"TJ Worsencroft",timeZone:"OH - EST",tl:"Vince",am:"Niccole",salesRep:"Johnny"},
+  {id:486,start:"12/8/2025",vaName:"Lynzette Mae Estrada",vaTag:"Combo",status:"Active",vaEmail:"maeestrada144@gmail.com",company:"Duncan & Associates Insurance Brokers",agencyPOC:"Heidi Duncan",timeZone:"WA - PST",tl:"ED",am:"Alicia",salesRep:"Mike"},
+  {id:487,start:"12/15/2025",vaName:"Hanzelm Santos",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"hanzelmsantos21@gmail.com",company:"Sentinel Insurance Agency",agencyPOC:"Chrishan De Silva",timeZone:"",tl:"ED",am:"Alicia",salesRep:"Johnny"},
+  {id:488,start:"12/15/2025",vaName:"Dianne Hubay",vaTag:"Gen VA",status:"Active",vaEmail:"diannehubay020495@gmail.com",company:"Ameriguard Agency Inc",agencyPOC:"Brad Boldt",timeZone:"MA - EST",tl:"RJ",am:"Niccole",salesRep:"Celina"},
+  {id:489,start:"12/22/2025",vaName:"Dhencel Concon",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"dconcon77@gmail.com",company:"Lewis, Hopkins & Williamson (LH&W)",agencyPOC:"Jamie Meissner",timeZone:"PA - EST",tl:"Rezyl",am:"Alicia",salesRep:"Johnny"},
+  {id:490,start:"12/22/2025",vaName:"John Charles Frederick Mamanao",vaTag:"Gen VA",status:"Active",vaEmail:"beastnectus@gmail.com",company:"Agency Automate",agencyPOC:"Rob Cesaric",timeZone:"MN - CST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:491,start:"12/22/2025",vaName:"Kimberly Brooke Orbeta",vaTag:"Gen VA",status:"Active",vaEmail:"kborbeta@gmail.com",company:"Arctica",agencyPOC:"Gerry Li",timeZone:"WI - CST",tl:"RJ",am:"Niccole",salesRep:"Johnny"},
+  {id:492,start:"12/30/2025",vaName:"Andrei Lera",vaTag:"Gen VA",status:"Active",vaEmail:"dreilera@gmail.com",company:"Trailstone",agencyPOC:"Sam  Thomas",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:493,start:"1/5/2026",vaName:"Joseph Ferrer",vaTag:"Combo",status:"Active",vaEmail:"josephferrer214@gmail.com",company:"Direct Insurance Services",agencyPOC:"Michael Spence",timeZone:"CO - MST",tl:"Martin",am:"Alicia",salesRep:"Mike"},
+  {id:494,start:"1/12/2026",vaName:"Romarjay Talara",vaTag:"Gen VA",status:"Active",vaEmail:"talararomarjay@gmail.com",company:"American Adventure Insurance",agencyPOC:"Marsden Haigh",timeZone:"CA - PST",tl:"ED",am:"Karla",salesRep:"Mike"},
+  {id:495,start:"1/12/2026",vaName:"Alfredo Berjame Jr",vaTag:"Gen VA",status:"Active",vaEmail:"alfredoberjame190@yahoo.com",company:"Trailstone",agencyPOC:"",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:496,start:"1/12/2026",vaName:"Mizpah Joy Gavile",vaTag:"Gen VA",status:"Active",vaEmail:"mizzy.va@gmail.com",company:"Trailstone",agencyPOC:"Mark Rodgers",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:497,start:"1/12/2026",vaName:"Roberto Escovidal",vaTag:"Gen VA",status:"Active",vaEmail:"rjbescovidal@gmail.com",company:"Combined Benefits Administrators",agencyPOC:"Sidney",timeZone:"LA - PDT",tl:"ED",am:"Karla",salesRep:"Celina"},
+  {id:498,start:"1/12/2026",vaName:"Alexandra Guro",vaTag:"Gen VA",status:"Active",vaEmail:"sabelloguro@gmail.com",company:"Raleigh Insurance Group",agencyPOC:"Daniel Rohrbaugh",timeZone:"NC- EST",tl:"Rezyl",am:"Niccole",salesRep:"Austin"},
+  {id:499,start:"1/26/2026",vaName:"Dianne Mangoranda",vaTag:"Gen VA",status:"Active",vaEmail:"diannemangoranda.vaph@gmail.com",company:"Hoery Insurance Agency Inc",agencyPOC:"Scott Hoery",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Celina"},
+  {id:500,start:"1/26/2026",vaName:"Dhencel Concon",vaTag:"Gen VA",status:"Active",vaEmail:"dconcon77@gmail.com",company:"Welsh Insurance Agency",agencyPOC:"Jeffrey Welsh",timeZone:"CO - MST",tl:"Rezyl",am:"Alicia",salesRep:"Mike"},
+  {id:501,start:"1/26/2026",vaName:"Allana Lou Dapetilla",vaTag:"Gen VA",status:"Active",vaEmail:"allanalou99@gmail.com",company:"J&J Insurance",agencyPOC:"Hassan Jaafar",timeZone:"MI - EST",tl:"Rezyl",am:"Karla",salesRep:"Austin"},
+  {id:502,start:"1/29/2026",vaName:"Leo Cesar Maboloc",vaTag:"Combo",status:"Reprofiled",vaEmail:"leocrisanto0802@gmail.com",company:"Optimal Insurance AZ",agencyPOC:"Jeremy Besse",timeZone:"AZ - MDT",tl:"Martin",am:"Karla",salesRep:"Johnny"},
+  {id:503,start:"1/30/2026",vaName:"Winslet Jul Napala",vaTag:"Combo",status:"Active",vaEmail:"napalawinsletjul@gmail.com",company:"Blackwell Insurance",agencyPOC:"Leigh Zellmer / Ken Haraughty",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Austin"},
+  {id:504,start:"2/2/2026",vaName:"Michaella Fhaira Matalam",vaTag:"Gen VA",status:"Active",vaEmail:"michaella14matalam@gmail.com",company:"Hardenbergh Insurance Group",agencyPOC:"Jon Sharp / Tracey Smith /Heather Pinard",timeZone:"PA - EST",tl:"Rezyl",am:"Alicia",salesRep:"Celina"},
+  {id:505,start:"2/2/2026",vaName:"Nikka Tyra Baquiran",vaTag:"Gen VA",status:"Active",vaEmail:"baquiran.nikka13@gmail.com",company:"Hardenbergh Insurance Group",agencyPOC:"Jon Sharp / Tracey Smith /Heather Pinard",timeZone:"PA - EST",tl:"Rezyl",am:"Alicia",salesRep:"Celina"},
+  {id:506,start:"2/2/2026",vaName:"Irig Florian Tarona",vaTag:"Gen VA",status:"Active",vaEmail:"adatarona@gmail.com",company:"Ovation Insurance",agencyPOC:"Joel Dunham",timeZone:"IN - EST",tl:"Rezyl",am:"Alicia",salesRep:"Johnny"},
+  {id:507,start:"2/2/2026",vaName:"Kristine Mae Aldamia",vaTag:"Gen VA",status:"Active",vaEmail:"aldamial05kr@gmail.com",company:"Florida Best Quote",agencyPOC:"Nina Mastridge",timeZone:"FL - EST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:508,start:"2/9/2026",vaName:"Jemimah Jazzle Cristobal",vaTag:"Combo",status:"Resigned",vaEmail:"jazzdelgado10@gmail.com",company:"Kwan Insurance Services",agencyPOC:"Karson Kwan",timeZone:"CA - PST",tl:"ED",am:"Karla",salesRep:"Johnny"},
+  {id:509,start:"2/9/2026",vaName:"John Vincent Chua",vaTag:"Combo",status:"Active",vaEmail:"johnchua.jobs@gmail.com",company:"Glenn S Caldwell Insurance Services Inc",agencyPOC:"Candice Myers",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"Celina"},
+  {id:510,start:"2/16/2026",vaName:"Mae Ambrosio",vaTag:"Gen VA",status:"Active",vaEmail:"workwithmaea@gmail.com",company:"IntelliBenefits Insurance Services",agencyPOC:"Greg Haack",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Johnny"},
+  {id:511,start:"2/23/2026",vaName:"Joan Marie Gelicame",vaTag:"Gen VA",status:"Active",vaEmail:"joanmariegelicame@gmail.com",company:"American Adventure Insurance",agencyPOC:"Marsden Haigh",timeZone:"CA - PST",tl:"ED",am:"Karla",salesRep:"Mike"},
+  {id:512,start:"2/23/2026",vaName:"Daniel Llavor",vaTag:"Combo",status:"Active",vaEmail:"llavordaniel@gmail.com",company:"Business Insurers of the Carolinas",agencyPOC:"Keith Pearsall",timeZone:"NC - EST",tl:"ED",am:"Alicia",salesRep:"Mike"},
+  {id:513,start:"2/23/2026",vaName:"Chelsea Dave Abrasaldo",vaTag:"Gen VA",status:"Active",vaEmail:"chelseaabrasaldo@yahoo.com",company:"Florida Best Quote",agencyPOC:"Nina Mastridge",timeZone:"FL - EST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:514,start:"3/2/2026",vaName:"Jessica Navarro",vaTag:"Gen VA",status:"Terminated",vaEmail:"jessicanavarro1003@gmail.com",company:"Cord Insurance/Steele Insurance",agencyPOC:"Niccole Williams",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Johnny"},
+  {id:515,start:"3/2/2026",vaName:"Louie Jay Elio",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"ljve1398@gmail.com",company:"Cord Insurance/Steele Insurance",agencyPOC:"Niccole Williams",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Johnny"},
+  {id:516,start:"3/2/2026",vaName:"Ronald Allan Jr Sy",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"ronaldsy97@gmail.com",company:"Duncan & Associates Insurance Brokers",agencyPOC:"Heidi Duncan",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"Mike"},
+  {id:517,start:"3/2/2026",vaName:"Jericho Opsima",vaTag:"Gen VA",status:"Active",vaEmail:"jerichoopsima22@gmail.com",company:"Agency Automate",agencyPOC:"Bill Jenkins",timeZone:"MN - CST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:518,start:"3/2/2026",vaName:"Jairiz Edward Esposo",vaTag:"Gen VA",status:"Terminated",vaEmail:"jesposo.dev@gmail.com",company:"Agency Automate",agencyPOC:"Bill Jenkins",timeZone:"MN - CST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:519,start:"3/2/2026",vaName:"James Klien Caluyong",vaTag:"Combo",status:"Active",vaEmail:"jamesklienccaluyong@gmail.com",company:"Portsmouth Atlantic Insurance",agencyPOC:"Jon Merwin",timeZone:"NH - EST",tl:"Martin",am:"Karla",salesRep:"Celina"},
+  {id:520,start:"3/2/2026",vaName:"Roland Jason Gulanes",vaTag:"Gen VA",status:"Active",vaEmail:"gulanesjason@gmail.com",company:"Cord Insurance/Steele Insurance",agencyPOC:"Niccole Williams",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"Johnny"},
+  {id:521,start:"3/2/2026",vaName:"John Ian Gubalani",vaTag:"Combo",status:"Active",vaEmail:"johnian.gubalani@gmail.com",company:"Kwan Insurance Services",agencyPOC:"Karson Kwan",timeZone:"CA - PST",tl:"ED",am:"Karla",salesRep:"Johnny"},
+  {id:522,start:"3/2/2026",vaName:"Xyrelle Voughn Maquiling",vaTag:"Gen VA",status:"Resigned",vaEmail:"xyrellemaquiling11@gmail.com",company:"Scheier Insurance Agency",agencyPOC:"Allison Scheier",timeZone:"CA - PST",tl:"RJ",am:"Alicia",salesRep:"Johnny"},
+  {id:523,start:"3/9/2026",vaName:"Jalaica Bellosillo",vaTag:"Combo",status:"Terminated",vaEmail:"jalaicabellosillo@gmail.com",company:"Jody Entrekin",agencyPOC:"Jody Entrekin",timeZone:"MS - CST",tl:"",am:"Cancelled",salesRep:"Mike"},
+  {id:524,start:"3/9/2026",vaName:"Cariela Otod",vaTag:"Gen VA",status:"Active",vaEmail:"carielaotod1026@gmail.com",company:"Hardenbergh Insurance Group",agencyPOC:"Jon Sharp / Tracey Smith",timeZone:"PA - EST",tl:"Rezyl",am:"Alicia",salesRep:"Celina"},
+  {id:525,start:"3/9/2026",vaName:"Rey Angely Saines",vaTag:"Gen VA",status:"Active",vaEmail:"reyangelysaines@gmail.com",company:"J. Gurley Insurance",agencyPOC:"John Byars",timeZone:"AL - CST",tl:"RJ",am:"Niccole",salesRep:"Mike"},
+  {id:526,start:"3/9/2026",vaName:"Sydney Navarro",vaTag:"Gen VA",status:"Active",vaEmail:"sydneynav1003@gmail.com",company:"Davies Insurance Agency Inc",agencyPOC:"Craig Davies",timeZone:"CA - PST",tl:"ED",am:"Karla",salesRep:"Celina"},
+  {id:527,start:"3/16/2026",vaName:"Reyjol Jumawan",vaTag:"Gen VA",status:"Active",vaEmail:"reyjol888@gmail.com",company:"United Risk Insurance",agencyPOC:"Cale Merrill",timeZone:"MS - CST",tl:"RJ",am:"Karla",salesRep:"Johnny"},
+  {id:528,start:"3/16/2026",vaName:"Orpha Tumala",vaTag:"Gen VA",status:"Active",vaEmail:"orpha.tumala@gmail.com",company:"Heaton Bennett",agencyPOC:"Ross Bennett",timeZone:"TX - CST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:529,start:"3/16/2026",vaName:"Brechie Bedico",vaTag:"Gen VA",status:"Terminated",vaEmail:"bedicobrech@gmail.com",company:"United Risk Insurance",agencyPOC:"Cale Merrill",timeZone:"MS - CST",tl:"RJ",am:"Karla",salesRep:"Johnny"},
+  {id:530,start:"3/23/2026",vaName:"Ariel Benjamine Espanto",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"arielespanto2013@gmail.com",company:"Direct Insurance Services",agencyPOC:"Michael Spence",timeZone:"CO - MST",tl:"Martin",am:"Alicia",salesRep:"Mike"},
+  {id:531,start:"3/24/2026",vaName:"Renalie Joy Tingson",vaTag:"Gen VA",status:"Active",vaEmail:"renalietngzn@gmail.com",company:"Florida Best Quote",agencyPOC:"Nina Mastridge",timeZone:"FL - EST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:532,start:"3/30/2026",vaName:"Dexter Salcedo",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"salcedodexter.vaedition@gmail.com",company:"Cotner Rock Agency",agencyPOC:"Josh Cotner",timeZone:"AZ - MDT",tl:"",am:"Cancelled",salesRep:""},
+  {id:533,start:"3/30/2026",vaName:"James Andrei Cardinales",vaTag:"Combo",status:"Active",vaEmail:"clesandrei02@gmail.com",company:"Amicum Financial",agencyPOC:"John Mitchell",timeZone:"OH - EST",tl:"ED",am:"Alicia",salesRep:"Mike"},
+  {id:534,start:"4/6/2026",vaName:"Cesar Ryan Ladringan",vaTag:"Combo",status:"Reprofiled",vaEmail:"cesarryanladringan@gmail.com",company:"AIC Insurance Agency",agencyPOC:"Christopher Green",timeZone:"OR - PST",tl:"RJ",am:"Cancelled",salesRep:"Johnny"},
+  {id:535,start:"4/6/2026",vaName:"Gabriel Zion Cimafranca",vaTag:"Combo",status:"Reprofiled",vaEmail:"cimafrancagabriel@gmail.com",company:"AIC Insurance Agency",agencyPOC:"Christopher Green",timeZone:"OR - PST",tl:"RJ",am:"Cancelled",salesRep:"Johnny"},
+  {id:536,start:"4/6/2026",vaName:"Mary Joy Bocawe",vaTag:"Gen VA",status:"Resigned",vaEmail:"maryjoybocawe611@gmail.com",company:"Maverick Insurance",agencyPOC:"Scott Andrew Mills",timeZone:"OH - EST",tl:"ED",am:"Karla",salesRep:"Mike"},
+  {id:537,start:"4/6/2026",vaName:"Patriz Bianca Clarion",vaTag:"Gen VA",status:"Terminated",vaEmail:"pbc112889@gmail.com",company:"AIC Insurance Agency",agencyPOC:"Christopher Green",timeZone:"OR - PST",tl:"RJ",am:"Cancelled",salesRep:"Johnny"},
+  {id:538,start:"4/8/2026",vaName:"Pierre Anthony Marc Santos",vaTag:"Combo",status:"Active",vaEmail:"p.saintz187@gmail.com",company:"Beach Break Insurance",agencyPOC:"Rich Sabatowski",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Austin"},
+  {id:539,start:"4/13/2026",vaName:"Maria Ulibeth Canvas",vaTag:"Gen VA",status:"Active",vaEmail:"canvas.m04@gmail.com",company:"Raleigh Insurance Group",agencyPOC:"Daniel Rohrbaugh",timeZone:"NC- EST",tl:"Rezyl",am:"Niccole",salesRep:"Austin"},
+  {id:540,start:"4/13/2026",vaName:"Marielle Pajo",vaTag:"Gen VA",status:"Active",vaEmail:"mariellepajo@gmail.com",company:"Florida Best Quote",agencyPOC:"Nina Mastridge",timeZone:"FL - EST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:541,start:"4/13/2026",vaName:"Raymond Mara",vaTag:"Gen VA",status:"Active",vaEmail:"imara.raymondp@gmail.com",company:"Grimes Insurance Agency",agencyPOC:"Ryan Reynolds",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:542,start:"4/20/2026",vaName:"Jorey Israel Bendanillo",vaTag:"Gen VA",status:"Active",vaEmail:"bendanillojorey@gmail.com",company:"Classic Coverage Group",agencyPOC:"Michael Arkin",timeZone:"NY - EST",tl:"Martin",am:"Alicia",salesRep:"Mike"},
+  {id:543,start:"4/20/2026",vaName:"Sergei Vaughn Calumpong",vaTag:"Gen VA",status:"Active",vaEmail:"svc.clmpng@gmail.com",company:"Maverick Insurance",agencyPOC:"Scott Andrew Mills",timeZone:"OH - EST",tl:"ED",am:"Karla",salesRep:"Mike"},
+  {id:544,start:"4/27/2026",vaName:"Honey Grace Tioaquen",vaTag:"Gen VA",status:"Active",vaEmail:"h.tioaquen96@gmail.com",company:"TCA Insurance",agencyPOC:"Cliff Miller",timeZone:"MI - EST",tl:"ED",am:"Karla",salesRep:"Celina"},
+  {id:545,start:"4/27/2026",vaName:"Jhonel Alfaro",vaTag:"Gen VA",status:"Active",vaEmail:"jhonelalfaro@gmail.com",company:"Vault Insurance & Risk Management",agencyPOC:"Ashley Hellbusch",timeZone:"NE - CST",tl:"ED",am:"Alicia",salesRep:"Celina"},
+  {id:546,start:"5/4/2026",vaName:"Ariel Benjamine Espanto",vaTag:"Gen VA",status:"Active",vaEmail:"arielespanto2013@gmail.com",company:"NPPW Services",agencyPOC:"Lennix Gibson",timeZone:"CA - PST",tl:"RJ",am:"Karla",salesRep:"Johnny"},
+  {id:547,start:"5/4/2026",vaName:"Arturo Gales",vaTag:"Gen VA",status:"Active",vaEmail:"arturogales123@gmail.com",company:"NPPW Services",agencyPOC:"Lennix Gibson",timeZone:"CA - PST",tl:"RJ",am:"Karla",salesRep:"Johnny"},
+  {id:548,start:"5/11/2026",vaName:"Hanna Mae Eduria",vaTag:"Combo",status:"Active",vaEmail:"xiungeun@gmail.com",company:"Bly Insurance Group",agencyPOC:"Joseph Bly",timeZone:"MO - CST",tl:"RJ",am:"Alicia",salesRep:"Celina"},
+  {id:549,start:"5/11/2026",vaName:"Gabriel Zion Cimafranca",vaTag:"Combo",status:"Active",vaEmail:"cimafrancagabriel@gmail.com",company:"Steve Pore Insurance",agencyPOC:"Amy Butler",timeZone:"KS - CST",tl:"RJ",am:"Karla",salesRep:"Mike"},
+  {id:550,start:"5/11/2026",vaName:"Ira Mae Basalan",vaTag:"Gen VA",status:"Active",vaEmail:"basalaniramaelopez@gmail.com",company:"Cord Insurance/Steele Insurance",agencyPOC:"Niccole Williams",timeZone:"CA - PST",tl:"ED",am:"Alicia",salesRep:"Johnny"},
+  {id:551,start:"5/11/2026",vaName:"Maria Cristine Rañoa",vaTag:"Gen VA",status:"Reprofiled",vaEmail:"mariacristineranoa1126@gmail.com",company:"ACG Insure LLC",agencyPOC:"Chris Shepherd",timeZone:"KS - CST",tl:"RJ",am:"Alicia",salesRep:"Celina"},
+  {id:552,start:"5/11/2026",vaName:"Gian Tristian Apostol",vaTag:"Gen VA",status:"Active",vaEmail:"giantristianapostol@gmail.com",company:"RMIN Consulting",agencyPOC:"Adrian Smith",timeZone:"LA - CST",tl:"ED",am:"Karla",salesRep:"Mike"},
+  {id:553,start:"5/11/2026",vaName:"Jefer Sera",vaTag:"Gen VA",status:"Active",vaEmail:"jefersera26@gmail.com",company:"Vault Insurance & Risk Management",agencyPOC:"Ashley Hellbusch",timeZone:"NE - CST",tl:"ED",am:"Alicia",salesRep:"Celina"},
+  {id:554,start:"5/11/2026",vaName:"Elaiza Eve Ramos",vaTag:"Gen VA",status:"Active",vaEmail:"ramos.elaizaeve@gmail.com",company:"South City Insurance",agencyPOC:"Daman Bhinder / Myles Weigel",timeZone:"TX - CST",tl:"Martin",am:"Karla",salesRep:"Celina"},
+  {id:555,start:"5/11/2026",vaName:"John Dave Baylon",vaTag:"Gen VA",status:"Active",vaEmail:"johndavebaylon@gmail.com",company:"South City Insurance",agencyPOC:"Myles Weigel",timeZone:"TX - CST",tl:"Martin",am:"Karla",salesRep:"Celina"},
+  {id:556,start:"5/14/2026",vaName:"Cesar Ryan Ladringan",vaTag:"Gen VA",status:"Active",vaEmail:"cesarryanladringan@gmail.com",company:"Hardenbergh Insurance Group",agencyPOC:"Jon Sharp / Tracey Smith",timeZone:"PA - EST",tl:"Rezyl",am:"Alicia",salesRep:"Celina"},
+  {id:557,start:"5/18/2026",vaName:"Maria Luz Marañon",vaTag:"Gen VA",status:"Active",vaEmail:"mariamaranon017@gmail.com",company:"South City Insurance",agencyPOC:"Daman Bhinder / Myles Weigel",timeZone:"TX - CST",tl:"Martin",am:"Karla",salesRep:"Celina"},
+  {id:558,start:"5/26/2026",vaName:"Prince Oncada",vaTag:"Combo",status:"Terminated",vaEmail:"prince.oncada@gmail.com",company:"Mosaic Insurance Alliance",agencyPOC:"Paul Pukis",timeZone:"WA - PST",tl:"ED",am:"Karla",salesRep:"Mike"},
+  {id:559,start:"5/26/2026",vaName:"Akela Paulene Antalan",vaTag:"Combo",status:"Resigned",vaEmail:"akela.paulene@gmail.com",company:"Mosaic Insurance Alliance",agencyPOC:"Paul Pukis",timeZone:"WA - PST",tl:"ED",am:"Karla",salesRep:"Mike"},
+  {id:560,start:"6/1/2026",vaName:"Claire Celeste",vaTag:"Combo",status:"Active",vaEmail:"claire.celeste23@gmail.com",company:"Ramey King Insurance Agency",agencyPOC:"Mandy Smith",timeZone:"TX - CST",tl:"RJ",am:"Alicia",salesRep:"Mike"},
+  {id:561,start:"6/1/2026",vaName:"Joel Rey Bueno",vaTag:"Gen VA",status:"Active",vaEmail:"bueno.joelrey@gmail.com",company:"NPPW Services",agencyPOC:"Lennix Gibson",timeZone:"CA - PST",tl:"RJ",am:"Karla",salesRep:"Johnny"},
+  {id:562,start:"6/8/2026",vaName:"Ronald Sy Jr.",vaTag:"Combo",status:"Active",vaEmail:"ronjrsy22@gmail.com",company:"Reilly Insurance LLC",agencyPOC:"Mark Reilly",timeZone:"PA - EST",tl:"ED",am:"Karla",salesRep:"Mike"},
+  {id:563,start:"6/8/2026",vaName:"Mark Kenny Gesmalin",vaTag:"Combo",status:"Resigned",vaEmail:"gesmalinmarkkenny@gmail.com",company:"Mosaic Insurance Alliance",agencyPOC:"Paul Pukis",timeZone:"WA - PST",tl:"ED",am:"Karla",salesRep:"Mike"},
+  {id:564,start:"6/15/2026",vaName:"Daniela Generalao",vaTag:"Gen VA",status:"Active",vaEmail:"danielageneralao77@gmail.com",company:"Marenco Insurance Agency",agencyPOC:"Alex Marenco",timeZone:"NY - EST",tl:"ED",am:"Niccole",salesRep:"Celina"},
+  {id:565,start:"6/15/2026",vaName:"Zigfred Gementiza",vaTag:"Gen VA",status:"Active",vaEmail:"zigfredg@gmail.com",company:"Crawford Butz & Associates",agencyPOC:"Mike Ehrlich/Jordan Wren",timeZone:"MO - CST",tl:"Rezyl",am:"Karla",salesRep:"Celina"},
+  {id:566,start:"6/15/2026",vaName:"Mary Barbette Baldestamon",vaTag:"Gen VA",status:"Active",vaEmail:"marybarbette@gmail.com",company:"Hoery Insurance - Farmers",agencyPOC:"Scott Hoery",timeZone:"CO - MDT",tl:"Martin",am:"Niccole",salesRep:"Celina"},
+  {id:567,start:"6/15/2026",vaName:"Bernadette Cal",vaTag:"Gen VA",status:"Active",vaEmail:"calbernadette24@gmail.com",company:"Scheier Insurance Agency",agencyPOC:"Allison Scheier",timeZone:"CA - PST",tl:"RJ",am:"Alicia",salesRep:"Johnny"},
+  {id:568,start:"6/15/2026",vaName:"Marie Franchesca Placer",vaTag:"Gen VA",status:"Active",vaEmail:"mariefranchescaplacer@gmail.com",company:"Scheier Insurance Agency",agencyPOC:"Allison Scheier",timeZone:"CA - PST",tl:"RJ",am:"Alicia",salesRep:"Johnny"},
+  {id:569,start:"6/15/2026",vaName:"Ronna Jay Pejano",vaTag:"Combo",status:"Active",vaEmail:"ronnapejano@gmail.com",company:"Synergy Insurance Advisors",agencyPOC:"Scott Starita",timeZone:"CO - MDT",tl:"Martin",am:"Karla",salesRep:"Johnny"},
+  {id:570,start:"6/15/2026",vaName:"Kimberly Royo",vaTag:"Gen VA",status:"Resigned",vaEmail:"royo.kimberly@gmail.com",company:"JBLB Insurance Group",agencyPOC:"Tawnya Stuedle",timeZone:"MO - CST",tl:"RJ",am:"Karla",salesRep:"Celina"},
+  {id:571,start:"6/15/2026",vaName:"Lindsay Cañete",vaTag:"Combo",status:"Active",vaEmail:"lcanete833@gmail.com",company:"Mosaic Insurance Alliance",agencyPOC:"Paul Pukis",timeZone:"WA - PST",tl:"ED",am:"Karla",salesRep:"Mike"},
+  {id:572,start:"6/15/2026",vaName:"Brisbane Alexander Cordero",vaTag:"Gen VA",status:"Terminated",vaEmail:"brisbanecordero46@gmail.com",company:"Lundell Insurance",agencyPOC:"Chanee Boehnen",timeZone:"WI - CST",tl:"RJ",am:"Alicia",salesRep:"Mike"},
+  {id:573,start:"6/15/2026",vaName:"Joan Lapinid",vaTag:"Gen VA",status:"Active",vaEmail:"joanlapinidofficial@gmail.com",company:"Priority Risk Management",agencyPOC:"Mark Shoultz",timeZone:"IN - EST",tl:"ED",am:"Niccole",salesRep:"Austin"},
+  {id:574,start:"6/15/2026",vaName:"Diosdado Dalisay",vaTag:"Gen VA",status:"Active",vaEmail:"diosdadodalisay1095@gmail.com",company:"JBLB Insurance Group",agencyPOC:"Tawnya Stuedle",timeZone:"MO - CST",tl:"RJ",am:"Karla",salesRep:"Celina"},
+  {id:575,start:"6/16/2026",vaName:"Krishia Mae Del Rosario",vaTag:"Gen VA",status:"Resigned",vaEmail:"krishiamaemdelrosario@gmail.com",company:"Great Park Insurance",agencyPOC:"Daniel Seong",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Austin"},
+  {id:576,start:"6/16/2026",vaName:"Harvey Maranan",vaTag:"Gen VA",status:"Active",vaEmail:"harveymaranan19251@gmail.com",company:"Bly Insurance Group",agencyPOC:"Joseph Bly",timeZone:"MO - CST",tl:"RJ",am:"Alicia",salesRep:"Celina"},
+  {id:577,start:"6/17/2026",vaName:"Aimee Fernandez",vaTag:"Gen VA",status:"Active",vaEmail:"fernandezaimee224@gmail.com",company:"Classic Coverage Group",agencyPOC:"Michael Arkin",timeZone:"NY - EST",tl:"Martin",am:"Alicia",salesRep:"Mike"},
+  {id:578,start:"6/22/2026",vaName:"Sid Vicious Cagula",vaTag:"Gen VA",status:"Active",vaEmail:"cagulasid4@gmail.com",company:"Hardenbergh Insurance Group",agencyPOC:"Jon Sharp / Tracey Smith",timeZone:"PA - EST",tl:"Rezyl",am:"Alicia",salesRep:"Celina"},
+  {id:579,start:"6/22/2026",vaName:"Princess Jolisse Sastrillas",vaTag:"Gen VA",status:"Active",vaEmail:"princessmondee@gmail.com",company:"World Insurance",agencyPOC:"Chris Badger",timeZone:"TX - CST",tl:"Martin",am:"Niccole",salesRep:"Austin"},
+  {id:580,start:"6/22/2026",vaName:"Mekka Ella Bulan",vaTag:"Gen VA",status:"Active",vaEmail:"bulanmekka98@gmail.com",company:"Greco Insurance Group",agencyPOC:"Joey Greco",timeZone:"NE - CST",tl:"RJ",am:"Karla",salesRep:"Johnny"},
+  {id:581,start:"6/29/2026",vaName:"Sunshine Marie Seriña",vaTag:"Gen VA",status:"Active",vaEmail:"sersunsh1@gmail.com",company:"Ameriguard Agency Inc.",agencyPOC:"Brad Boldt",timeZone:"MA - EST",tl:"RJ",am:"Niccole",salesRep:"Celina"},
+  {id:582,start:"6/29/2026",vaName:"Luke Angelo Velez",vaTag:"Gen VA",status:"Active",vaEmail:"velezlukeangelo11@gmail.com",company:"Ameriguard Agency Inc.",agencyPOC:"Brad Boldt",timeZone:"MA - EST",tl:"RJ",am:"Niccole",salesRep:"Celina"},
+  {id:583,start:"6/29/2026",vaName:"Lourrence Ed Senajon",vaTag:"Gen VA",status:"Active",vaEmail:"orenedsenajon@gmail.com",company:"Agency Automate",agencyPOC:"Bill Jenkins",timeZone:"MN - CST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:584,start:"6/29/2026",vaName:"Ivan Louie Malicsi",vaTag:"Gen VA",status:"Active",vaEmail:"ivanlouiemalicsi@gmail.com",company:"Agency Automate",agencyPOC:"Bill Jenkins",timeZone:"MN - CST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:585,start:"6/29/2026",vaName:"Kaiyou Serra",vaTag:"Gen VA",status:"Active",vaEmail:"kserra@addu.edu.ph",company:"Agency Automate",agencyPOC:"Bill Jenkins",timeZone:"MN - CST",tl:"Vince",am:"Niccole",salesRep:"Austin"},
+  {id:586,start:"6/29/2026",vaName:"Ceide Tan",vaTag:"Gen VA",status:"Active",vaEmail:"ceide999@gmail.com",company:"Lundell Insurance",agencyPOC:"Chanee Boehnen",timeZone:"WI - CST",tl:"RJ",am:"Alicia",salesRep:"Mike"},
+  {id:587,start:"6/29/2026",vaName:"Leo Niño Gasque",vaTag:"Combo",status:"Active",vaEmail:"leontheabsurd@gmail.com",company:"Great Park Insurance",agencyPOC:"Daniel Seong",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Austin"},
+  {id:588,start:"6/29/2026",vaName:"Cherry Love Sabijon",vaTag:"Gen VA",status:"Active",vaEmail:"cherrylovesabijon24@gmail.com",company:"Great Park Insurance",agencyPOC:"Daniel Seong",timeZone:"CA - PST",tl:"ED",am:"Niccole",salesRep:"Austin"},
+  {id:589,start:"7/13/2026",vaName:"Jomar Lumabi",vaTag:"",status:"",vaEmail:"jlumab731@gmail.com",company:"Kevin Panter Insurance",agencyPOC:"Kevin Panter",timeZone:"GA - EST",tl:"Vince",am:"",salesRep:"Mike"},
 ];
 
 const INIT_CONCERNS = [
@@ -1994,7 +2586,19 @@ function KPITab() {
   const [selWeek,  setSelWeek]  = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [search,   setSearch]   = useState("");
-  // Calendar range selection (lifted from MiniCalendar)
+  const { rows: tlAtoRecords } = useSupabaseTable("tl_ato", "id", INIT_TL_ATO);
+
+  // Auto-populate AM and TL from TL ATO when client/company is filled
+  function lookupFromTLATO(clientText) {
+    if (!clientText.trim()) return {};
+    const q = clientText.toLowerCase();
+    const match = tlAtoRecords.find(r =>
+      (r.company && r.company.toLowerCase().includes(q)) ||
+      (r.agencyPOC && r.agencyPOC.toLowerCase().includes(q))
+    );
+    if (match) return { am: match.am || "", tl: match.tl || "" };
+    return {};
+  }
   const [calRangeStart, setCalRangeStart] = useState(null);
   const [calRangeEnd,   setCalRangeEnd]   = useState(null);
   const [amFilter, setAmFilter] = useState("All");
@@ -2291,8 +2895,11 @@ function KPITab() {
             {/* Client */}
             <div style={{gridColumn:"span 2"}}>
               <div style={{fontSize:11,color:C.muted,fontWeight:600,marginBottom:4}}>CLIENT / AGENCY *</div>
-              <input value={newCI.client} placeholder="e.g. TJ Worsencroft, Navigate Risk Advisors" onChange={e=>setNewCI(p=>({...p,client:e.target.value}))}
+              <input value={newCI.client} placeholder="e.g. TJ Worsencroft, Navigate Risk Advisors"
+                onChange={e=>setNewCI(p=>({...p,client:e.target.value}))}
+                onBlur={e=>{const l=lookupFromTLATO(e.target.value);if(l.am||l.tl)setNewCI(p=>({...p,...l}));}}
                 style={{width:"100%",padding:"6px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13}}/>
+              {newCI.client&&(()=>{const l=lookupFromTLATO(newCI.client);return l.am?<div style={{fontSize:11,color:C.green,marginTop:3}}>Auto-filled: AM = {l.am}, TL = {l.tl}</div>:null;})()}
             </div>
             {/* Type */}
             <div>
@@ -3555,6 +4162,186 @@ const EMAIL_STARS = [
   { icon: "ℹ️", color: "#1D4ED8", bg: "#EFF6FF", border: "#93C5FD", label: "1-off Work",   desc: "One-off task or work item", square: true, sqColor: "#93C5FD" },
 ];
 
+// ── TL ATO TAB ──
+function TLATOTab() {
+  const C = useTheme();
+  const { rows: records, upsert: upsertRecord, remove: removeRecord } = useSupabaseTable("tl_ato", "id", INIT_TL_ATO);
+  const [search, setSearch]   = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [adding, setAdding]   = useState(false);
+  const EMPTY = { start:"", vaName:"", vaTag:"", status:"Active", vaEmail:"", company:"", agencyPOC:"", timeZone:"", tl:"", am:"", salesRep:"" };
+  const [newRec, setNewRec]   = useState(EMPTY);
+  const [expandId, setExpandId] = useState(null);
+
+  const statuses = ["All", ...new Set(records.map(r => r.status).filter(Boolean))];
+  const TLS = ["Martin","Rez","Ed","RJ","Vincent"];
+  const AMS = ["Niccole","Karla","Alicia"];
+
+  const visible = useMemo(() => records.filter(r => {
+    const q = search.toLowerCase();
+    const ms = !search || [r.vaName,r.company,r.agencyPOC,r.tl,r.am,r.salesRep,r.vaEmail,r.vaTag,r.timeZone,r.status]
+      .some(v => v && v.toLowerCase().includes(q));
+    const sf = statusFilter === "All" || r.status === statusFilter;
+    return ms && sf;
+  }), [records, search, statusFilter]);
+
+  function upRec(id, field, val) {
+    const r = records.find(x => x.id === id);
+    if (r) upsertRecord({ ...r, [field]: val });
+  }
+  function saveNew() {
+    if (!newRec.vaName.trim() && !newRec.company.trim()) return;
+    upsertRecord({ id: Date.now(), ...newRec });
+    setNewRec(EMPTY); setAdding(false);
+  }
+
+  const fieldStyle = { width:"100%", padding:"5px 8px", borderRadius:6, border:`1px solid ${C.border}`, fontSize:13, background:C.white };
+  const labelStyle = { fontSize:10, color:C.muted, fontWeight:700, marginBottom:3 };
+
+  return (
+    <div>
+      {/* Search + filters + add */}
+      <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap",alignItems:"center"}}>
+        <input placeholder="Search VA, company, TL, AM, email..."
+          value={search} onChange={e=>setSearch(e.target.value)}
+          style={{flex:"1 1 220px",padding:"8px 12px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:13}}/>
+        <div style={{display:"flex",gap:4}}>
+          {statuses.map(s=>(
+            <button key={s} onClick={()=>setStatusFilter(s)}
+              style={{padding:"6px 12px",borderRadius:8,border:"none",cursor:"pointer",fontSize:12,
+                background:statusFilter===s?C.dark:C.gray,color:statusFilter===s?C.white:C.dark,fontWeight:statusFilter===s?700:400}}>{s}</button>
+          ))}
+        </div>
+        <span style={{fontSize:12,color:C.muted}}>{visible.length} records</span>
+        <button onClick={()=>setAdding(v=>!v)}
+          style={{padding:"7px 16px",borderRadius:8,border:"none",cursor:"pointer",background:C.red,color:C.white,fontWeight:600,fontSize:13,marginLeft:"auto"}}>
+          {adding?"✕ Cancel":"+ Add Account"}
+        </button>
+      </div>
+
+      {/* Add form */}
+      {adding&&(
+        <div style={{background:C.white,border:`2px solid ${C.teal}`,borderRadius:12,padding:18,marginBottom:16}}>
+          <div style={{fontWeight:700,fontSize:14,color:C.teal,marginBottom:14}}>New Account</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:12}}>
+            {[["Start Date","start","date"],["VA Name","vaName"],["VA Tag","vaTag"],["Status","status","select-status"],
+              ["VA Email","vaEmail"],["Company","company"],["Agency POC","agencyPOC"],["Time Zone","timeZone"],
+              ["TL","tl","select-tl"],["AM","am","select-am"],["Sales Rep","salesRep"]].map(([label,field,type])=>(
+              <div key={field}>
+                <div style={labelStyle}>{label.toUpperCase()}</div>
+                {type==="date" ? (
+                  <input type="date" value={newRec[field]} onChange={e=>setNewRec(p=>({...p,[field]:e.target.value}))} style={fieldStyle}/>
+                ) : type==="select-status" ? (
+                  <select value={newRec[field]} onChange={e=>setNewRec(p=>({...p,[field]:e.target.value}))} style={fieldStyle}>
+                    {["Active","Resigned","Terminated","On Leave"].map(s=><option key={s}>{s}</option>)}
+                  </select>
+                ) : type==="select-tl" ? (
+                  <select value={newRec[field]} onChange={e=>setNewRec(p=>({...p,[field]:e.target.value}))} style={fieldStyle}>
+                    <option value="">— Select TL —</option>
+                    {TLS.map(t=><option key={t}>{t}</option>)}
+                  </select>
+                ) : type==="select-am" ? (
+                  <select value={newRec[field]} onChange={e=>setNewRec(p=>({...p,[field]:e.target.value}))} style={fieldStyle}>
+                    <option value="">— Select AM —</option>
+                    {AMS.map(a=><option key={a}>{a}</option>)}
+                  </select>
+                ) : (
+                  <input value={newRec[field]} placeholder={label} onChange={e=>setNewRec(p=>({...p,[field]:e.target.value}))} style={fieldStyle}/>
+                )}
+              </div>
+            ))}
+          </div>
+          <div style={{display:"flex",gap:10,marginTop:14,justifyContent:"flex-end"}}>
+            <button onClick={()=>setAdding(false)} style={{padding:"7px 18px",borderRadius:8,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:13}}>Cancel</button>
+            <button onClick={saveNew} style={{padding:"7px 22px",borderRadius:8,border:"none",background:C.teal,color:C.white,cursor:"pointer",fontWeight:700,fontSize:13}}>Save</button>
+          </div>
+        </div>
+      )}
+
+      {/* Table */}
+      <div style={{background:C.white,borderRadius:10,border:`1px solid ${C.border}`,overflow:"auto"}}>
+        <table style={{width:"100%",borderCollapse:"collapse",fontSize:12,minWidth:900}}>
+          <thead>
+            <tr style={{background:C.dark,color:C.white}}>
+              {["Start","Name of VA","VA Tag","Status","Company","Agency POC","TZ","TL","AM","Sales Rep",""].map((h,i)=>(
+                <th key={i} style={{padding:"9px 12px",textAlign:"left",fontWeight:600,fontSize:11,whiteSpace:"nowrap"}}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {visible.map((r,ri)=>{
+              const isOpen = expandId === r.id;
+              const statusColor = r.status==="Active"?C.green:r.status==="Resigned"?"#EF4444":r.status==="Terminated"?"#DC2626":C.amber;
+              return (
+                <React.Fragment key={r.id}>
+                  <tr onClick={()=>setExpandId(isOpen?null:r.id)}
+                    style={{borderBottom:`1px solid ${C.border}`,background:ri%2===0?C.white:C.gray,cursor:"pointer"}}>
+                    <td style={{padding:"8px 12px",whiteSpace:"nowrap",color:C.muted}}>{r.start}</td>
+                    <td style={{padding:"8px 12px",fontWeight:600,minWidth:140}}>{r.vaName}</td>
+                    <td style={{padding:"8px 12px",color:C.muted}}>{r.vaTag}</td>
+                    <td style={{padding:"8px 12px"}}>
+                      <span style={{fontSize:11,fontWeight:700,color:statusColor,background:statusColor+"18",padding:"2px 8px",borderRadius:99}}>{r.status}</span>
+                    </td>
+                    <td style={{padding:"8px 12px",minWidth:160}}>{r.company}</td>
+                    <td style={{padding:"8px 12px"}}>{r.agencyPOC}</td>
+                    <td style={{padding:"8px 12px",whiteSpace:"nowrap",color:C.muted}}>{r.timeZone}</td>
+                    <td style={{padding:"8px 12px",fontWeight:600,color:C.teal}}>{r.tl}</td>
+                    <td style={{padding:"8px 12px",fontWeight:600,color:r.am?({Niccole:C.red,Karla:C.blue,Alicia:C.teal}[r.am]||C.dark):C.muted}}>{r.am||"—"}</td>
+                    <td style={{padding:"8px 12px"}}>{r.salesRep}</td>
+                    <td style={{padding:"8px 10px"}} onClick={e=>{e.stopPropagation();removeRecord(r.id);}}>
+                      <button style={{background:"none",border:`1px solid ${C.border}`,borderRadius:6,cursor:"pointer",color:C.muted,fontSize:13,padding:"2px 7px"}}>×</button>
+                    </td>
+                  </tr>
+                  {isOpen&&(
+                    <tr>
+                      <td colSpan={11} style={{padding:0,borderBottom:`1px solid ${C.border}`}}>
+                        <div style={{background:"#FAFBFF",padding:"14px 18px",display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12}}>
+                          {[["Start Date","start"],["VA Name","vaName"],["VA Tag","vaTag"],["VA Email","vaEmail"],
+                            ["Company","company"],["Agency POC","agencyPOC"],["Time Zone","timeZone"],["Sales Rep","salesRep"]].map(([label,field])=>(
+                            <div key={field}>
+                              <div style={labelStyle}>{label.toUpperCase()}</div>
+                              <input defaultValue={r[field]} onBlur={e=>upRec(r.id,field,e.target.value)}
+                                style={fieldStyle}/>
+                            </div>
+                          ))}
+                          <div>
+                            <div style={labelStyle}>STATUS</div>
+                            <select value={r.status} onChange={e=>upRec(r.id,"status",e.target.value)} style={fieldStyle}>
+                              {["Active","Resigned","Terminated","On Leave"].map(s=><option key={s}>{s}</option>)}
+                            </select>
+                          </div>
+                          <div>
+                            <div style={labelStyle}>TL</div>
+                            <select value={r.tl} onChange={e=>upRec(r.id,"tl",e.target.value)} style={fieldStyle}>
+                              <option value="">— Select TL —</option>
+                              {TLS.map(t=><option key={t}>{t}</option>)}
+                            </select>
+                          </div>
+                          <div>
+                            <div style={labelStyle}>AM</div>
+                            <select value={r.am} onChange={e=>upRec(r.id,"am",e.target.value)} style={{...fieldStyle,color:r.am?({Niccole:C.red,Karla:C.blue,Alicia:C.teal}[r.am]||C.dark):C.muted}}>
+                              <option value="">— Select AM —</option>
+                              {AMS.map(a=><option key={a}>{a}</option>)}
+                            </select>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              );
+            })}
+            {visible.length===0&&(
+              <tr><td colSpan={11} style={{padding:24,textAlign:"center",color:C.muted}}>No records found.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      <p style={{fontSize:11,color:C.muted,marginTop:8}}>{visible.length} of {records.length} records · Click any row to expand and edit</p>
+    </div>
+  );
+}
+
 function WorkflowTab() {
   const C = useTheme();
   const [workflow, setWorkflow] = useState(WORKFLOW);
@@ -4227,6 +5014,7 @@ const TABS = [
   { id: "kpi",          label: " Island KPIs",         locked: true },
   { id: "hubspot",      label: " HubSpot Links",       locked: true },
   { id: "accounts",     label: " Niccole's Accounts",  locked: true },
+  { id: "tlato",        label: "TL ATO",               locked: false },
   { id: "workflow",     label: " Workflow",             locked: false },
   { id: "generalnotes", label: " General Notes",        locked: false },
   { id: "notes",        label: " Sales Training",       locked: false },
@@ -4341,6 +5129,7 @@ export default function GellApp() {
         {activeTab === "kpi"          && <KPITab />}
         {activeTab === "hubspot"      && <HubSpotTab />}
         {activeTab === "accounts"     && <AccountsTab checkins={checkins} />}
+        {activeTab === "tlato"        && <TLATOTab />}
         {activeTab === "workflow"     && <WorkflowTab />}
         {activeTab === "generalnotes" && <GeneralNotesTab />}
         {activeTab === "notes"        && <SalesTrainingTab />}
