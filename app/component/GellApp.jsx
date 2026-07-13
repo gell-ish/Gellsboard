@@ -3115,10 +3115,10 @@ function KPITab() {
                 </tr>
               </thead>
               <tbody>
-                {weekCheckins.length===0&&(
-                  <tr><td colSpan={7} style={{padding:24,textAlign:"center",color:C.muted}}>No check-ins for this week.</td></tr>
+                {filteredWeekCheckins.length===0&&(
+                  <tr><td colSpan={9} style={{padding:24,textAlign:"center",color:C.muted}}>No check-ins found.</td></tr>
                 )}
-                {weekCheckins.map(c=>{
+                {filteredWeekCheckins.map(c=>{
                   const cfg = STATUS_CFG[c.status]||STATUS_CFG.showed;
                   const isOpen = expandId===c.id;
                   return(
@@ -4208,7 +4208,7 @@ function TLATOTab() {
   const [expandId, setExpandId] = useState(null);
 
   const statuses  = ["All", ...new Set(records.map(r => r.status).filter(Boolean))];
-  const tlOptions = ["All","Martin","Vince","Karla","Rezyl","Ed"];
+  const tlOptions = ["All","Martin","Vince","Karla","Rezyl","ED"];
   const amOptions = ["All", "Niccole", "Karla", "Alicia"];
   const salesOptions = ["All", ...new Set(records.map(r => r.salesRep).filter(Boolean))];
 
@@ -4299,7 +4299,7 @@ function TLATOTab() {
                 <th key={i} style={{padding:"9px 12px",textAlign:"left",fontWeight:600,fontSize:11,whiteSpace:"nowrap"}}>{h}</th>
               ))}
               {[
-                {key:"tl",label:"TL",opts:["All","Martin","Vince","Karla","Rezyl","Ed"],val:tlFilter,set:setTlFilter,ac:C.teal},
+                {key:"tl",label:"TL",opts:["All","Martin","Vince","Karla","Rezyl","ED"],val:tlFilter,set:setTlFilter,ac:C.teal},
                 {key:"am",label:"AM",opts:["All","Niccole","Karla","Alicia"],val:amFilter,set:setAmFilter,ac:C.red},
                 {key:"sales",label:"Sales Rep",opts:salesOptions,val:salesFilter,set:setSalesFilter,ac:C.purple},
               ].map(({key,label,opts,val,set,ac})=>(
