@@ -4295,10 +4295,11 @@ function TLATOTab() {
         <table style={{width:"100%",borderCollapse:"collapse",fontSize:12,minWidth:900}}>
           <thead>
             <tr style={{background:C.dark,color:C.white}}>
-              {["Start","Name of VA","VA Tag","Status","Company","Agency POC","TZ"].map((h,i)=>(
+              {["Start","Name of VA","VA Tag","Company","Agency POC","TZ"].map((h,i)=>(
                 <th key={i} style={{padding:"9px 12px",textAlign:"left",fontWeight:600,fontSize:11,whiteSpace:"nowrap"}}>{h}</th>
               ))}
               {[
+                {key:"status",label:"Status",opts:["All",...new Set(records.map(r=>r.status).filter(Boolean))],val:statusFilter,set:setStatusFilter,ac:C.dark},
                 {key:"tl",label:"TL",opts:["All","Martin","Vince","Karla","Rezyl","ED","RJ"],val:tlFilter,set:setTlFilter,ac:C.teal},
                 {key:"am",label:"AM",opts:["All","Niccole","Karla","Alicia"],val:amFilter,set:setAmFilter,ac:C.red},
                 {key:"sales",label:"Sales Rep",opts:salesOptions,val:salesFilter,set:setSalesFilter,ac:C.purple},
