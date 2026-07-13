@@ -4209,6 +4209,8 @@ function TLATOTab() {
   const [expandId, setExpandId] = useState(null);
 
   const statuses  = ["All", ...new Set(records.map(r => r.status).filter(Boolean))];
+  const TLS = ["Martin","Vince","Karla","Rezyl","ED","RJ"];
+  const AMS = ["Niccole","Karla","Alicia"];
   const tlOptions = ["All","Martin","Vince","Karla","Rezyl","ED","RJ"];
   const amOptions = ["All", "Niccole", "Karla", "Alicia"];
   const salesOptions = ["All", ...new Set(records.map(r => r.salesRep).filter(Boolean))];
