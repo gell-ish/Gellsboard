@@ -2602,6 +2602,7 @@ function KPITab() {
   const [calRangeStart, setCalRangeStart] = useState(null);
   const [calRangeEnd,   setCalRangeEnd]   = useState(null);
   const [amFilter, setAmFilter] = useState("All");
+  const [amColOpen, setAmColOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState("All");
   // Add modal state
   const [adding,   setAdding]   = useState(false);
@@ -2817,7 +2818,7 @@ function KPITab() {
               <select value={ci.tl||""} onChange={e=>upCI(ci.id,'tl',e.target.value)}
                 style={{width:"100%",padding:"5px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13}}>
                 <option value="">— Select TL —</option>
-                <option>Martin</option><option>Rez</option><option>Ed</option><option>RJ</option><option>Vincent</option>
+                <option>Martin</option><option>Vince</option><option>Karla</option><option>Rezyl</option><option>Ed</option>
               </select>
             </div>
             {/* Status */}
@@ -2935,7 +2936,7 @@ function KPITab() {
               <div style={{fontSize:11,color:C.muted,fontWeight:600,marginBottom:4}}>TL ASSIGNED</div>
               <select value={newCI.tl} onChange={e=>setNewCI(p=>({...p,tl:e.target.value}))} style={{...sel,width:"100%"}}>
                 <option value="">— Select TL —</option>
-                <option>Martin</option><option>Rez</option><option>Ed</option><option>RJ</option><option>Vincent</option>
+                <option>Martin</option><option>Vince</option><option>Karla</option><option>Rezyl</option><option>Ed</option>
               </select>
             </div>
             {/* Status */}
@@ -3088,23 +3089,24 @@ function KPITab() {
                   ))}
                   <th style={{padding:"8px 12px",textAlign:"left",fontSize:11,fontWeight:700,borderBottom:`1px solid ${C.border}`,whiteSpace:"nowrap"}}>
                     <div style={{position:"relative",display:"inline-block"}}>
-                      <button onClick={e=>{e.stopPropagation();document.getElementById("am-col-filter").style.display=document.getElementById("am-col-filter").style.display==="block"?"none":"block";}}
+                      <button onClick={e=>{e.stopPropagation();setAmColOpen(v=>!v);}}
                         style={{background:amFilter!=="All"?({Niccole:C.red,Karla:C.blue,Alicia:C.teal}[amFilter]||C.dark):"none",
                           color:amFilter!=="All"?C.white:C.muted,border:"none",cursor:"pointer",fontSize:11,fontWeight:700,
                           padding:amFilter!=="All"?"2px 8px":"0",borderRadius:6}}>
                         {amFilter==="All"?"AM ▾":`${amFilter} ▾`}
                       </button>
-                      <div id="am-col-filter" style={{display:"none",position:"absolute",top:"100%",left:0,zIndex:99,background:C.white,border:`1px solid ${C.border}`,borderRadius:8,boxShadow:"0 4px 16px rgba(0,0,0,0.12)",padding:6,minWidth:110}}>
-                        {["All","Niccole","Karla","Alicia"].map(a=>(
-                          <div key={a} onClick={e=>{e.stopPropagation();setAmFilter(a);document.getElementById("am-col-filter").style.display="none";}}
-                            style={{padding:"6px 10px",cursor:"pointer",borderRadius:6,fontSize:12,
-                              color:a==="All"?C.dark:({Niccole:C.red,Karla:C.blue,Alicia:C.teal}[a]||C.dark),
-                              fontWeight:amFilter===a?700:400,
-                              background:amFilter===a?C.gray:"transparent"}}>
-                            {a==="All"?"All AMs":a}
-                          </div>
-                        ))}
-                      </div>
+                      {amColOpen&&(
+                        <div style={{position:"absolute",top:"100%",left:0,zIndex:99,background:C.white,border:`1px solid ${C.border}`,borderRadius:8,boxShadow:"0 4px 16px rgba(0,0,0,0.12)",padding:6,minWidth:110}}>
+                          {["All","Niccole","Karla","Alicia"].map(a=>(
+                            <div key={a} onClick={e=>{e.stopPropagation();setAmFilter(a);setAmColOpen(false);}}
+                              style={{padding:"6px 10px",cursor:"pointer",borderRadius:6,fontSize:12,
+                                color:a==="All"?C.dark:({Niccole:C.red,Karla:C.blue,Alicia:C.teal}[a]||C.dark),
+                                fontWeight:amFilter===a?700:400,background:amFilter===a?C.gray:"transparent"}}>
+                              {a==="All"?"All AMs":a}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </th>
                   {["TL","Status",""].map((h,i)=>(
@@ -3240,7 +3242,7 @@ function KPITab() {
                           <select value={c.tl||""} onChange={e=>upCI(c.id,"tl",e.target.value)}
                             style={{border:"none",background:"transparent",cursor:"pointer",fontSize:12,color:c.tl?C.teal:C.muted,fontWeight:c.tl?600:400}}>
                             <option value="">— TL —</option>
-                            <option>Martin</option><option>Rez</option><option>Ed</option><option>RJ</option><option>Vincent</option>
+                            <option>Martin</option><option>Vince</option><option>Karla</option><option>Rezyl</option><option>Ed</option>
                           </select>
                         </td>
                         <td style={{padding:"7px 12px"}}>
@@ -4206,7 +4208,7 @@ function TLATOTab() {
   const [expandId, setExpandId] = useState(null);
 
   const statuses  = ["All", ...new Set(records.map(r => r.status).filter(Boolean))];
-  const tlOptions = ["All", ...new Set(records.map(r => r.tl).filter(Boolean)).add("Martin").add("Rez").add("Ed").add("RJ").add("Vincent")];
+  const tlOptions = ["All","Martin","Vince","Karla","Rezyl","Ed"];
   const amOptions = ["All", "Niccole", "Karla", "Alicia"];
   const salesOptions = ["All", ...new Set(records.map(r => r.salesRep).filter(Boolean))];
 
@@ -4297,7 +4299,7 @@ function TLATOTab() {
                 <th key={i} style={{padding:"9px 12px",textAlign:"left",fontWeight:600,fontSize:11,whiteSpace:"nowrap"}}>{h}</th>
               ))}
               {[
-                {key:"tl",label:"TL",opts:["All","Martin","Rez","Ed","RJ","Vincent"],val:tlFilter,set:setTlFilter,ac:C.teal},
+                {key:"tl",label:"TL",opts:["All","Martin","Vince","Karla","Rezyl","Ed"],val:tlFilter,set:setTlFilter,ac:C.teal},
                 {key:"am",label:"AM",opts:["All","Niccole","Karla","Alicia"],val:amFilter,set:setAmFilter,ac:C.red},
                 {key:"sales",label:"Sales Rep",opts:salesOptions,val:salesFilter,set:setSalesFilter,ac:C.purple},
               ].map(({key,label,opts,val,set,ac})=>(
