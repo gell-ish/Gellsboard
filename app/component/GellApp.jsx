@@ -4197,8 +4197,9 @@ const EMAIL_STARS = [
 function TLATOTab() {
   const C = useTheme();
   const { rows: records, upsert: upsertRecord, remove: removeRecord } = useSupabaseTable("tl_ato", "id", INIT_TL_ATO);
-  const [search, setSearch]   = useState("");
+  const [search, setSearch]         = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [companyFilter, setCompanyFilter] = useState("All");
   const [tlFilter,     setTlFilter]     = useState("All");
   const [amFilter,     setAmFilter]     = useState("All");
   const [salesFilter,  setSalesFilter]  = useState("All");
@@ -4217,11 +4218,12 @@ function TLATOTab() {
     const ms = !search || [r.vaName,r.company,r.agencyPOC,r.tl,r.am,r.salesRep,r.vaEmail,r.vaTag,r.timeZone,r.status]
       .some(v => v && v.toLowerCase().includes(q));
     return ms
-      && (statusFilter === "All" || r.status === statusFilter)
-      && (tlFilter     === "All" || r.tl === tlFilter)
-      && (amFilter     === "All" || r.am === amFilter)
-      && (salesFilter  === "All" || r.salesRep === salesFilter);
-  }), [records, search, statusFilter, tlFilter, amFilter, salesFilter]);
+      && (statusFilter  === "All" || r.status    === statusFilter)
+      && (companyFilter === "All" || r.company   === companyFilter)
+      && (tlFilter      === "All" || r.tl        === tlFilter)
+      && (amFilter      === "All" || r.am        === amFilter)
+      && (salesFilter   === "All" || r.salesRep  === salesFilter);
+  }), [records, search, statusFilter, companyFilter, tlFilter, amFilter, salesFilter]);
 
   function upRec(id, field, val) {
     const r = records.find(x => x.id === id);
@@ -4295,11 +4297,11 @@ function TLATOTab() {
         <table style={{width:"100%",borderCollapse:"collapse",fontSize:12,minWidth:900}}>
           <thead>
             <tr style={{background:C.dark,color:C.white}}>
-              {["Start","Name of VA","VA Tag","Company","Agency POC","TZ"].map((h,i)=>(
+              {["Start","Name of VA","VA Tag","Status","Agency POC","TZ"].map((h,i)=>(
                 <th key={i} style={{padding:"9px 12px",textAlign:"left",fontWeight:600,fontSize:11,whiteSpace:"nowrap"}}>{h}</th>
               ))}
               {[
-                {key:"status",label:"Status",opts:["All",...new Set(records.map(r=>r.status).filter(Boolean))],val:statusFilter,set:setStatusFilter,ac:C.dark},
+                {key:"company",label:"Company",opts:["All",...new Set(records.map(r=>r.company).filter(Boolean)).values()].slice(0,50),val:companyFilter,set:setCompanyFilter,ac:C.dark},
                 {key:"tl",label:"TL",opts:["All","Martin","Vince","Karla","Rezyl","ED","RJ"],val:tlFilter,set:setTlFilter,ac:C.teal},
                 {key:"am",label:"AM",opts:["All","Niccole","Karla","Alicia"],val:amFilter,set:setAmFilter,ac:C.red},
                 {key:"sales",label:"Sales Rep",opts:salesOptions,val:salesFilter,set:setSalesFilter,ac:C.purple},
