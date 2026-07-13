@@ -2818,7 +2818,7 @@ function KPITab() {
               <select value={ci.tl||""} onChange={e=>upCI(ci.id,'tl',e.target.value)}
                 style={{width:"100%",padding:"5px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13}}>
                 <option value="">— Select TL —</option>
-                <option>Martin</option><option>Vince</option><option>Karla</option><option>Rezyl</option><option>Ed</option>
+                <option>Martin</option><option>Vince</option><option>Karla</option><option>Rezyl</option><option>ED</option><option>RJ</option>
               </select>
             </div>
             {/* Status */}
@@ -2936,7 +2936,7 @@ function KPITab() {
               <div style={{fontSize:11,color:C.muted,fontWeight:600,marginBottom:4}}>TL ASSIGNED</div>
               <select value={newCI.tl} onChange={e=>setNewCI(p=>({...p,tl:e.target.value}))} style={{...sel,width:"100%"}}>
                 <option value="">— Select TL —</option>
-                <option>Martin</option><option>Vince</option><option>Karla</option><option>Rezyl</option><option>Ed</option>
+                <option>Martin</option><option>Vince</option><option>Karla</option><option>Rezyl</option><option>ED</option><option>RJ</option>
               </select>
             </div>
             {/* Status */}
@@ -3242,7 +3242,7 @@ function KPITab() {
                           <select value={c.tl||""} onChange={e=>upCI(c.id,"tl",e.target.value)}
                             style={{border:"none",background:"transparent",cursor:"pointer",fontSize:12,color:c.tl?C.teal:C.muted,fontWeight:c.tl?600:400}}>
                             <option value="">— TL —</option>
-                            <option>Martin</option><option>Vince</option><option>Karla</option><option>Rezyl</option><option>Ed</option>
+                            <option>Martin</option><option>Vince</option><option>Karla</option><option>Rezyl</option><option>ED</option><option>RJ</option>
                           </select>
                         </td>
                         <td style={{padding:"7px 12px"}}>
@@ -4208,7 +4208,7 @@ function TLATOTab() {
   const [expandId, setExpandId] = useState(null);
 
   const statuses  = ["All", ...new Set(records.map(r => r.status).filter(Boolean))];
-  const tlOptions = ["All","Martin","Vince","Karla","Rezyl","ED"];
+  const tlOptions = ["All","Martin","Vince","Karla","Rezyl","ED","RJ"];
   const amOptions = ["All", "Niccole", "Karla", "Alicia"];
   const salesOptions = ["All", ...new Set(records.map(r => r.salesRep).filter(Boolean))];
 
@@ -4299,7 +4299,7 @@ function TLATOTab() {
                 <th key={i} style={{padding:"9px 12px",textAlign:"left",fontWeight:600,fontSize:11,whiteSpace:"nowrap"}}>{h}</th>
               ))}
               {[
-                {key:"tl",label:"TL",opts:["All","Martin","Vince","Karla","Rezyl","ED"],val:tlFilter,set:setTlFilter,ac:C.teal},
+                {key:"tl",label:"TL",opts:["All","Martin","Vince","Karla","Rezyl","ED","RJ"],val:tlFilter,set:setTlFilter,ac:C.teal},
                 {key:"am",label:"AM",opts:["All","Niccole","Karla","Alicia"],val:amFilter,set:setAmFilter,ac:C.red},
                 {key:"sales",label:"Sales Rep",opts:salesOptions,val:salesFilter,set:setSalesFilter,ac:C.purple},
               ].map(({key,label,opts,val,set,ac})=>(
