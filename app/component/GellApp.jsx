@@ -4247,61 +4247,7 @@ function TLATOTab() {
           {adding?"✕ Cancel":"+ Add Account"}
         </button>
       </div>
-      {/* Filter chips row */}
-      <div style={{display:"flex",gap:12,marginBottom:14,flexWrap:"wrap",alignItems:"flex-start"}}>
-        {/* Status */}
-        <div>
-          <div style={{fontSize:10,color:C.muted,fontWeight:700,marginBottom:4}}>STATUS</div>
-          <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
-            {statuses.map(s=>(
-              <button key={s} onClick={()=>setStatusFilter(s)}
-                style={{padding:"4px 10px",borderRadius:99,border:"none",cursor:"pointer",fontSize:11,
-                  background:statusFilter===s?C.dark:C.gray,color:statusFilter===s?C.white:C.dark,fontWeight:statusFilter===s?700:400}}>{s}</button>
-            ))}
-          </div>
-        </div>
-        {/* TL */}
-        <div>
-          <div style={{fontSize:10,color:C.muted,fontWeight:700,marginBottom:4}}>TL</div>
-          <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
-            {["All","Martin","Rez","Ed","RJ","Vincent"].map(t=>(
-              <button key={t} onClick={()=>setTlFilter(t)}
-                style={{padding:"4px 10px",borderRadius:99,border:"none",cursor:"pointer",fontSize:11,
-                  background:tlFilter===t?C.teal:C.gray,color:tlFilter===t?C.white:C.dark,fontWeight:tlFilter===t?700:400}}>{t}</button>
-            ))}
-          </div>
-        </div>
-        {/* AM */}
-        <div>
-          <div style={{fontSize:10,color:C.muted,fontWeight:700,marginBottom:4}}>AM</div>
-          <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
-            {["All","Niccole","Karla","Alicia"].map(a=>(
-              <button key={a} onClick={()=>setAmFilter(a)}
-                style={{padding:"4px 10px",borderRadius:99,border:"none",cursor:"pointer",fontSize:11,
-                  background:amFilter===a?({Niccole:C.red,Karla:C.blue,Alicia:C.teal}[a]||C.dark):C.gray,
-                  color:amFilter===a?C.white:C.dark,fontWeight:amFilter===a?700:400}}>{a}</button>
-            ))}
-          </div>
-        </div>
-        {/* Sales Rep */}
-        <div>
-          <div style={{fontSize:10,color:C.muted,fontWeight:700,marginBottom:4}}>SALES REP</div>
-          <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
-            {salesOptions.map(s=>(
-              <button key={s} onClick={()=>setSalesFilter(s)}
-                style={{padding:"4px 10px",borderRadius:99,border:"none",cursor:"pointer",fontSize:11,
-                  background:salesFilter===s?C.purple:C.gray,color:salesFilter===s?C.white:C.dark,fontWeight:salesFilter===s?700:400}}>{s}</button>
-            ))}
-          </div>
-        </div>
-        {/* Clear all */}
-        {(statusFilter!=="All"||tlFilter!=="All"||amFilter!=="All"||salesFilter!=="All")&&(
-          <button onClick={()=>{setStatusFilter("All");setTlFilter("All");setAmFilter("All");setSalesFilter("All");}}
-            style={{padding:"4px 12px",borderRadius:99,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:11,color:C.muted,marginTop:14}}>
-            Clear filters
-          </button>
-        )}
-      </div>
+
 
       {/* Add form */}
       {adding&&(
@@ -4347,9 +4293,34 @@ function TLATOTab() {
         <table style={{width:"100%",borderCollapse:"collapse",fontSize:12,minWidth:900}}>
           <thead>
             <tr style={{background:C.dark,color:C.white}}>
-              {["Start","Name of VA","VA Tag","Status","Company","Agency POC","TZ","TL","AM","Sales Rep",""].map((h,i)=>(
+              {["Start","Name of VA","VA Tag","Status","Company","Agency POC","TZ"].map((h,i)=>(
                 <th key={i} style={{padding:"9px 12px",textAlign:"left",fontWeight:600,fontSize:11,whiteSpace:"nowrap"}}>{h}</th>
               ))}
+              {[
+                {key:"tl",label:"TL",opts:["All","Martin","Rez","Ed","RJ","Vincent"],val:tlFilter,set:setTlFilter,ac:C.teal},
+                {key:"am",label:"AM",opts:["All","Niccole","Karla","Alicia"],val:amFilter,set:setAmFilter,ac:C.red},
+                {key:"sales",label:"Sales Rep",opts:salesOptions,val:salesFilter,set:setSalesFilter,ac:C.purple},
+              ].map(({key,label,opts,val,set,ac})=>(
+                <th key={key} style={{padding:"9px 12px",textAlign:"left",fontWeight:600,fontSize:11,whiteSpace:"nowrap",position:"relative"}}>
+                  <button onClick={e=>{e.stopPropagation();const el=document.getElementById(`tl-ato-${key}`);el.style.display=el.style.display==="block"?"none":"block";}}
+                    style={{background:val!=="All"?ac:"transparent",color:val!=="All"?C.white:"#CBD5E1",border:"none",cursor:"pointer",
+                      fontSize:11,fontWeight:700,padding:val!=="All"?"2px 8px":"0",borderRadius:6,display:"flex",alignItems:"center",gap:4}}>
+                    {val==="All"?label:val} ▾
+                  </button>
+                  <div id={`tl-ato-${key}`} style={{display:"none",position:"absolute",top:"100%",left:0,zIndex:99,background:C.white,
+                    border:`1px solid ${C.border}`,borderRadius:8,boxShadow:"0 4px 16px rgba(0,0,0,0.12)",padding:6,minWidth:130}}>
+                    {opts.map(o=>(
+                      <div key={o} onClick={e=>{e.stopPropagation();set(o);document.getElementById(`tl-ato-${key}`).style.display="none";}}
+                        style={{padding:"6px 10px",cursor:"pointer",borderRadius:6,fontSize:12,
+                          color:o==="All"?C.dark:key==="am"?({Niccole:C.red,Karla:C.blue,Alicia:C.teal}[o]||C.dark):C.dark,
+                          fontWeight:val===o?700:400,background:val===o?C.gray:"transparent"}}>
+                        {o==="All"?`All ${label}s`:o}
+                      </div>
+                    ))}
+                  </div>
+                </th>
+              ))}
+              <th style={{padding:"9px 12px"}}></th>
             </tr>
           </thead>
           <tbody>
