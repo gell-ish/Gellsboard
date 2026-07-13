@@ -2635,8 +2635,7 @@ function KPITab() {
   // Filter by exact date if available, otherwise fall back to week range
   const weekCheckins = useMemo(() => {
     let base;
-    if (calRangeStart) {
-      const lo = calRangeEnd && calRangeEnd < calRangeStart ? calRangeEnd : calRangeStart;
+    if (calRangeStart) {      const lo = calRangeEnd && calRangeEnd < calRangeStart ? calRangeEnd : calRangeStart;
       const hi = calRangeEnd && calRangeEnd > calRangeStart ? calRangeEnd : calRangeStart;
       const loMid = new Date(lo.getFullYear(), lo.getMonth(), lo.getDate(), 0, 0, 0);
       const hiEnd = new Date(hi.getFullYear(), hi.getMonth(), hi.getDate(), 23, 59, 59);
@@ -2660,6 +2659,11 @@ function KPITab() {
     if (typeFilter === "all") return base;
     return base.filter(c => c.type === typeFilter);
   }, [checkins, activeWeek, calRangeStart, calRangeEnd, weekDateMap, typeFilter]);
+
+  // Apply AM filter on top of weekCheckins for the report view list
+  const filteredWeekCheckins = useMemo(() =>
+    amFilter === "All" ? weekCheckins : weekCheckins.filter(c => c.am === amFilter),
+  [weekCheckins, amFilter]);
   // Per-AM stats broken out by type — computed from tagged check-ins (skipped not counted)
   const amStats = useMemo(() => {
     function rateFor(rows) {
@@ -3065,6 +3069,7 @@ function KPITab() {
           </div>
 
           {/* Check-in list */}
+          {/* Check-in list header */}
           <div style={{background:C.teal,color:C.white,borderRadius:"10px 10px 0 0",padding:"10px 18px",display:"flex",gap:14,alignItems:"center",flexWrap:"wrap"}}>
             <span style={{fontWeight:700,fontSize:13}}>Check-ins — {calRangeStart ? (calRangeEnd && calRangeEnd.toDateString()!==calRangeStart.toDateString() ? `${calRangeStart.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${calRangeEnd.toLocaleDateString("en-US",{month:"short",day:"numeric"})}` : calRangeStart.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})) : activeWeek}</span>
             <span style={{fontSize:12,opacity:.85}}>{weekTotals.total} counted</span>
@@ -3078,7 +3083,31 @@ function KPITab() {
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:13,minWidth:640}}>
               <thead>
                 <tr style={{background:"#F8F8FB"}}>
-                  {["","Client / Agency","VAs & Scores","Type","Mode","AM","TL","Status",""].map((h,i)=>(
+                  {["","Client / Agency","VAs & Scores","Type","Mode"].map((h,i)=>(
+                    <th key={i} style={{padding:"8px 12px",textAlign:"left",fontSize:11,color:C.muted,fontWeight:700,borderBottom:`1px solid ${C.border}`,whiteSpace:"nowrap"}}>{h}</th>
+                  ))}
+                  <th style={{padding:"8px 12px",textAlign:"left",fontSize:11,fontWeight:700,borderBottom:`1px solid ${C.border}`,whiteSpace:"nowrap"}}>
+                    <div style={{position:"relative",display:"inline-block"}}>
+                      <button onClick={e=>{e.stopPropagation();document.getElementById("am-col-filter").style.display=document.getElementById("am-col-filter").style.display==="block"?"none":"block";}}
+                        style={{background:amFilter!=="All"?({Niccole:C.red,Karla:C.blue,Alicia:C.teal}[amFilter]||C.dark):"none",
+                          color:amFilter!=="All"?C.white:C.muted,border:"none",cursor:"pointer",fontSize:11,fontWeight:700,
+                          padding:amFilter!=="All"?"2px 8px":"0",borderRadius:6}}>
+                        {amFilter==="All"?"AM ▾":`${amFilter} ▾`}
+                      </button>
+                      <div id="am-col-filter" style={{display:"none",position:"absolute",top:"100%",left:0,zIndex:99,background:C.white,border:`1px solid ${C.border}`,borderRadius:8,boxShadow:"0 4px 16px rgba(0,0,0,0.12)",padding:6,minWidth:110}}>
+                        {["All","Niccole","Karla","Alicia"].map(a=>(
+                          <div key={a} onClick={e=>{e.stopPropagation();setAmFilter(a);document.getElementById("am-col-filter").style.display="none";}}
+                            style={{padding:"6px 10px",cursor:"pointer",borderRadius:6,fontSize:12,
+                              color:a==="All"?C.dark:({Niccole:C.red,Karla:C.blue,Alicia:C.teal}[a]||C.dark),
+                              fontWeight:amFilter===a?700:400,
+                              background:amFilter===a?C.gray:"transparent"}}>
+                            {a==="All"?"All AMs":a}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </th>
+                  {["TL","Status",""].map((h,i)=>(
                     <th key={i} style={{padding:"8px 12px",textAlign:"left",fontSize:11,color:C.muted,fontWeight:700,borderBottom:`1px solid ${C.border}`,whiteSpace:"nowrap"}}>{h}</th>
                   ))}
                 </tr>
@@ -4168,22 +4197,29 @@ function TLATOTab() {
   const { rows: records, upsert: upsertRecord, remove: removeRecord } = useSupabaseTable("tl_ato", "id", INIT_TL_ATO);
   const [search, setSearch]   = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [tlFilter,     setTlFilter]     = useState("All");
+  const [amFilter,     setAmFilter]     = useState("All");
+  const [salesFilter,  setSalesFilter]  = useState("All");
   const [adding, setAdding]   = useState(false);
   const EMPTY = { start:"", vaName:"", vaTag:"", status:"Active", vaEmail:"", company:"", agencyPOC:"", timeZone:"", tl:"", am:"", salesRep:"" };
   const [newRec, setNewRec]   = useState(EMPTY);
   const [expandId, setExpandId] = useState(null);
 
-  const statuses = ["All", ...new Set(records.map(r => r.status).filter(Boolean))];
-  const TLS = ["Martin","Rez","Ed","RJ","Vincent"];
-  const AMS = ["Niccole","Karla","Alicia"];
+  const statuses  = ["All", ...new Set(records.map(r => r.status).filter(Boolean))];
+  const tlOptions = ["All", ...new Set(records.map(r => r.tl).filter(Boolean)).add("Martin").add("Rez").add("Ed").add("RJ").add("Vincent")];
+  const amOptions = ["All", "Niccole", "Karla", "Alicia"];
+  const salesOptions = ["All", ...new Set(records.map(r => r.salesRep).filter(Boolean))];
 
   const visible = useMemo(() => records.filter(r => {
     const q = search.toLowerCase();
     const ms = !search || [r.vaName,r.company,r.agencyPOC,r.tl,r.am,r.salesRep,r.vaEmail,r.vaTag,r.timeZone,r.status]
       .some(v => v && v.toLowerCase().includes(q));
-    const sf = statusFilter === "All" || r.status === statusFilter;
-    return ms && sf;
-  }), [records, search, statusFilter]);
+    return ms
+      && (statusFilter === "All" || r.status === statusFilter)
+      && (tlFilter     === "All" || r.tl === tlFilter)
+      && (amFilter     === "All" || r.am === amFilter)
+      && (salesFilter  === "All" || r.salesRep === salesFilter);
+  }), [records, search, statusFilter, tlFilter, amFilter, salesFilter]);
 
   function upRec(id, field, val) {
     const r = records.find(x => x.id === id);
@@ -4201,22 +4237,70 @@ function TLATOTab() {
   return (
     <div>
       {/* Search + filters + add */}
-      <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap",alignItems:"center"}}>
+      <div style={{display:"flex",gap:8,marginBottom:10,flexWrap:"wrap",alignItems:"center"}}>
         <input placeholder="Search VA, company, TL, AM, email..."
           value={search} onChange={e=>setSearch(e.target.value)}
           style={{flex:"1 1 220px",padding:"8px 12px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:13}}/>
-        <div style={{display:"flex",gap:4}}>
-          {statuses.map(s=>(
-            <button key={s} onClick={()=>setStatusFilter(s)}
-              style={{padding:"6px 12px",borderRadius:8,border:"none",cursor:"pointer",fontSize:12,
-                background:statusFilter===s?C.dark:C.gray,color:statusFilter===s?C.white:C.dark,fontWeight:statusFilter===s?700:400}}>{s}</button>
-          ))}
-        </div>
         <span style={{fontSize:12,color:C.muted}}>{visible.length} records</span>
         <button onClick={()=>setAdding(v=>!v)}
           style={{padding:"7px 16px",borderRadius:8,border:"none",cursor:"pointer",background:C.red,color:C.white,fontWeight:600,fontSize:13,marginLeft:"auto"}}>
           {adding?"✕ Cancel":"+ Add Account"}
         </button>
+      </div>
+      {/* Filter chips row */}
+      <div style={{display:"flex",gap:12,marginBottom:14,flexWrap:"wrap",alignItems:"flex-start"}}>
+        {/* Status */}
+        <div>
+          <div style={{fontSize:10,color:C.muted,fontWeight:700,marginBottom:4}}>STATUS</div>
+          <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
+            {statuses.map(s=>(
+              <button key={s} onClick={()=>setStatusFilter(s)}
+                style={{padding:"4px 10px",borderRadius:99,border:"none",cursor:"pointer",fontSize:11,
+                  background:statusFilter===s?C.dark:C.gray,color:statusFilter===s?C.white:C.dark,fontWeight:statusFilter===s?700:400}}>{s}</button>
+            ))}
+          </div>
+        </div>
+        {/* TL */}
+        <div>
+          <div style={{fontSize:10,color:C.muted,fontWeight:700,marginBottom:4}}>TL</div>
+          <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
+            {["All","Martin","Rez","Ed","RJ","Vincent"].map(t=>(
+              <button key={t} onClick={()=>setTlFilter(t)}
+                style={{padding:"4px 10px",borderRadius:99,border:"none",cursor:"pointer",fontSize:11,
+                  background:tlFilter===t?C.teal:C.gray,color:tlFilter===t?C.white:C.dark,fontWeight:tlFilter===t?700:400}}>{t}</button>
+            ))}
+          </div>
+        </div>
+        {/* AM */}
+        <div>
+          <div style={{fontSize:10,color:C.muted,fontWeight:700,marginBottom:4}}>AM</div>
+          <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
+            {["All","Niccole","Karla","Alicia"].map(a=>(
+              <button key={a} onClick={()=>setAmFilter(a)}
+                style={{padding:"4px 10px",borderRadius:99,border:"none",cursor:"pointer",fontSize:11,
+                  background:amFilter===a?({Niccole:C.red,Karla:C.blue,Alicia:C.teal}[a]||C.dark):C.gray,
+                  color:amFilter===a?C.white:C.dark,fontWeight:amFilter===a?700:400}}>{a}</button>
+            ))}
+          </div>
+        </div>
+        {/* Sales Rep */}
+        <div>
+          <div style={{fontSize:10,color:C.muted,fontWeight:700,marginBottom:4}}>SALES REP</div>
+          <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
+            {salesOptions.map(s=>(
+              <button key={s} onClick={()=>setSalesFilter(s)}
+                style={{padding:"4px 10px",borderRadius:99,border:"none",cursor:"pointer",fontSize:11,
+                  background:salesFilter===s?C.purple:C.gray,color:salesFilter===s?C.white:C.dark,fontWeight:salesFilter===s?700:400}}>{s}</button>
+            ))}
+          </div>
+        </div>
+        {/* Clear all */}
+        {(statusFilter!=="All"||tlFilter!=="All"||amFilter!=="All"||salesFilter!=="All")&&(
+          <button onClick={()=>{setStatusFilter("All");setTlFilter("All");setAmFilter("All");setSalesFilter("All");}}
+            style={{padding:"4px 12px",borderRadius:99,border:`1px solid ${C.border}`,background:C.white,cursor:"pointer",fontSize:11,color:C.muted,marginTop:14}}>
+            Clear filters
+          </button>
+        )}
       </div>
 
       {/* Add form */}
