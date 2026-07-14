@@ -2599,6 +2599,17 @@ function KPITab() {
     if (match) return { am: match.am || "", tl: match.tl || "" };
     return {};
   }
+
+  // Get all VA names for a given agency/company from TL ATO
+  function lookupVAsFromTLATO(clientText) {
+    if (!clientText.trim()) return [];
+    const q = clientText.toLowerCase();
+    const matches = tlAtoRecords.filter(r =>
+      (r.company && r.company.toLowerCase().includes(q)) ||
+      (r.agencyPOC && r.agencyPOC.toLowerCase().includes(q))
+    );
+    return matches.map(r => r.vaName).filter(Boolean);
+  }
   const [calRangeStart, setCalRangeStart] = useState(null);
   const [calRangeEnd,   setCalRangeEnd]   = useState(null);
   const [amFilter, setAmFilter] = useState("All");
@@ -2902,9 +2913,27 @@ function KPITab() {
               <div style={{fontSize:11,color:C.muted,fontWeight:600,marginBottom:4}}>CLIENT / AGENCY *</div>
               <input value={newCI.client} placeholder="e.g. TJ Worsencroft, Navigate Risk Advisors"
                 onChange={e=>setNewCI(p=>({...p,client:e.target.value}))}
-                onBlur={e=>{const l=lookupFromTLATO(e.target.value);if(l.am||l.tl)setNewCI(p=>({...p,...l}));}}
+                onBlur={e=>{
+                  const l=lookupFromTLATO(e.target.value);
+                  const vas=lookupVAsFromTLATO(e.target.value);
+                  if(l.am||l.tl) setNewCI(p=>({...p,...l}));
+                  if(vas.length>0) setNewCI(p=>({
+                    ...p,
+                    vas: vas.map(name=>({name,score:""}))
+                  }));
+                }}
                 style={{width:"100%",padding:"6px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13}}/>
-              {newCI.client&&(()=>{const l=lookupFromTLATO(newCI.client);return l.am?<div style={{fontSize:11,color:C.green,marginTop:3}}>Auto-filled: AM = {l.am}, TL = {l.tl}</div>:null;})()}
+              {newCI.client&&(()=>{
+                const l=lookupFromTLATO(newCI.client);
+                const vas=lookupVAsFromTLATO(newCI.client);
+                if(!l.am&&!vas.length) return null;
+                return (
+                  <div style={{fontSize:11,color:C.green,marginTop:3}}>
+                    {l.am&&<span>Auto-filled: AM = {l.am}{l.tl?`, TL = ${l.tl}`:""}</span>}
+                    {vas.length>0&&<span style={{marginLeft:l.am?8:0}}>· {vas.length} VA{vas.length>1?"s":""} found</span>}
+                  </div>
+                );
+              })()}
             </div>
             {/* Type */}
             <div>
@@ -2953,18 +2982,29 @@ function KPITab() {
             {/* VAs */}
             <div style={{gridColumn:"span 2"}}>
               <div style={{fontSize:11,color:C.muted,fontWeight:600,marginBottom:6}}>VIRTUAL ASSISTANTS & SCORES</div>
-              {newCI.vas.map((v,i)=>(
-                <div key={i} style={{display:"flex",gap:8,alignItems:"center",marginBottom:6}}>
-                  <div style={{fontSize:12,color:C.muted,width:20,textAlign:"right",flexShrink:0}}>#{i+1}</div>
-                  <input value={v.name} placeholder="VA full name" onChange={e=>setVA(i,"name",e.target.value)}
-                    style={{flex:"1 1 150px",padding:"6px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13}}/>
-                  <input value={v.score} placeholder="Score % or N/A" onChange={e=>setVA(i,"score",e.target.value)}
-                    style={{width:90,padding:"6px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13}}/>
-                  {newCI.vas.length>1&&(
-                    <button onClick={()=>removeVA(i)} style={{background:"none",border:"none",cursor:"pointer",color:C.muted,fontSize:16,padding:0,flexShrink:0}}>×</button>
-                  )}
-                </div>
-              ))}
+              {newCI.vas.map((v,i)=>{
+                const agencyVAs = lookupVAsFromTLATO(newCI.client);
+                return (
+                  <div key={i} style={{display:"flex",gap:8,alignItems:"center",marginBottom:6}}>
+                    <div style={{fontSize:12,color:C.muted,width:20,textAlign:"right",flexShrink:0}}>#{i+1}</div>
+                    {agencyVAs.length>0 ? (
+                      <select value={v.name} onChange={e=>setVA(i,"name",e.target.value)}
+                        style={{flex:"1 1 150px",padding:"6px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13}}>
+                        <option value="">— Select VA —</option>
+                        {agencyVAs.map(n=><option key={n} value={n}>{n}</option>)}
+                      </select>
+                    ) : (
+                      <input value={v.name} placeholder="VA full name" onChange={e=>setVA(i,"name",e.target.value)}
+                        style={{flex:"1 1 150px",padding:"6px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13}}/>
+                    )}
+                    <input value={v.score} placeholder="Score % or N/A" onChange={e=>setVA(i,"score",e.target.value)}
+                      style={{width:90,padding:"6px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13}}/>
+                    {newCI.vas.length>1&&(
+                      <button onClick={()=>removeVA(i)} style={{background:"none",border:"none",cursor:"pointer",color:C.muted,fontSize:16,padding:0,flexShrink:0}}>×</button>
+                    )}
+                  </div>
+                );
+              })}
               <button onClick={addVA} style={{fontSize:12,color:C.teal,background:"none",border:`1px dashed ${C.teal}`,borderRadius:6,padding:"4px 12px",cursor:"pointer",marginTop:2}}>+ Add another VA</button>
             </div>
             {/* Notes */}
@@ -3452,13 +3492,33 @@ function KPITab() {
                 </div>
                 <div style={{gridColumn:"span 2"}}>
                   <div style={{fontSize:11,color:C.muted,fontWeight:600,marginBottom:4}}>AGENCY *</div>
-                  <input value={newConcern.agency} placeholder="e.g. Navigate Risk Advisors" onChange={e=>setNewConcern(p=>({...p,agency:e.target.value}))}
+                  <input value={newConcern.agency} placeholder="e.g. Navigate Risk Advisors"
+                    onChange={e=>setNewConcern(p=>({...p,agency:e.target.value}))}
+                    onBlur={e=>{
+                      const vas = lookupVAsFromTLATO(e.target.value);
+                      if (vas.length===1) setNewConcern(p=>({...p,va:vas[0]}));
+                    }}
                     style={{width:"100%",padding:"6px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13}}/>
+                  {(()=>{
+                    const vas = lookupVAsFromTLATO(newConcern.agency);
+                    return vas.length>0 ? <div style={{fontSize:11,color:C.green,marginTop:3}}>{vas.length} VA{vas.length>1?"s":""} found for this agency</div> : null;
+                  })()}
                 </div>
                 <div>
                   <div style={{fontSize:11,color:C.muted,fontWeight:600,marginBottom:4}}>VA NAME</div>
-                  <input value={newConcern.va} placeholder="VA full name" onChange={e=>setNewConcern(p=>({...p,va:e.target.value}))}
-                    style={{width:"100%",padding:"6px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13}}/>
+                  {(()=>{
+                    const vas = lookupVAsFromTLATO(newConcern.agency);
+                    return vas.length > 0 ? (
+                      <select value={newConcern.va} onChange={e=>setNewConcern(p=>({...p,va:e.target.value}))}
+                        style={{width:"100%",padding:"6px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13}}>
+                        <option value="">— Select VA —</option>
+                        {vas.map(v=><option key={v} value={v}>{v}</option>)}
+                      </select>
+                    ) : (
+                      <input value={newConcern.va} placeholder="VA full name" onChange={e=>setNewConcern(p=>({...p,va:e.target.value}))}
+                        style={{width:"100%",padding:"6px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13}}/>
+                    );
+                  })()}
                 </div>
                 <div style={{gridColumn:"span 3"}}>
                   <div style={{fontSize:11,color:C.muted,fontWeight:600,marginBottom:4}}>CONCERN *</div>
