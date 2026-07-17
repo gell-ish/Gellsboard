@@ -5110,42 +5110,195 @@ function WordTrackPanel() {
 function SalesTrainingTab() {
   const C = useTheme();
   const [resource, setResource] = useState("clarity");
+
+  const VBS_SECTIONS = [
+    {
+      title: "Value-Based Selling",
+      color: "#0369A1",
+      content: `Value-based selling is a sales approach where you focus on the business outcomes and value your solution provides, instead of its features or price.`,
+      examples: [
+        { label: "Instead of saying", text: `"Our VAs can answer phones, quote policies, and manage renewals."` },
+        { label: "You would say", text: `"Our VAs help agencies reduce administrative workload by up to 40%, allowing licensed staff to focus on revenue-generating activities and improving customer response times."` },
+      ],
+      bullets: ["ROI (return on investment)", "Time savings", "Increased revenue", "Improved efficiency", "Reduced stress and bottlenecks"],
+      bulletsLabel: "The conversation centers on:",
+      keyQuestion: "\"How will this improve the client's business?\"",
+    },
+    {
+      title: "Consultative Discovery",
+      color: "#0369A1",
+      content: `Consultative discovery is the process of asking thoughtful questions to understand a prospect's business, challenges, goals, and priorities before recommending a solution. Instead of immediately explaining your service, you spend time learning about the client.`,
+      examples: [],
+      bullets: [
+        "What prompted you to look for a VA?",
+        "What tasks are taking up most of your team's time?",
+        "Where do you feel your agency is losing efficiency?",
+        "What does success look like six months from now?",
+        "Have you tried outsourcing before? What worked and what didn't?",
+      ],
+      bulletsLabel: "Examples of discovery questions:",
+      uncover: ["Pain points", "Goals", "Budget", "Decision-making process", "Urgency", "Desired outcomes"],
+      uncoverLabel: "The goal is to uncover:",
+    },
+    {
+      title: "How They Work Together",
+      color: "#065F46",
+      content: "Consultative discovery comes first: Ask questions → Listen carefully → Identify the client's biggest challenges → Connect your solution using value-based selling.",
+      dialogue: [
+        { speaker: "Discovery", text: `"What is your biggest bottleneck right now?"` },
+        { speaker: "Client", text: `"My producers spend too much time servicing existing clients."` },
+        { speaker: "Value-Based Response", text: `"That's exactly where our VAs can help. By taking over policy servicing, certificate requests, and administrative work, your producers can spend more time selling and building relationships, which typically has a much greater impact on agency growth."` },
+      ],
+      remember: [
+        { label: "Consultative Discovery", value: "Ask before you tell." },
+        { label: "Value-Based Selling", value: "Sell the outcome, not the service." },
+      ],
+    },
+    {
+      title: "Why You're Less Likely to Hear 'No' at Cross-Sell",
+      color: "#92400E",
+      content: `A "no" at the cross-sell stage often means you didn't fully understand the customer's needs earlier in the conversation. The client has essentially convinced themselves they have the problem — you're not saying "buy this," you're saying "earlier you mentioned X, this is how we solve X."`,
+      scenarios: [
+        {
+          label: "Poor Discovery",
+          bad: `Salesperson: "Would you also be interested in our MSP services?"\nClient: "No, we're good."`,
+          note: "The client says no because they don't see why they need it.",
+        },
+        {
+          label: "Good Discovery",
+          good: `Earlier: "Who manages your IT today? How much downtime do you experience?"\nClient: "Honestly, it's becoming a headache. We don't have anyone dedicated to IT."\nLater: "Based on what you've shared, I think our MSP offering could take that burden off your team."`,
+          note: "Now it doesn't feel like a random upsell. It feels like a solution.",
+        },
+      ],
+    },
+    {
+      title: "Applying It to Lava",
+      color: "#4F46E5",
+      content: "Instead of jumping to \"Would you like another VA?\", first discover the pain points, then connect your recommendation to what they told you.",
+      discoverList: ["Are producers doing admin work?", "Are calls going to voicemail?", "Is turnaround time on quotes slow?", "Are employees working overtime?", "Are there tasks that never get done?"],
+      example: {
+        client: `"Our CSRs are buried."`,
+        response: `"Based on what you've shared, I think adding another VA would help relieve your CSRs so they can focus on servicing clients instead of getting stuck with administrative work."`,
+        note: "At that point, you're not cross-selling. You're recommending a solution based on what the client told you.",
+      },
+    },
+  ];
+
   return (
     <div>
       <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
-        <button
-          onClick={() => setResource("clarity")}
-          style={{
-            padding: "8px 16px",
-            borderRadius: 8,
-            border: "none",
-            cursor: "pointer",
-            fontSize: 13,
-            fontWeight: resource === "clarity" ? 700 : 400,
-            background: resource === "clarity" ? C.dark : C.gray,
-            color: resource === "clarity" ? C.white : C.muted,
-          }}
-        >
-           Clarity Selling
-        </button>
-        <button
-          onClick={() => setResource("wordtrack")}
-          style={{
-            padding: "8px 16px",
-            borderRadius: 8,
-            border: "none",
-            cursor: "pointer",
-            fontSize: 13,
-            fontWeight: resource === "wordtrack" ? 700 : 400,
-            background: resource === "wordtrack" ? C.dark : C.gray,
-            color: resource === "wordtrack" ? C.white : C.muted,
-          }}
-        >
-           VA & AM Word Track
-        </button>
+        {[
+          { key: "clarity",  label: " Clarity Selling" },
+          { key: "wordtrack",label: " VA & AM Word Track" },
+          { key: "vbs",      label: " Value-Based Selling" },
+        ].map(({ key, label }) => (
+          <button key={key} onClick={() => setResource(key)}
+            style={{ padding: "8px 16px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 13,
+              fontWeight: resource === key ? 700 : 400,
+              background: resource === key ? C.dark : C.gray,
+              color: resource === key ? C.white : C.muted }}>
+            {label}
+          </button>
+        ))}
       </div>
-      {resource === "clarity" && <ClaritySellingPanel />}
+      {resource === "clarity"   && <ClaritySellingPanel />}
       {resource === "wordtrack" && <WordTrackPanel />}
+      {resource === "vbs" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {VBS_SECTIONS.map((s, si) => (
+            <div key={si} style={{ background: C.white, borderRadius: 10, border: `1px solid ${C.border}`, overflow: "hidden" }}>
+              <div style={{ padding: "12px 18px", background: s.color, color: "#fff", fontWeight: 700, fontSize: 14 }}>
+                {s.title}
+              </div>
+              <div style={{ padding: 18, display: "flex", flexDirection: "column", gap: 12 }}>
+                {s.content && <p style={{ margin: 0, fontSize: 13, lineHeight: 1.7, color: C.dark }}>{s.content}</p>}
+
+                {s.examples && s.examples.map((e, i) => (
+                  <div key={i} style={{ background: C.gray, borderRadius: 8, padding: "10px 14px", borderLeft: `4px solid ${s.color}` }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 4 }}>{e.label.toUpperCase()}</div>
+                    <div style={{ fontSize: 13, color: C.dark, fontStyle: "italic" }}>{e.text}</div>
+                  </div>
+                ))}
+
+                {s.bulletsLabel && (
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: C.muted, marginBottom: 6 }}>{s.bulletsLabel}</div>
+                    <ul style={{ margin: 0, paddingLeft: 20, display: "flex", flexDirection: "column", gap: 4 }}>
+                      {s.bullets.map((b, i) => <li key={i} style={{ fontSize: 13, color: C.dark }}>{b}</li>)}
+                    </ul>
+                  </div>
+                )}
+
+                {s.uncoverLabel && (
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: C.muted, marginBottom: 6 }}>{s.uncoverLabel}</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                      {s.uncover.map((u, i) => (
+                        <span key={i} style={{ background: s.color + "18", color: s.color, fontSize: 12, fontWeight: 600, padding: "3px 10px", borderRadius: 99 }}>{u}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {s.keyQuestion && (
+                  <div style={{ background: s.color + "12", borderRadius: 8, padding: "10px 14px", fontSize: 13, fontWeight: 700, color: s.color }}>
+                    Key question: {s.keyQuestion}
+                  </div>
+                )}
+
+                {s.dialogue && s.dialogue.map((d, i) => (
+                  <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: s.color, minWidth: 160, flexShrink: 0, paddingTop: 2 }}>{d.speaker}</span>
+                    <div style={{ background: C.gray, borderRadius: 8, padding: "8px 12px", fontSize: 13, color: C.dark, flex: 1, fontStyle: "italic" }}>{d.text}</div>
+                  </div>
+                ))}
+
+                {s.remember && (
+                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                    {s.remember.map((r, i) => (
+                      <div key={i} style={{ background: s.color + "12", borderRadius: 8, padding: "10px 14px", flex: "1 1 200px" }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: s.color, marginBottom: 4 }}>{r.label}</div>
+                        <div style={{ fontSize: 13, color: C.dark }}>{r.value}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {s.scenarios && s.scenarios.map((sc, i) => (
+                  <div key={i} style={{ background: C.gray, borderRadius: 8, padding: "12px 14px", borderLeft: `4px solid ${i === 0 ? C.red : C.green}` }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: i === 0 ? C.red : C.green, marginBottom: 6 }}>{sc.label}</div>
+                    <pre style={{ margin: 0, fontSize: 12, color: C.dark, whiteSpace: "pre-wrap", fontFamily: "inherit", lineHeight: 1.6 }}>{sc.bad || sc.good}</pre>
+                    <div style={{ fontSize: 11, color: C.muted, marginTop: 6, fontStyle: "italic" }}>{sc.note}</div>
+                  </div>
+                ))}
+
+                {s.discoverList && (
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: C.muted, marginBottom: 6 }}>Discover first:</div>
+                    <ul style={{ margin: 0, paddingLeft: 20, display: "flex", flexDirection: "column", gap: 4 }}>
+                      {s.discoverList.map((d, i) => <li key={i} style={{ fontSize: 13, color: C.dark }}>{d}</li>)}
+                    </ul>
+                  </div>
+                )}
+
+                {s.example && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: C.red, minWidth: 60, flexShrink: 0, paddingTop: 2 }}>Client</span>
+                      <div style={{ background: C.gray, borderRadius: 8, padding: "8px 12px", fontSize: 13, flex: 1, fontStyle: "italic" }}>{s.example.client}</div>
+                    </div>
+                    <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: s.color, minWidth: 60, flexShrink: 0, paddingTop: 2 }}>Response</span>
+                      <div style={{ background: C.gray, borderRadius: 8, padding: "8px 12px", fontSize: 13, flex: 1, fontStyle: "italic" }}>{s.example.response}</div>
+                    </div>
+                    <div style={{ fontSize: 12, color: C.muted, fontStyle: "italic" }}>{s.example.note}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
