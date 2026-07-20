@@ -1894,7 +1894,7 @@ function EditableText({ value, onSave, style = {}, inputStyle = {} }) {
 //  TASKS TAB 
 function TasksTab() {
   const C = useTheme();
-  const { rows: tasks, upsert: upsertTask, remove: removeTask } = useSupabaseTable("tasks", "id", INIT_TASKS);
+  const { rows: tasks, upsert: upsertTask, remove: removeTask, loading: tasksLoading } = useSupabaseTable("tasks", "id", []);
   const [filter, setFilter] = useState("Active");
   const [adding, setAdding] = useState(false);
   const [newTask, setNewTask] = useState({
@@ -1930,6 +1930,14 @@ function TasksTab() {
     ip: tasks.filter((t) => t.status === "In Progress").length,
     pend: tasks.filter((t) => t.status === "Pending").length,
   };
+  if (tasksLoading) return (
+    <div style={{display:"flex",alignItems:"center",justifyContent:"center",padding:60,flexDirection:"column",gap:12}}>
+      <div style={{width:32,height:32,border:`3px solid ${C.border}`,borderTop:`3px solid ${C.teal}`,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
+      <div style={{fontSize:13,color:C.muted}}>Loading tasks...</div>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
+
   return (
     <div>
       <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
